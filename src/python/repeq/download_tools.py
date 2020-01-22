@@ -4,7 +4,7 @@ import datetime
 import obspy
 
 
-def Catalog_USGS(time1,time2,area=[-156.357,-154.061,18.407,20.437],magnitude=3.0,outname='testout.cat'):
+def catalog_USGS(time1,time2,area=[-156.357,-154.061,18.407,20.437],magnitude=3.0,outname='testout.cat'):
     #download the earthquake catalog from USGS earthquake API
     import requests
     import datetime
@@ -162,7 +162,7 @@ def EQfilter(catalog,BT_time=['20170607020500','20191210000000'],BT_lon=[132,133
     return(T,lon,lat,dep,mag)
                   
 
-def download(evtime,sec_before,sec_after,lon,lat,minrad,maxrad,provider=["IRIS"],OUT='./'):
+def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],range_rad=[0,6],provider=["IRIS"],OUT='./'):
     import obspy
     from obspy.clients.fdsn.mass_downloader import CircularDomain,RectangularDomain,Restrictions, MassDownloader
     import datetime
@@ -170,6 +170,14 @@ def download(evtime,sec_before,sec_after,lon,lat,minrad,maxrad,provider=["IRIS"]
     import pandas as pd
     import numpy as np
     import time
+    '''
+    print('evtime:2000-01-01T06:58:39.780')
+    print('Seconds before and after the evtime, sec_bef_aft=[120,600]')
+    print('Restriction type: FType=="circ" or "rect"')
+    print('Center/boundary of the filtering reference ex:[120,24] for "circ" or [119,123,21,26] for "rect"')
+    print('range_rad=[0,6]')
+    '''
+    
     '''
     #example input
     evtime='2000-01-01T06:58:39.780Z'
@@ -185,18 +193,22 @@ def download(evtime,sec_before,sec_after,lon,lat,minrad,maxrad,provider=["IRIS"]
     '''
     yyyy,mm,dd,HH,MM,SS,NS=cattime2normal(evtime) 
     origin_time = obspy.UTCDateTime(yyyy,mm,dd,HH,MM,SS,NS)
-    domain = CircularDomain(latitude=lat, longitude=lon,
-                        minradius=minrad, maxradius=maxrad)
-    
-    
-    #domain = RectangularDomain(minlatitude=34.452, maxlatitude=38.72, minlongitude=-123.201, maxlongitude=-118.015)
+    assert len(sec_bef_aft)==2, 'Give seconds before and after the origin time! Ex:[60,1200]'
+    if Ftype=='circ':
+        assert len(lon_lat)==2, 'length of lon_lat should be 2. Ex:[123,32.1]'
+        assert len(range_rad)==2, 'length of range_rad should be 2'
+        domain = CircularDomain(latitude=lon_lat[1], longitude=lon_lat[0],minradius=range_rad[0], maxradius=range_rad[1])
+    elif Ftype=='rect':
+        assert len(lon_lat)==4, 'length of lon_lat should be 4. Ex:[119,123,21,26]'
+        #assert len(range_rad)==2, 'length of range_rad should be 2'
+        domain = RectangularDomain(minlatitude=lon_lat[2], maxlatitude=lon_lat[3], minlongitude=lon_lat[0], maxlongitude=lon_lat[1])
     
     
     restrictions = Restrictions(
     # Get data from 5 minutes before the event to one hour after the
     # event. This defines the temporal bounds of the waveform data.
-    starttime=origin_time - sec_before,
-    endtime=origin_time + sec_after,
+    starttime=origin_time - sec_bef_aft[0],
+    endtime=origin_time + sec_bef_aft[1],
     # You might not want to deal with gaps in the data. If this setting is
     # True, any trace with a gap/overlap will be discarded.
     reject_channels_with_gaps=True,
@@ -225,8 +237,8 @@ def download(evtime,sec_before,sec_after,lon,lat,minrad,maxrad,provider=["IRIS"]
     location_priorities=["", "00", "10","100"])
     
     # No specified providers will result in all known ones being queried.
-    #mdl = MassDownloader(providers=provider)
-    mdl = MassDownloader(providers=["IRIS"])
+    mdl = MassDownloader(providers=provider)
+#    mdl = MassDownloader(providers=["IRIS"])
     # The data will be downloaded to the ``./waveforms/`` and ``./stations/``
     # folders with automatically chosen file names.
     outstr=evtime.split('T')[0].replace('-','')+str(HH).zfill(2)+str(MM).zfill(2)+str(SS).zfill(2) #save dir as evid
