@@ -4,23 +4,27 @@ import datetime
 import obspy
 
 
-def catalog_USGS(time1,time2,area=[-156.357,-154.061,18.407,20.437],magnitude=3.0,outname='testout.cat'):
+def catalog_USGS(times=['2000','2020'],area=[-156.357,-154.061,18.407,20.437],magnitude=[3.0,6.5],outname='testout.cat'):
     #download the earthquake catalog from USGS earthquake API
     import requests
     import datetime
     import sys
-
+    assert len(times)==2, 'Please provide a range for time [time1,time2] the format can be [YYYY]MMDD  or <datetime> type'
+    assert len(area)==4, 'Please provide valid range for searching area [lon1,lon2,lat1,lat2]'
+    assert len(magnitude)==2, 'Length of magnitude should be 2, EX:[0.5,6.0]'
+    time1=times[0]
+    time2=times[1]
     #formatting check
     if type(time1)==str:
         if len(time1)<4:
             print('Time must be at least [YYYY]MMDD  or <datetime> type')
             sys.exit(2)
         elif len(time1)==4:
-            time1=datetime.datetime(float(time1[:4]),1,1)
+            time1=datetime.datetime(int(time1[:4]),1,1)
         elif len(time1)==6:
-            time1=datetime.datetime(float(time1[:4]),float(time1[4:6]),1)
+            time1=datetime.datetime(int(time1[:4]),int(time1[4:6]),1)
         elif len(time1)==8:
-            time1=datetime.datetime(float(time1[:4]),float(time1[4:6]),float(time1[6:8]))
+            time1=datetime.datetime(int(time1[:4]),int(time1[4:6]),int(time1[6:8]))
         else:
             print('Please make sure time1 format should be [YYYY]MMDD or in <datetime> type')
     if type(time2)==str:
@@ -28,11 +32,11 @@ def catalog_USGS(time1,time2,area=[-156.357,-154.061,18.407,20.437],magnitude=3.
             print('Time must be at least [YYYY]MMDD  or <datetime> type')
             sys.exit(2)
         elif len(time2)==4:
-            time2=datetime.datetime(float(time2[:4]),1,1)
+            time2=datetime.datetime(int(time2[:4]),1,1)
         elif len(time2)==6:
-            time2=datetime.datetime(float(time2[:4]),float(time2[4:6]),1)
+            time2=datetime.datetime(int(time2[:4]),int(time2[4:6]),1)
         elif len(time2)==8:
-            time2=datetime.datetime(float(time2[:4]),float(time2[4:6]),float(time2[6:8]))
+            time2=datetime.datetime(int(time2[:4]),int(time2[4:6]),int(time2[6:8]))
         else:
             print('Please make sure time1 format should be [YYYY]MMDD or in <datetime> type')
     
@@ -54,7 +58,8 @@ def catalog_USGS(time1,time2,area=[-156.357,-154.061,18.407,20.437],magnitude=3.
     minlatitude=area[2]
     maxlatitude=area[3]
     #the minimum M (don't want to go too small)
-    minmag=magnitude
+    minmag=magnitude[0]
+    maxmag=magnitude[1]
     deltadays=30
     if minmag<2:
         deltadays=10
@@ -66,10 +71,11 @@ def catalog_USGS(time1,time2,area=[-156.357,-154.061,18.407,20.437],magnitude=3.
         deltadays=60
     time1=time0
     while True:
+        print('Now at:',time2.strftime('%Y/%m/%d'),timemax.strftime('%Y/%m/%d'))
         time2=time1+datetime.timedelta(days=deltadays) #if too many earthquakes that exceed the API limit, change 60 days to smaller
         time1str=time1.strftime('%Y-%m-%d')
         time2str=time2.strftime('%Y-%m-%d')
-        url='https://earthquake.usgs.gov/fdsnws/event/1/query?format=csv&starttime='+time1str+'&endtime='+time2str+'&minmagnitude='+str(minmag)+'&maxlatitude='+str(maxlatitude)+'&minlatitude='+str(minlatitude)+'&maxlongitude='+str(maxlongitude)+'&minlongitude='+str(minlongitude)
+        url='https://earthquake.usgs.gov/fdsnws/event/1/query?format=csv&starttime='+time1str+'&endtime='+time2str+'&minmagnitude='+str(minmag)+'&maxmagnitude='+str(maxmag)+'&maxlatitude='+str(maxlatitude)+'&minlatitude='+str(minlatitude)+'&maxlongitude='+str(maxlongitude)+'&minlongitude='+str(minlongitude)
         data=requests.get(url)
         #write file
         lines=data.text.split('\n')[::-1][1:-1]
