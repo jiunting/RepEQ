@@ -1,0 +1,2 @@
+#Make the .mod file first. It has the format same as fk
+#convert the .mod file to .nd file, then .npz file is used by TauPyModel
