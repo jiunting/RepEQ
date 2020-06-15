@@ -71,7 +71,7 @@ def catalog_USGS(times=['2000','2020'],area=[-156.357,-154.061,18.407,20.437],ma
         deltadays=60
     time1=time0
     while True:
-        print('Now at:',time2.strftime('%Y/%m/%d'),timemax.strftime('%Y/%m/%d'))
+        print('Now at:%s %s'%(time2.strftime('%Y/%m/%d'), timemax.strftime('%Y/%m/%d')) )
         time2=time1+datetime.timedelta(days=deltadays) #if too many earthquakes that exceed the API limit, change 60 days to smaller
         time1str=time1.strftime('%Y-%m-%d')
         time2str=time2.strftime('%Y-%m-%d')
@@ -118,22 +118,50 @@ def EQfilter(catalog,BT_time=['20170607020500','20191210000000'],BT_lon=[132,133
     time1=BT_time[0]
     time2=BT_time[1]
     if not( type(time1) is datetime.datetime ):
-        yyyy=int(time1[0:4])
-        mm=int(time1[4:6])
-        dd=int(time1[6:8])
-        HH=int(time1[8:10])
-        MM=int(time1[10:12])
-        SS=int(time1[12:14])
-        time1=datetime.datetime(yyyy,mm,dd,HH,MM,SS)
+        #time1 is string
+        #determine input length
+        L_inp=len(time1)
+        assert L_inp>=8 #sould be at least yyyymmdd
+        st_slice=(0,4,6,8,10,12)
+        ed_slice=(4,6,8,10,12,14)
+        max_idx=6
+        T=[]
+        for i in range(max_idx):
+            try:
+                T.append(int(time1[st_slice[i]:ed_slice[i]]))
+            except:
+                T.append(0)
+
+        #yyyy=int(time1[0:4])
+        #mm=int(time1[4:6])
+        #dd=int(time1[6:8])
+        #HH=int(time1[8:10])
+        #MM=int(time1[10:12])
+        #SS=int(time1[12:14])
+        time1=datetime.datetime(T[0],T[1],T[2],T[3],T[4],T[5])
     
     if not( type(time2) is datetime.datetime ):
-        yyyy=int(time2[0:4])
-        mm=int(time2[4:6])
-        dd=int(time2[6:8])
-        HH=int(time2[8:10])
-        MM=int(time2[10:12])
-        SS=int(time2[12:14])
-        time2=datetime.datetime(yyyy,mm,dd,HH,MM,SS)
+        L_inp=len(time2)
+        assert L_inp>=8 #sould be at least yyyymmdd
+        st_slice=(0,4,6,8,10,12)
+        ed_slice=(4,6,8,10,12,14)
+        max_idx=6
+        T=[]
+        for i in range(max_idx):
+            try:
+                T.append(int(time2[st_slice[i]:ed_slice[i]]))
+            except:
+                T.append(0)
+    
+        #yyyy=int(time1[0:4])
+        #yyyy=int(time2[0:4])
+        #mm=int(time2[4:6])
+        #dd=int(time2[6:8])
+        #HH=int(time2[8:10])
+        #MM=int(time2[10:12])
+        #SS=int(time2[12:14])
+        #time2=datetime.datetime(yyyy,mm,dd,HH,MM,SS)
+        time2=datetime.datetime(T[0],T[1],T[2],T[3],T[4],T[5])
 
     with open(catalog,'r') as IN1:
         T=[];lat=[];lon=[];dep=[];mag=[];#magTp=[];nst=[];gap=[]
@@ -168,7 +196,7 @@ def EQfilter(catalog,BT_time=['20170607020500','20191210000000'],BT_lon=[132,133
     return(T,lon,lat,dep,mag)
                   
 
-def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],range_rad=[0,6],provider=["IRIS"],OUT='./'):
+def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],range_rad=[0,6],channel=["BHZ","HHZ"],provider=["IRIS"],OUT='.'):
     import obspy
     from obspy.clients.fdsn.mass_downloader import CircularDomain,RectangularDomain,Restrictions, MassDownloader
     import datetime
@@ -235,8 +263,7 @@ def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],ra
     #channel_priorities=["BH[ZNE]"],
     #channel_priorities=["BHZ","HNZ"],
     #channel_priorities=["BHZ"],
-    #channel_priorities=["HNZ"],
-    channel_priorities=["BHZ","HHZ"],
+    channel_priorities=channel,
     #channel_priorities=["HN[ZNE]"],
     # Location codes are arbitrary and there is no rule as to which
     # location is best. Same logic as for the previous setting.
@@ -250,12 +277,25 @@ def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],ra
     outstr=evtime.split('T')[0].replace('-','')+str(HH).zfill(2)+str(MM).zfill(2)+str(SS).zfill(2) #save dir as evid
     outmsdir=OUT+'/'+outstr+"/waveforms"
     outstadir=OUT+'/'+outstr+"/stations"
-    
     mdl.download(domain, restrictions,threads_per_client=20, mseed_storage=outmsdir,stationxml_storage=outstadir)
     return(outmsdir,outstadir)
 
 
+def download_waves_catalog(cata_name,cata_filters,sec_bef_aft=[120,600],range_rad=[0,6],channel=["BHZ","HHZ"],provider=["IRIS"],waveforms_outdir='.'):
+    #T,lon,lat,dep,mag=EQfilter(cata_name,BT_time=['20170607020500','20191210000000'],BT_lon=[132,133],BT_lat=[30,31],BT_dep=[0,50],BT_mag=[5.0,9.0])
+    T,lon,lat,dep,mag=EQfilter(cata_name,BT_time=cata_filters['filt_times'],BT_lon=cata_filters['filt_lon'],BT_lat=cata_filters['filt_lat'],
+                               BT_dep=cata_filters['filt_dep'],BT_mag=cata_filters['filt_m'])
     
+    for i,eqT in enumerate(T):
+        if i==0:
+            print('--------------start downloading------------')
+        if i%10==0:
+            print('Now at #%d / %d'%(i,len(T)))
+        
+        download_waves(eqT,sec_bef_aft=sec_bef_aft,Ftype='circ',lon_lat=[lon[i],lat[i]],range_rad=range_rad,channel=channel,provider=provider,OUT=waveforms_outdir)
+
+
+
 def rm_response(mseedpath,stapath,setlon,setlat,stainfo_path=None):
     import obspy
     from obspy.clients.fdsn.mass_downloader import CircularDomain,RectangularDomain,Restrictions, MassDownloader

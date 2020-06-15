@@ -8,8 +8,9 @@ sec_bef_aft=[120,600]
 Ftype='circ'
 lon_lat=[120,24]
 range_rad=[0,6]
+channel=["BHZ","HHZ"]
 provider=["IRIS"]
-OUT='./QQQ'
+OUT='./QQQQ'
 
 #-------Run the code------------------
-download_tools.download_waves(evtime,sec_bef_aft,Ftype,lon_lat,range_rad,provider,OUT)
+download_tools.download_waves(evtime,sec_bef_aft,Ftype,lon_lat,range_rad,channel,provider,OUT)

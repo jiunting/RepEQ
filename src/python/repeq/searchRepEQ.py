@@ -32,12 +32,12 @@ def get_staloc(net_sta_key,n_date):
     stlat=float(soup.find_all('latitude' or 'Latitude')[0].text)
     return(stlon,stlat)
 
-def get_traveltime(stlon,stlat,eqlon,eqlat,eqdep):
+def get_traveltime(stlon,stlat,eqlon,eqlat,eqdep,model_name='iasp91'):
     #c=Client()
     #c=c.distaz(stalat=stlat,stalon=stlon,evtlat=eqlat,evtlon=eqlon)
     #dist,az,baz=obspy.geodetics.base.gps2dist_azimuth(lat1=evlat,lon1=evlon,lat2=stlat,lon2=stlon)
     dist_degree=obspy.geodetics.locations2degrees(lat1=eqlat,long1=eqlon,lat2=stlat,long2=stlon)
-    model = TauPyModel(model="iasp91")
+    model = TauPyModel(model=model_name)
     P=model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_degree, phase_list=('P','p'), receiver_depth_in_km=0)
     S=model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_degree, phase_list=('S','s'), receiver_depth_in_km=0)
     return(P[0].time,S[0].time,dist_degree)
@@ -207,7 +207,7 @@ for net_sta_key in same_net_sta:
         #-------------get info------------
         stlon,stlat=get_staloc(net_sta_key,n_date)
         #get travel time
-        tP,tS,GCARC=get_traveltime(stlon,stlat,eqlon,eqlat,eqdep)
+        tP,tS,GCARC=get_traveltime(stlon,stlat,eqlon,eqlat,eqdep,model_name='iasp91')
         sav_Parrivl.append(tP)   #P wave travel time
         #---------hang on, write the information in the sac file------
         #make sac a dictionary
@@ -282,12 +282,12 @@ for net_sta_key in same_net_sta:
     #plt.legend(use_legend)
     OUT1.close()
 
-
+'''
 plt.plot(sav_CCC)
 plt.title('All CC calculations')
 plt.ylabel('CC')
 plt.show()
-
+'''
 
 
 
