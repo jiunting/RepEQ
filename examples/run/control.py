@@ -48,7 +48,8 @@ data_filters={
 'freq':(0.8,2),
 'window':(0,30),
 }
-
+startover=False   #True: re-run everything, or False: check the files that already exist to see if they need to be updated
+make_fig_CC=2     #plot figure when measured CC larger than this number
 
 
 #-------Parameters settings END-----------
@@ -68,11 +69,10 @@ if get_waveform:
     download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_rad,channel,provider,waveforms_outdir)
 
 
-
 if search:
 #    from obspy.taup import TauPyModel
 #    TauPy_name=analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
-    analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=True,make_fig=True)
+    analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC)
 
 
 

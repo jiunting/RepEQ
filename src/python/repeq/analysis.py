@@ -89,9 +89,10 @@ def build_TauPyModel(home,project_name,vel_mod_file,background_model='PREM'):
 
 
 
-def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=False,make_fig=True):
+def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=False,make_fig_CC=2):
     '''
-        startover=True: re-run everything, or False: skip the files that already exist
+        startover=True: re-run everything, or False: check the files that already exist to see if they need to be updated
+        make_fig_CC: plot the figure when CC value >= this number. set a number >1 if you dont want plot
     '''
     #import matplotlib.pyplot as plt
     import obspy
@@ -101,8 +102,6 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
     import numpy as np
     from scipy import signal
     import os,sys,shutil,glob,datetime
-    if make_fig:
-        import matplotlib.pyplot as plt
     
     def get_staloc(net_sta_key,n_date):
         xml_file=glob.glob(n_date+'/'+'stations/'+net_sta_key+'.xml')[0]
@@ -187,7 +186,7 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
 
     #-----looping all the stations,data and make CC calculations---------------
     for net_sta_key in same_net_sta:
-        #for net_sta_key in ['BK.HUMO']:
+        #for net_sta_key in ['HV.TOUO']:
         check_file_flag=0 #if the log file exist, and wanna check into the information
         if os.path.exists(repeq_dir+'/'+net_sta_key+'.log'):
             if not startover:
@@ -206,10 +205,11 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
 
         sav_Date=[]
         n=0
-        pre_sampr=[] #make sure sampling rate for a same station keeps the same. If not, don't use it
-        sav_data=[] #save all the same station data(different eq), loop them by Cn,2 to see if it is repeat EQ
-        sav_t=[]
-        sav_Parrivl=[]
+        pre_sampr=[]      #make sure sampling rate for a same station always keeps the same. If not, don't use it
+        sav_data=[]       #save all the cutted P waves (same station, different eqs), loop them by Cn,2  later to see if it is repeat EQ
+        sav_t=[]          #saved time corresponding to sav_data, so plt.plot(sav_t[0],sav_data[0]) should make sense
+        sav_OT=[]         #event origin time with respect to KZtime
+        sav_Parrivl=[]    #saved P travel time
         sav_evlon=[]
         sav_evlat=[]
         sav_legend=[] #
@@ -250,9 +250,13 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             sav_Parrivl.append(tP)   #P wave travel time
             #---------hang on, write the information in the sac file------
             #make sac a dictionary
-            Otime=obspy.UTCDateTime(Date)-data[0].stats.starttime
-            tP=tP+Otime
-            tS=tS+Otime
+            Otime=obspy.UTCDateTime(Date)-data[0].stats.starttime #event origin time with respect to KZTime/Date
+            tP=tP+Otime #P arrival with respect to KZTime/Date
+            tS=tS+Otime #S arrival
+            '''
+                user1: P travel time from source to station
+                user2: S travel time from origin to station
+            '''
             data[0].stats.update({'sac':{'t1':tP,'t2':tS,'o':Otime,'user1':tP-Otime,'user2':tS-Otime,'stlo':stlon,'stla':stlat,'evlo':eqlon,'evla':eqlat,'evdp':eqdep,'gcarc':GCARC}})
             data.write(n_date+'/waveforms/'+net_sta_key+'.sac',format='SAC')
             #--------ok, continue to process the data--------
@@ -265,12 +269,13 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             if np.isnan(y).any():
                 print('detect Nan value in the data, continue to the next')
                 continue
-            #allign data by P-arrival
+            #cut data by P-arrival
             idxt=np.where( (tP-p_wind[0]<=t) & (t<=tP+p_wind[1]) )[0] #find the index of P-waves
             Pwave_t=t[idxt]
             Pwave_y=y[idxt]/np.max(np.abs(y[idxt]))
-            sav_data.append(Pwave_y) #sav_data: save Pwave data for all different date
-            sav_t.append(Pwave_t)    #sav_t: save Pwave time
+            sav_data.append(Pwave_y) #sav_data: cutted P wave
+            sav_t.append(Pwave_t)    #sav_t: save Pwave time. 0 at the KZtime.  plt.plot(sav_t[0],sav_data[0]) should make sense. t=0 at kztime
+            sav_OT.append(Otime)
             #sav_data_long.append(y)
             #sav_t_long.append(t)
             #save earthquake location, for filtering
@@ -310,10 +315,12 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
                 #Output as a file
                 OUT1.write('%s-%s %s %f\n'%(sav_legend[idate],sav_legend[jdate],net_sta_key,CCC))
                 #Output figure, make figures for debug
-                if CCC>=0.9:
+                if CCC>=make_fig_CC:
+                    import matplotlib.pyplot as plt
                     plt.figure()
-                    plt.plot(sav_t[idate],sav_data[idate],'k',linewidth=1)
-                    plt.plot(sav_t[jdate],sav_data[jdate],linewidth=1)
+                    plt.plot(sav_t[idate]-sav_OT[idate],sav_data[idate],'k',linewidth=1)
+                    plt.plot(sav_t[jdate]-sav_OT[jdate],sav_data[jdate],linewidth=1)
+                    plt.xlabel('Origin time(s)',fontsize=15)
                     plt.title(net_sta_key+' CC=%3.2f (unshifted)'%(CCC))
                     plt.legend([sav_legend[idate],sav_legend[jdate]])
                     plt.savefig(repeq_dir+'/'+net_sta_key+'.'+sav_legend[idate]+'_'+sav_legend[jdate]+'.png')

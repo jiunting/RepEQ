@@ -141,8 +141,8 @@ else:
 
 #sav_all_CCC=[]
 ###loop the net_sta and find the datetime
-for net_sta_key in same_net_sta:
-#for net_sta_key in ['BK.HUMO']:
+#for net_sta_key in same_net_sta:
+for net_sta_key in ['IU.POHA']:
     if coarse_check=='Y':
         if os.path.isfile(repeq_dir+'/'+net_sta_key+'.log'):
             print('Log file exist:',repeq_dir+'/'+net_sta_key+'.log','nothing to do...')
