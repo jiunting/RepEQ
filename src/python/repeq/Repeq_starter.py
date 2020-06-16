@@ -10,8 +10,11 @@ def create_dirs(home,project_name,overwrite=False):
         os.makedirs(home+'/'+project_name+'/'+'waveforms') #put all the waveforms in here
         os.makedirs(home+'/'+project_name+'/'+'structure') #put velocity model .mod file here
         main_REPEQ=os.environ['REPEQ'] #the uppest dir of the REPEQ
-        shutil.copy(main_REPEQ+'/examples/model/Vel1D_Chile.mod',home+'/'+project_name+'/'+'structure/Vel1D_Chile.mod')
+        shutil.copy(main_REPEQ+'/examples/model/example.mod',home+'/'+project_name+'/'+'structure/example.mod')
         os.makedirs(home+'/'+project_name+'/'+'catalog') #catalog file in USGS format
+        os.makedirs(home+'/'+project_name+'/'+'output')
+        os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'logs')
+        shutil.copy(main_REPEQ+'/examples/notes/Format_log.txt',home+'/'+project_name+'/'+'output/logs/Format_log.txt')
 
     else:
         if overwrite:
