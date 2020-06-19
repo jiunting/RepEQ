@@ -400,14 +400,21 @@ def read_logs(home,project_name):
     OUT1.close()
 
 
-def sequence(home,project_name):
+def sequence(home,project_name,seq_filters):
+    #make sequence file based on parameters setting
     import datetime
     import numpy as np
     import glob
     summary_name='%s.summary'%(project_name)
-    OUTfile=home+'/'+project_name+'/output/logs/'+'%s.sequence'%(project_name)
+    OUTfile=open(home+'/'+project_name+'/output/logs/'+'%s.sequence'%(project_name),'w')
     INfile=open(home+'/'+project_name+'/output/logs/'+summary_name,'r')
-    def det_repeq(line,min_nsta,min_nsta_HiCC,min_CC,time_sep)->'Boolean':
+    
+    min_nsta_HiCC=seq_filters['min_nsta']  #at least x stations has CC greater than the below threshold
+    min_CC=seq_filters['min_CC']
+    time_sep=seq_filters['time_sep'] #p1-p2 needs to be separated by at least x sec
+    
+    def det_repeq(line,min_nsta_HiCC,min_CC,time_sep)->'Boolean':
+        #determine whether p1-p2 is a pair
         elems=line.split()
         p1p2=elems[0]
         t1=datetime.datetime.strptime(p1p2.split('-')[0],'%Y%m%d%H%M%S')
@@ -422,7 +429,7 @@ def sequence(home,project_name):
             count_sta += 1
             if CC>=min_CC:
                 count_CC += 1
-        if (count_sta>=min_nsta) and (count_CC>=min_nsta_HiCC):
+        if (count_CC>=min_nsta_HiCC):
             return True,p1p2.split('-')[0],p1p2.split('-')[1]
         else:
             return False,None,None
@@ -430,7 +437,7 @@ def sequence(home,project_name):
     EQseq=[]
     nseq=0 #number of sequences
     for line in INfile.readlines():
-        isrepEQ,p1,p2 = det_repeq(line,min_nsta,min_nsta_HiCC,min_CC,time_sep)
+        isrepEQ,p1,p2 = det_repeq(line,min_nsta_HiCC,min_CC,time_sep)
         if isrepEQ:
             nseq += 1
             comp_p1p2={allEQ:i for i,subset in enumerate(EQseq) for allEQ in subset} #dict of {'eqid':num of seq}
