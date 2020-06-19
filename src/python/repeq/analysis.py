@@ -1,4 +1,9 @@
-
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 08 18:19:05 2019
+    
+@author: TimLin
+"""
 
 
 def build_TauPyModel(home,project_name,vel_mod_file,background_model='PREM'):
@@ -331,6 +336,68 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
                     #plt.legend(use_legend)
         OUT1.close()
     #-----looping all the stations,data and make CC calculations END---------------
+
+
+
+def read_logs(home,project_name,data_filters,outdir=''):
+    #data_filters is the same as searchRepEQ used for naming purpose
+    #outdir: nothing means use default (in output/logs/)
+    log_dir=home+'/'+project_name+'/output/logs'
+    logs=glob.glob(log_dir+'/'+'*.log')
+    outname='%s_freq%.3f-%.3f_wind%d-%d'%(project_name,data_filters['freq'][0],data_filters['freq'][1],data_filters['window'][0],data_filters['window'][1])
+    if outdir:
+        try:
+            if outdir[-1]='/':
+                outdir=outdir[:-1]
+            OUT1=open(outdir+'/'+outname,'w')
+        except:
+            print('Output directory/name:%s do not exist!'%(outdir))
+    else:
+        OUT1=open(home+'/'+project_name+'/output/logs/'+outname)
+
+    #####save logs into a very large dictionary#####
+    Large_D={}
+    #nsta=0
+    for logname in logs:
+        net_sta=logname.split('/')[-1].split('.')[0]+'.'+logname.split('/')[-1].split('.')[1]
+        print(net_sta)
+        Large_D[net_sta]=[] #create new key
+        IN1=open(logname,'r')
+        for line in IN1.readlines():
+            Large_D[net_sta].append(line.strip())
+        IN1.close()
+
+    #all the keys with net_staname
+    ref_keys=list(Large_D.keys())
+    sav_D={}
+    for nkey in range(len(ref_keys)):
+        print('-Dealing with',ref_keys[nkey])
+        total_lines=len(Large_D[ref_keys[nkey]])
+        for nline,line in enumerate(Large_D[ref_keys[nkey]]):
+            if nline%100==0:
+                print('n_line=',nline,'out of',total_lines)
+            p1p2=line.split()[0] # p1-p2
+            CCC=float(line.split()[-1])
+            if p1p2 in sav_D:
+                sav_D[p1p2].append(ref_keys[nkey])
+                sav_D[p1p2].append(CCC)
+            else:
+                sav_D[p1p2]=[]
+                sav_D[p1p2].append(ref_keys[nkey])
+                sav_D[p1p2].append(CCC)
+
+    #sort the order
+    all_keys=list(sav_D.keys())
+    all_keys.sort()
+
+    #Write sav_D to output
+    for all_key in all_keys:
+        OUT1.write('%s '%(all_key))
+        for i_elem in range( int(len(sav_D[all_key])/2) ):
+            OUT1.write('%s %4.2f '%(sav_D[all_key][2*i_elem],sav_D[all_key][2*i_elem+1] ))
+        OUT1.write('\n')
+
+    OUT1.close()
 
 
 
