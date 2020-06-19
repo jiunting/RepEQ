@@ -187,15 +187,18 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
     #-----looping all the stations,data and make CC calculations---------------
     for net_sta_key in same_net_sta:
         #for net_sta_key in ['HV.TOUO']:
-        check_file_flag=0 #if the log file exist, and wanna check into the information
+        #check_file_flag=0 #if the log file exist, and wanna check into the information
         if os.path.exists(repeq_dir+'/'+net_sta_key+'.log'):
             if not startover:
+                continue #just skip the file if it's already exist
+                '''
                 #but not just skip the file, read the file and check if all the calculations are there
                 UPD1=open(repeq_dir+'/'+net_sta_key+'.log','r') #open the pre-existing file and check
                 Chk_lines=UPD1.read()
                 UPD1.close()
                 OUT1=open(repeq_dir+'/'+net_sta_key+'.log','a')
                 check_file_flag=1 #check into the file and see if theres any missing
+                '''
             else:
                 #overwrite the existing .log file
                 OUT1=open(repeq_dir+'/'+net_sta_key+'.log','w')
@@ -296,12 +299,12 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
         for idate in range(len(sav_data)-1):
             for jdate in range(len(sav_data)):
                 #print('CC for',idate,jdate)
-                #check whether needs to calculate
-#                if (mkdirflag=='N') & (updateflag=='Y') & (logf_exist=='Y'):
+                '''
                 if check_file_flag:
                     #log file exist and you must have already read it into a large string, right?
                     if '%s-%s'%(sav_legend[idate],sav_legend[jdate]) in Chk_lines:
                         continue
+                '''
                 eqdist_degree=obspy.geodetics.locations2degrees(lat1=sav_evlat[idate],long1=sav_evlon[idate],lat2=sav_evlat[jdate],long2=sav_evlon[jdate])
                 if (eqdist_degree>0.2):
                     continue
