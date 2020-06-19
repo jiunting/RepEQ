@@ -73,6 +73,7 @@ if search:
 #    from obspy.taup import TauPyModel
 #    TauPy_name=analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
     analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC)
+    analysis.read_logs(home,project_name,data_filters,outdir='')
 
 
 
