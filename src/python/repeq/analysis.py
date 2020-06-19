@@ -342,18 +342,19 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
 def read_logs(home,project_name,data_filters,outdir=''):
     #data_filters is the same as searchRepEQ used for naming purpose
     #outdir: nothing means use default (in output/logs/)
+    import glob
     log_dir=home+'/'+project_name+'/output/logs'
     logs=glob.glob(log_dir+'/'+'*.log')
-    outname='%s_freq%.3f-%.3f_wind%d-%d'%(project_name,data_filters['freq'][0],data_filters['freq'][1],data_filters['window'][0],data_filters['window'][1])
+    outname='%s_freq%.3f-%.3f_wind%d-%d.summary'%(project_name,data_filters['freq'][0],data_filters['freq'][1],data_filters['window'][0],data_filters['window'][1])
     if outdir:
         try:
-            if outdir[-1]='/':
+            if outdir[-1]=='/':
                 outdir=outdir[:-1]
             OUT1=open(outdir+'/'+outname,'w')
         except:
             print('Output directory/name:%s do not exist!'%(outdir))
     else:
-        OUT1=open(home+'/'+project_name+'/output/logs/'+outname)
+        OUT1=open(home+'/'+project_name+'/output/logs/'+outname,'w')
 
     #####save logs into a very large dictionary#####
     Large_D={}
