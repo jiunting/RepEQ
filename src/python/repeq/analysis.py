@@ -339,22 +339,21 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
 
 
 
-def read_logs(home,project_name,data_filters,outdir=''):
-    #data_filters is the same as searchRepEQ used for naming purpose
-    #outdir: nothing means use default (in output/logs/)
+def read_logs(home,project_name):
     import glob
     log_dir=home+'/'+project_name+'/output/logs'
     logs=glob.glob(log_dir+'/'+'*.log')
-    outname='%s_freq%.3f-%.3f_wind%d-%d.summary'%(project_name,data_filters['freq'][0],data_filters['freq'][1],data_filters['window'][0],data_filters['window'][1])
-    if outdir:
-        try:
-            if outdir[-1]=='/':
-                outdir=outdir[:-1]
-            OUT1=open(outdir+'/'+outname,'w')
-        except:
-            print('Output directory/name:%s do not exist!'%(outdir))
-    else:
-        OUT1=open(home+'/'+project_name+'/output/logs/'+outname,'w')
+#    outname='%s_freq%.3f-%.3f_wind%d-%d.summary'%(project_name,data_filters['freq'][0],data_filters['freq'][1],data_filters['window'][0],data_filters['window'][1])
+    outname='%s.summary'%(project_name)
+#    if outdir:
+#        try:
+#            if outdir[-1]=='/':
+#                outdir=outdir[:-1]
+#            OUT1=open(outdir+'/'+outname,'w')
+#        except:
+#            print('Output directory/name:%s do not exist!'%(outdir))
+#    else:
+    OUT1=open(home+'/'+project_name+'/output/logs/'+outname,'w')
 
     #####save logs into a very large dictionary#####
     Large_D={}
@@ -400,6 +399,71 @@ def read_logs(home,project_name,data_filters,outdir=''):
 
     OUT1.close()
 
+
+def sequence(home,project_name):
+    import datetime
+    import numpy as np
+    import glob
+    summary_name='%s.summary'%(project_name)
+    OUTfile=home+'/'+project_name+'/output/logs/'+'%s.sequence'%(project_name)
+    INfile=open(home+'/'+project_name+'/output/logs/'+summary_name,'r')
+    def det_repeq(line,min_nsta,min_nsta_HiCC,min_CC,time_sep)->'Boolean':
+        elems=line.split()
+        p1p2=elems[0]
+        t1=datetime.datetime.strptime(p1p2.split('-')[0],'%Y%m%d%H%M%S')
+        t2=datetime.datetime.strptime(p1p2.split('-')[1],'%Y%m%d%H%M%S')
+        if (t2-t1).total_seconds()<time_sep:
+            return False,None,None
+        count_CC=0
+        count_sta=0
+        for n_measu in range(int((len(elems) - 1) / 2)):
+            sta=elems[1 + n_measu * 2]
+            CC=float(elems[2 + n_measu * 2])
+            count_sta += 1
+            if CC>=min_CC:
+                count_CC += 1
+        if (count_sta>=min_nsta) and (count_CC>=min_nsta_HiCC):
+            return True,p1p2.split('-')[0],p1p2.split('-')[1]
+        else:
+            return False,None,None
+
+    EQseq=[]
+    nseq=0 #number of sequences
+    for line in INfile.readlines():
+        isrepEQ,p1,p2 = det_repeq(line,min_nsta,min_nsta_HiCC,min_CC,time_sep)
+        if isrepEQ:
+            nseq += 1
+            comp_p1p2={allEQ:i for i,subset in enumerate(EQseq) for allEQ in subset} #dict of {'eqid':num of seq}
+            #p1 exist, p2 not
+            if (p1 in comp_p1p2):
+                #check if p2 exist, if not, append p2 also
+                if not(p2 in comp_p1p2):
+                    EQseq[comp_p1p2[p1]].append(p2)
+                    continue
+                else:
+                    #both p1,p2 exist
+                    continue
+    
+            #p2 exist, p1 not
+            if (p2 in comp_p1p2):
+                #check if p1 exist, if not, append p1 also
+                if not(p1 in comp_p1p2):
+                    EQseq[comp_p1p2[p2]].append(p1)
+                    continue
+
+            #p1, p2 does not exist
+            if (not(p1 in comp_p1p2)) and (not(p2 in comp_p1p2)):
+                EQseq.append([p1,p2])
+                continue
+
+    INfile.close()
+    #write EQ sequences to file
+    for nseq in EQseq:
+        for neq in nseq:
+            OUTfile.write('%s '%(neq))
+        OUTfile.write('\n')
+
+    OUTfile.close()
 
 
 

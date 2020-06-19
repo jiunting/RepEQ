@@ -51,6 +51,15 @@ data_filters={
 startover=False   #True: re-run everything, or False: check the files that already exist to see if they need to be updated
 make_fig_CC=2     #plot figure when measured CC larger than this number
 
+##params of sequence defination
+# This example means at least 3 stations with CC>=0.9
+seq_filters={
+min_nsta=3,
+min_CC=0.9,
+time_sep=86400*2 #p1-p2 needs to be separated by at least n sec
+}
+
+
 
 #-------Parameters settings END-----------
 
@@ -73,8 +82,8 @@ if search:
 #    from obspy.taup import TauPyModel
 #    TauPy_name=analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
     analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC)
-    analysis.read_logs(home,project_name,data_filters,outdir='')
-
+    analysis.read_logs(home,project_name)
+    analysis.sequence(home,project_name,seq_filters,data_filters,outdir='')
 
 
 
