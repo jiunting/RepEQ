@@ -63,12 +63,16 @@ def evloc(Cat_Date,evdate):
 #-------------------------------------------------------------------------------#
 #pairsf='pairs_BP0.8-2_wind30s.out' #pairs file from read_log.py
 #pairsf='test_pairs.out' #pairs file from read_log.py
-pairsf='seq12.inp'
+#pairsf='seq12.inp'
+pairsf='/Users/timlin/Documents/Project/TestREPEQ/QQQ/output/logs/QQQ.sequence'
 #pairsf='pairs_BP0.8-2_wind30s_one.out' #pairs file from read_log.py
-eqpath='/Users/timlin/Documents/Project/EQrequest/Hawaii/Hawaii_ALL/' #where you put your waveform data (EQ folders)
-catalogpath='/Users/timlin/Documents/Project/EQrequest/Hawaii_ALL_M3.dat' #EQ information
+#eqpath='/Users/timlin/Documents/Project/EQrequest/Hawaii/Hawaii_ALL/' #where you put your waveform data (EQ folders)
+eqpath='/Users/timlin/Documents/Project/TestREPEQ/QQQ/waveforms/' #where you put your waveform data (EQ folders)
+#catalogpath='/Users/timlin/Documents/Project/EQrequest/Hawaii_ALL_M3.dat' #EQ information
+catalogpath='/Users/timlin/Documents/Project/TestREPEQ/QQQ/catalog/area1.cat' #EQ information
 A=pd.read_csv(catalogpath,header=None,sep=',',names=['time','eqlat','eqlon','eqdep','eqmag','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],skiprows=0)
 Cat_Date=pd.to_datetime(A['time'],format='%Y-%m-%dT%H:%M:%S.%fZ')#convert time to Datetime format
+
 
 #filt_freq_HR=(0.8,2) #Yu & Wen, (2012)
 #filt_freq_HR=(0.5,2) #correct P arrival

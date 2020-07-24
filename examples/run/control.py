@@ -9,12 +9,10 @@ get_catalog=0      #download EQ catalog from USGS
 get_waveform=0     #download waveforms
 search=1           #search repEQ
 
-#-------Parameters settings-----------
+#================Parameters settings================
 home='/Users/timlin/Documents/Project/TestREPEQ'
 project_name='QQQ'
 vel_model='/Users/timlin/Documents/Project/Inversion/HawaiiEQ_SSE/All_InvEQ/structure/Hawaii.litho.mod' #path of velocity model in fk format
-
-
 
 ##catalog params
 cata_times=['20100102','20200101'] #this can be large
@@ -23,7 +21,6 @@ cata_magnitude=[3.0,9.5]
 cata_name='area1.cat'
 
 ##filter the catalog and download the data by these criteria
-
 cata_filters={
 'filt_times':['20170101','20190105'],
 'filt_lon':[-156.357, -154.061],
@@ -51,7 +48,7 @@ data_filters={
 startover=False   #True: re-run everything, or False: check the files that already exist to see if they need to be updated
 make_fig_CC=2     #plot figure when measured CC larger than this number
 
-##params of sequence defination
+##params for sequence defination
 # This example means at least 3 stations with CC>=0.9
 seq_filters={
 'min_nsta':1,
@@ -59,13 +56,30 @@ seq_filters={
 'time_sep':86400*2 #p1-p2 needs to be separated by at least n sec
 }
 
+##params for lag measurements
+#-----parameters for correcting P arrival-----#
+filt_freq_HR=[(0.5,2),(0.5,2)] #set n-step Pwave corrections
+p_wind=[(5,15),(2,4)]#window for Pwave correction. Seconds before(positive!) and after theoritical P arrival
+CCC_thres=0.9 #threshold for repEQ from log file
+CCsta_thres=0.9 #threshold for individual station
+min_num=1 #at least n stations got this threshold
+#-----parameters for lag measurement after correcting P arrival-----#
+L_wind=(20,150) #Total(large window) data to be measured. Seconds before, after corrected P arrival
+filt_L_wind=(0.5,2) #filter for the large window
+S_wind=6 # n seconds for S(small window) of measurement each time
+mov=0.2 # moving seconds
+sampt=0.005 #interpolate to this interval
+Write_out=True #write measured lag?
+#--------------------------------------------#
 
 
-#-------Parameters settings END-----------
+
+#================Parameters settings END================
+
+
+
 
 cata_out=home+'/'+project_name+'/catalog/'+cata_name
-
-
 
 if init:
     Repeq_starter.create_dirs(home,project_name)
@@ -82,8 +96,9 @@ if search:
 #    from obspy.taup import TauPyModel
 #    TauPy_name=analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
 #analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC)
-    analysis.read_logs(home,project_name)
-    analysis.sequence(home,project_name,seq_filters)
+    analysis.read_logs(home,project_name) #merge all the .log file into a large summary file
+    analysis.sequence(home,project_name,seq_filters) #make sequence file
+    analysis.measure_lag(home,project_name,sequence_file)
 
 
 
