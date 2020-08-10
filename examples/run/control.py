@@ -59,6 +59,7 @@ seq_filters={
 
 ##params for lag measurements
 #-----parameters for correcting P arrival-----#
+'''
 filt_freq_HR=[(0.5,2),(0.5,2)] #set n-step Pwave corrections
 p_wind=[(5,15),(2,4)]#window for Pwave correction. Seconds before(positive!) and after theoritical P arrival
 CCC_thres=0.9 #threshold for repEQ from log file
@@ -71,6 +72,23 @@ S_wind=6 # n seconds for S(small window) of measurement each time
 mov=0.2 # moving seconds
 sampt=0.005 #interpolate to this interval
 Write_out=True #write measured lag?
+'''
+lag_params={
+'filt_freq_HR':[(0.5,2),(0.5,2)],  #set n-step Pwave corrections
+'p_wind':[(5,15),(3,3)], #window for Pwave correction. Seconds before(positive!) and after theoritical P arrival
+'CCC_thres':0.9, #threshold for repEQ from log file
+'CCsta_thres':0.9, #threshold for individual station
+'min_num':1, #at least n stations got this threshold
+'L_wind':(20,150), #Total(large window) data to be measured. Seconds before, after corrected P arrival
+'filt_L_wind':(0.5,2), #filter for the large window
+'S_wind':6, # n seconds for S(small window) of measurement each time
+'mov':0.2, # moving seconds
+'sampt':0.005, #interpolate to this interval
+'Write_out':True, #write measured lag?
+}
+
+
+
 #--------------------------------------------#
 sequence_file='QQQ.sequence' #default name of sequence file is project_name.sequence
 
@@ -99,7 +117,7 @@ if search:
 #    analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC)
 #    analysis.read_logs(home,project_name) #merge all the .log file into a large summary file
 #    analysis.sequence(home,project_name,seq_filters) #make sequence file
-    analysis.measure_lag(home,project_name,sequence_file,cata_name)
+    analysis.measure_lag(home,project_name,lag_params,sequence_file,cata_name)
 
 
 

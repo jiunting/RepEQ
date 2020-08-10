@@ -475,7 +475,7 @@ def sequence(home,project_name,seq_filters):
 
 
 
-def measure_lag(home,project_name,sequence_file,cata_name):
+def measure_lag(home,project_name,lag_params,sequence_file,cata_name):
     import glob
     import matplotlib.pyplot as plt
     import datetime
@@ -569,18 +569,18 @@ def measure_lag(home,project_name,sequence_file,cata_name):
     #filt_freq_HR=(1,4)
     #filt_freq_HR=(0.03,0.1)
     #------------parameters for correcting P arrival-----------------#
-    filt_freq_HR=[(0.5,2),(0.5,2)] #set n-step Pwave corrections
-    p_wind=[(5,15),(2,4)]#window for Pwave correction. Seconds before(positive!) and after theoritical P arrival
-    CCC_thres=0.9 #threshold for repEQ from log file
-    CCsta_thres=0.9 #threshold for individual station
-    min_num=1 #at least n stations got this threshold
+    filt_freq_HR=lag_params['filt_freq_HR'] #set n-step Pwave corrections
+    p_wind=lag_params['p_wind']  #window for Pwave correction. Seconds before(positive!) and after theoritical P arrival
+    CCC_thres=lag_params['CCC_thres'] #threshold for repEQ from log file
+    CCsta_thres=lag_params['CCsta_thres'] #threshold for individual station
+    min_num=lag_params['min_num']  #at least n stations got this threshold
     #-----------parameters for lag measurement after correcting P arrival----------------#
-    L_wind=(20,150) #Total(large window) data to be measured. Seconds before, after corrected P arrival
-    filt_L_wind=(0.5,2) #filter for the large window
-    S_wind=6 # n seconds for S(small window) of measurement each time
-    mov=0.2 # moving seconds
-    sampt=0.005 #interpolate to this interval
-    Write_out=True #write measured lag?
+    L_wind=lag_params['L_wind']  #Total(large window) data to be measured. Seconds before, after corrected P arrival
+    filt_L_wind=lag_params['filt_L_wind'] #filter for the large window
+    S_wind=lag_params['S_wind'] # n seconds for S(small window) of measurement each time
+    mov=lag_params['mov'] # moving seconds
+    sampt=lag_params['sampt'] #interpolate to this interval
+    Write_out=lag_params['Write_out'] #write measured lag?
     #-------------------------------------------------------------------------------#
 
     EQfolders=glob.glob(eqpath+'*')
@@ -692,7 +692,7 @@ def measure_lag(home,project_name,sequence_file,cata_name):
                         tmpD2.plot()
                         time.sleep(1)
                     '''
-                    CCC,lag=cal_CCF(p1_D_w1_slice[0].data,p2_D_w1_slice[0].data)
+                    CCC_correct1,lag=cal_CCF(p1_D_w1_slice[0].data,p2_D_w1_slice[0].data)
                     midd=(p2_D_w1_slice[0].stats.npts)-1  #length of b?? at this idx, refdata align with target data
                     dt=p2_D_w1_slice[0].stats.delta
                     shP=(lag-midd)*(dt) #convert to second (dt correction of P)
@@ -748,7 +748,7 @@ def measure_lag(home,project_name,sequence_file,cata_name):
                     #detrend them
                     #p1_D_w1_slice.detrend()
                     #p2_D_w1_slice.detrend()
-                    CCC,lag=cal_CCF(p1_D_w2_slice[0].data,p2_D_w2_slice[0].data)
+                    CCC_correct2,lag=cal_CCF(p1_D_w2_slice[0].data,p2_D_w2_slice[0].data)
                     midd=(p2_D_w2_slice[0].stats.npts)-1  #length of b?? at this idx, refdata align with target data
                     dt=p2_D_w2_slice[0].stats.delta
                     shP=(lag-midd)*(dt) #convert to second (dt correction of P)
@@ -799,6 +799,7 @@ def measure_lag(home,project_name,sequence_file,cata_name):
                     ed=st+S_wind*sampl
                     sav_lags=[]
                     sav_st=[] #sec for measured window (P at 0sec)
+                    sav_windCCC=[] #save CCC for measured windows
                     while ed<len(L_data1[0].data):
                         S_D1=L_data1[0].data[st:ed].copy() #small window, data 1
                         S_D2=L_data2[0].data[st:ed].copy()
@@ -819,6 +820,7 @@ def measure_lag(home,project_name,sequence_file,cata_name):
                         lags=(lag-midd)*(1/sampl) #lag seconds
                         sav_lags.append(lags)
                         sav_st.append( ((st+ed)*0.5)/sampl-L_wind[0] )
+                        sav_windCCC.append(CCC)
                         st+=movpts
                         ed+=movpts
                         '''
@@ -834,9 +836,9 @@ def measure_lag(home,project_name,sequence_file,cata_name):
                     if Write_out:
                         # OUT_lagf=open('./lag_INFO/lg_'+sta+'_'+p1_str+'_'+p2_str+'.txt','w')
                         OUT_lagf=open(home+'/'+project_name+'/'+'output'+'/'+'lags'+'/'+'lg_'+sta+'_'+p1_str+'_'+p2_str+'.txt','w')
-                        OUT_lagf.write('#sec(after_alligned_P) lag(sec)\n') #header, P = 0 sec
+                        OUT_lagf.write('#sec(after_alligned_P) lag(sec) windowCCC CCC_corr1 CCC_corr2\n') #header, P = 0 sec
                         for nline in range(len(sav_st)):
-                            OUT_lagf.write('%f %f\n'%(sav_st[nline],sav_lags[nline]))
+                            OUT_lagf.write('%f %f %f %f %f\n'%(sav_st[nline],sav_lags[nline],sav_windCCC[nline],CCC_correct1,CCC_correct2))
                         OUT_lagf.close()
                     plt.yticks([],[])
                     ax=plt.gca()
