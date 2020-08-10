@@ -15,14 +15,15 @@ project_name='QQQ'
 vel_model='/Users/timlin/Documents/Project/Inversion/HawaiiEQ_SSE/All_InvEQ/structure/Hawaii.litho.mod' #path of velocity model in fk format
 
 ##catalog params
-cata_times=['20100102','20200101'] #this can be large
+cata_times=['20000101','20200101'] #this can be large
 cata_area=[-156.357,-154.061,18.407,20.437]
 cata_magnitude=[3.0,9.5]
 cata_name='area1.cat'
 
 ##filter the catalog and download the data by these criteria
 cata_filters={
-'filt_times':['20170101','20190105'],
+#'filt_times':['20170101','20190105'],
+'filt_times':['20000101','20180515'],
 'filt_lon':[-156.357, -154.061],
 'filt_lat':[18.407, 20.437],
 'filt_dep':[0,30],
@@ -71,7 +72,7 @@ mov=0.2 # moving seconds
 sampt=0.005 #interpolate to this interval
 Write_out=True #write measured lag?
 #--------------------------------------------#
-
+sequence_file='QQQ.sequence' #default name of sequence file is project_name.sequence
 
 
 #================Parameters settings END================
@@ -95,10 +96,10 @@ if get_waveform:
 if search:
 #    from obspy.taup import TauPyModel
 #    TauPy_name=analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
-#analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC)
-    analysis.read_logs(home,project_name) #merge all the .log file into a large summary file
-    analysis.sequence(home,project_name,seq_filters) #make sequence file
-    analysis.measure_lag(home,project_name,sequence_file)
+#    analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC)
+#    analysis.read_logs(home,project_name) #merge all the .log file into a large summary file
+#    analysis.sequence(home,project_name,seq_filters) #make sequence file
+    analysis.measure_lag(home,project_name,sequence_file,cata_name)
 
 
 

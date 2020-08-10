@@ -15,6 +15,7 @@ def create_dirs(home,project_name,overwrite=False):
         os.makedirs(home+'/'+project_name+'/'+'output')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'logs')
         shutil.copy(main_REPEQ+'/examples/notes/Format_log.txt',home+'/'+project_name+'/'+'output/logs/Format_log.txt')
+        os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'lags')
 
     else:
         if overwrite:
