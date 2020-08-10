@@ -488,6 +488,15 @@ def measure_lag(home,project_name,lag_params,sequence_file,cata_name):
     import shutil
     import time
 
+    #test if interactive backend is available
+    try: 
+        plt.plot()
+    except:
+        import matplotlib
+        matplotlib.use('pdf') #instead using interactive backend
+        import matplotlib.pyplot as plt
+
+
     def get_staloc(net_sta_key,n_date):
         xml_file=glob.glob(n_date+'/'+'stations/'+net_sta_key+'.xml')[0]
         tmpIN1=open(xml_file,'r').read()
