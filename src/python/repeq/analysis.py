@@ -477,7 +477,6 @@ def sequence(home,project_name,seq_filters):
 
 def measure_lag(home,project_name,lag_params,sequence_file,cata_name):
     import glob
-    import matplotlib.pyplot as plt
     import datetime
     import obspy
     from bs4 import BeautifulSoup
@@ -487,14 +486,9 @@ def measure_lag(home,project_name,lag_params,sequence_file,cata_name):
     import os
     import shutil
     import time
-
-    #test if interactive backend is available
-    try: 
-        plt.plot()
-    except:
-        import matplotlib
-        matplotlib.use('pdf') #instead using interactive backend
-        import matplotlib.pyplot as plt
+    import matplotlib
+    matplotlib.use('pdf') #instead using interactive backend
+    import matplotlib.pyplot as plt
 
 
     def get_staloc(net_sta_key,n_date):
@@ -612,6 +606,8 @@ def measure_lag(home,project_name,lag_params,sequence_file,cata_name):
                 p1=datetime.datetime.strptime(p1_str,'%Y%m%d%H%M%S')
                 p2=datetime.datetime.strptime(p2_str,'%Y%m%d%H%M%S')
                 tmp_pair=p1_str+'-'+p2_str # find '20180618133904-20180621043156', for example, in the .summary file
+                if not tmp_pair in  Suminfo:
+                    continue
                 pair_info=Suminfo[tmp_pair]
                 tmpelems=pair_info.split() #tmpelems is, for example ['20180618133904-20180621043156', 'HV.ERZ4', '0.96', 'HV.ERZ2', '0.67']
                 '''
