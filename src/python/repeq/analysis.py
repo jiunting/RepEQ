@@ -595,11 +595,12 @@ def measure_lag(home,project_name,lag_params,sequence_file,cata_name):
     Suminfo=read_summary(summary_path) #Suminfo is a dictionary with p1-p2 keys and p1-p2 measurements content
 
     for line in IN1.readlines():
+        print('----------Starting New Line--------------')
+        print(line)
         tmpelems_seq=line.split()
         #measure the lag between each other p1 p2 p3 p4......
         for i in range(len(tmpelems_seq)-1):
             for j in range(i+1,len(tmpelems_seq)):
-                print('--------------------------------------')
                 print('Now dealing with i,j',i,j)
                 p1_str=tmpelems_seq[i]
                 p2_str=tmpelems_seq[j]
