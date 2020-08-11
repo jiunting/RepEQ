@@ -467,6 +467,7 @@ def sequence(home,project_name,seq_filters):
     INfile.close()
     #write EQ sequences to file
     for nseq in EQseq:
+        nseq.sort()
         for neq in nseq:
             OUTfile.write('%s '%(neq))
         OUTfile.write('\n')
