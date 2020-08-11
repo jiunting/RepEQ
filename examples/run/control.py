@@ -96,7 +96,7 @@ if get_waveform:
 if search:
 #    from obspy.taup import TauPyModel
 #    TauPy_name=analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
-#    analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC)
+#    analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC,QC=True,save_note=True)
 #    analysis.read_logs(home,project_name) #merge all the .log file into a large summary file: project_name.summary
 #    analysis.sequence(home,project_name,seq_filters) #make sequence file: project_name.summary
     analysis.measure_lag(home,project_name,lag_params,sequence_file,cata_name)

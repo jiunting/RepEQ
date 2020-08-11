@@ -94,10 +94,11 @@ def build_TauPyModel(home,project_name,vel_mod_file,background_model='PREM'):
 
 
 
-def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=False,make_fig_CC=2):
+def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=False,make_fig_CC=2,QC=True,save_note=True):
     '''
         startover=True: re-run everything, or False: check the files that already exist to see if they need to be updated
         make_fig_CC: plot the figure when CC value >= this number. set a number >1 if you dont want plot
+        QC: run simple check to see if the data are just zeros 
     '''
     #import matplotlib.pyplot as plt
     import obspy
@@ -164,6 +165,10 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
     EQfolders=glob.glob(eqpath+'*')
     EQfolders.sort()
 
+    #make calculation note
+    if save_note:
+        OUT2=open(repeq_dir+'/'+project_name+'_searchRepEQ.note','w')
+
     ###Search through all the event directories and find all the stations (NET.CODE) ###
     same_net_sta=[]
     sav_info={} #dictionary that save the net_station time
@@ -212,9 +217,13 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             #log file not exist, make a new file
             OUT1=open(repeq_dir+'/'+net_sta_key+'.log','w')
 
+        if save_note:
+            OUT2.write('--------Starting Sta:%s --------\n'%(net_sta_ley))
+
         sav_Date=[]
         n=0
         pre_sampr=[]      #make sure sampling rate for a same station always keeps the same. If not, don't use it
+        pre_date=[]       #EQID for the reference sampling rate (i.e. eqid for pre_sampr) 
         sav_data=[]       #save all the cutted P waves (same station, different eqs), loop them by Cn,2  later to see if it is repeat EQ
         sav_t=[]          #saved time corresponding to sav_data, so plt.plot(sav_t[0],sav_data[0]) should make sense
         sav_OT=[]         #event origin time with respect to KZtime
@@ -242,14 +251,32 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             eqlat=float(A['eqlat'][idx_cat])
             eqdep=float(A['eqdep'][idx_cat])
             if eqdep<0.0:
+                if save_note:
+                    OUT2.write(' -dropping negative eqdep: %s\n'%(n_date))
                 continue
             #read the data path by obspy
             data=obspy.read(n_date+'/waveforms/'+net_sta_key+'*.mseed')
+            if QC:
+                #quick quality check 
+                dlen=len(data[0].data)
+                small_wind_std=np.std(data[0].data[:dlen//10]) #first 10% of the whole window
+                big_wind_std=np.std(data[0].data) #whole window
+                if small_wind_std<1e-9 or big_wind_std<1e-9:
+                    if save_note:
+                        OUT2.write(' -dropping no data from QC: %s\n'%(n_date))
+                    continue #no data in small or big window 
+                if (small_wind_std/big_wind_std)>2.0 :
+                    if save_note:
+                        OUT2.write(' -dropping no P/S waveforms from QC: %s\n'%(n_date))
+                    continue #small window has larger std than big window, probably no waveforms
             tmp_sampr=data[0].stats.sampling_rate #check sampling rate
             if pre_sampr==[]:
                 pre_sampr=tmp_sampr #set the sampr for first station
+                pre_date=n_date
             if tmp_sampr!=pre_sampr:
-                print('Sampling rate inconsistent')
+                if save_note:
+                    OUT2.write(' -dropping sampling rate inconsistent: %s=%f; %s=%f\n'%(pre_date,pre_sampr,n_date,tmp_sampr))
+                #print('Sampling rate inconsistent')
                 continue
             #-------------get info------------
             stlon,stlat=get_staloc(net_sta_key,n_date)
@@ -275,7 +302,9 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             data.filter('bandpass',freqmin=filt_freq_HR[0],freqmax=filt_freq_HR[1],corners=4,zerophase=True)
             y=data[0].data
             if np.isnan(y).any():
-                print('detect Nan value in the data, continue to the next')
+                #print('detect Nan value in the data, continue to the next')
+                if save_note:
+                    OUT2.write(' -dropping Nan value in the data: %s\n'%(n_date))
                 continue
             #cut data by P-arrival
             idxt=np.where( (tP-p_wind[0]<=t) & (t<=tP+p_wind[1]) )[0] #find the index of P-waves
@@ -314,11 +343,17 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
                 '''
                 eqdist_degree=obspy.geodetics.locations2degrees(lat1=sav_evlat[idate],long1=sav_evlon[idate],lat2=sav_evlat[jdate],long2=sav_evlon[jdate])
                 if (eqdist_degree>max_sepr):
+                    if save_note:
+                        OUT2.write(' -dropping events too far : %s - %s\n'%(sav_Date[idate],sav_Date[jdate]))
                     continue #events are too far
                 if jdate<=idate:
+                    #if save_note:
+                    #    OUT2.write(' -dropping redundent calculation : %s - %s\n'%(sav_Date[idate],sav_Date[jdate]))
                     continue #skip the repeat calculation
                 CCC,lag=cal_CCF(sav_data[idate],sav_data[jdate])
                 if np.isnan(CCC):
+                    if save_note:
+                        OUT2.write(' -dropping unknow reason causing CCC = nan : %s - %s\n'%(sav_Date[idate],sav_Date[jdate]))
                     continue #some wried(e.g. nan) value in data
                 sav_CCC.append(np.max(CCC))
                 sav_ij_date.append((idate,jdate))
