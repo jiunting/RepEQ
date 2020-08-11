@@ -372,6 +372,8 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
                     plt.close() #close figure, don't want to show
                     #plt.legend(use_legend)
         OUT1.close()
+    if save_note:
+        OUT2.close() #
     #-----looping all the stations,data and make CC calculations END---------------
 
 
