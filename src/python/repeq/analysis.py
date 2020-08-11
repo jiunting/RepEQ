@@ -159,6 +159,7 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
 
     filt_freq_HR=data_filters['freq']
     p_wind=data_filters['window']
+    max_sepr=data_filters['max_sepr']
     #-------------------------------------------------------------------------------#
     EQfolders=glob.glob(eqpath+'*')
     EQfolders.sort()
@@ -242,7 +243,6 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             eqdep=float(A['eqdep'][idx_cat])
             if eqdep<0.0:
                 continue
-            sav_Date.append(Date)
             #read the data path by obspy
             data=obspy.read(n_date+'/waveforms/'+net_sta_key+'*.mseed')
             tmp_sampr=data[0].stats.sampling_rate #check sampling rate
@@ -256,7 +256,6 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             #get travel time
             #tP,tS,GCARC=get_traveltime(stlon,stlat,eqlon,eqlat,eqdep,model_name='iasp91')
             tP,tS,GCARC=get_traveltime(stlon,stlat,eqlon,eqlat,eqdep,model_name=TauPy_name)
-            sav_Parrivl.append(tP)   #P wave travel time
             #---------hang on, write the information in the sac file------
             #make sac a dictionary
             Otime=obspy.UTCDateTime(Date)-data[0].stats.starttime #event origin time with respect to KZTime/Date
@@ -282,8 +281,10 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             idxt=np.where( (tP-p_wind[0]<=t) & (t<=tP+p_wind[1]) )[0] #find the index of P-waves
             Pwave_t=t[idxt]
             Pwave_y=y[idxt]/np.max(np.abs(y[idxt]))
+            sav_Date.append(Date)
             sav_data.append(Pwave_y) #sav_data: cutted P wave
             sav_t.append(Pwave_t)    #sav_t: save Pwave time. 0 at the KZtime.  plt.plot(sav_t[0],sav_data[0]) should make sense. t=0 at kztime
+            sav_Parrivl.append(tP)   #P wave travel time
             sav_OT.append(Otime)
             #sav_data_long.append(y)
             #sav_t_long.append(t)
@@ -312,13 +313,13 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
                         continue
                 '''
                 eqdist_degree=obspy.geodetics.locations2degrees(lat1=sav_evlat[idate],long1=sav_evlon[idate],lat2=sav_evlat[jdate],long2=sav_evlon[jdate])
-                if (eqdist_degree>0.2):
-                    continue
+                if (eqdist_degree>max_sepr):
+                    continue #events are too far
                 if jdate<=idate:
-                    continue
+                    continue #skip the repeat calculation
                 CCC,lag=cal_CCF(sav_data[idate],sav_data[jdate])
                 if np.isnan(CCC):
-                    continue
+                    continue #some wried(e.g. nan) value in data
                 sav_CCC.append(np.max(CCC))
                 sav_ij_date.append((idate,jdate))
                 #Output as a file
