@@ -359,15 +359,15 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
                     if '%s-%s'%(sav_legend[idate],sav_legend[jdate]) in Chk_lines:
                         continue
                 '''
+                if jdate<=idate:
+                    #if save_note:
+                    #    OUT2.write(' -dropping redundent calculation : %s - %s\n'%(sav_Date[idate],sav_Date[jdate]))
+                    continue #skip the repeat calculation
                 eqdist_degree=obspy.geodetics.locations2degrees(lat1=sav_evlat[idate],long1=sav_evlon[idate],lat2=sav_evlat[jdate],long2=sav_evlon[jdate])
                 if (eqdist_degree>max_sepr):
                     if save_note:
                         OUT2.write(' -dropping events too far : %s - %s\n'%(sav_Date[idate],sav_Date[jdate]))
                     continue #events are too far
-                if jdate<=idate:
-                    #if save_note:
-                    #    OUT2.write(' -dropping redundent calculation : %s - %s\n'%(sav_Date[idate],sav_Date[jdate]))
-                    continue #skip the repeat calculation
                 CCC,lag=cal_CCF(sav_data[idate],sav_data[jdate])
                 if np.isnan(CCC):
                     if save_note:
