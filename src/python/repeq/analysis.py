@@ -121,7 +121,23 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
         dist_degree=obspy.geodetics.locations2degrees(lat1=eqlat,long1=eqlon,lat2=stlat,long2=stlon)
         model = TauPyModel(model=model_name)
         P=model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_degree, phase_list=('P','p'), receiver_depth_in_km=0)
+        if len(P)==0:
+            print('Oops, no P/p ray can be found in given model!')
+            for test_model in ['ak135','iasp91','prem']:
+                tmp_model = TauPyModel(model=test_model)
+                P=tmp_model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_degree, phase_list=('P','p'), receiver_depth_in_km=0)
+                if len(P)!=0:
+                    print('Use global model for P instead:',test_model)
+                    break
         S=model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_degree, phase_list=('S','s'), receiver_depth_in_km=0)
+        if len(S)==0:
+            print('Oops, no S/s ray can be found in given model!')
+            for test_model in ['ak135','iasp91','prem']:
+                tmp_model = TauPyModel(model=test_model)
+                S=tmp_model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_degree, phase_list=('S','s'), receiver_depth_in_km=0)
+                if len(S)!=0:
+                    print('Use global model for S instead:',test_model)
+                    break
         return P[0].time,S[0].time,dist_degree
 
     def cal_CCF(data1,data2):
@@ -218,7 +234,7 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
             OUT1=open(repeq_dir+'/'+net_sta_key+'.log','w')
 
         if save_note:
-            OUT2.write('--------Starting Sta:%s --------\n'%(net_sta_ley))
+            OUT2.write('--------Starting Sta:%s --------\n'%(net_sta_key))
 
         sav_Date=[]
         n=0
