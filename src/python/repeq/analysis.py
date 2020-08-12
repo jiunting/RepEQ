@@ -280,11 +280,13 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
                 if small_wind_std<1e-9 or big_wind_std<1e-9:
                     if save_note:
                         OUT2.write(' -dropping no data from QC: %s\n'%(n_date))
-                    continue #no data in small or big window 
+                    continue #no data in small or big window
+                ''' 
                 if (small_wind_std/big_wind_std)>2.0 :
                     if save_note:
                         OUT2.write(' -dropping no P/S waveforms from QC: %s\n'%(n_date))
                     continue #small window has larger std than big window, probably no waveforms
+                '''
             tmp_sampr=data[0].stats.sampling_rate #check sampling rate
             if pre_sampr==[]:
                 pre_sampr=tmp_sampr #set the sampr for first station
