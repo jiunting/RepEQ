@@ -149,6 +149,11 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
         maxCCC=np.max(tmpccf)
         lag=tmpccf.argmax()
         return maxCCC,lag
+    
+    def cal_CCCF(data1,data2):
+        from obspy.signal.cross_correlation import correlate_template
+        CCF=xcorr_tools.correlate_template(data1,data2) #data1 should be longer than data2
+        return CCF
 
     def cal_CCCscore(ndata,sav_ij_date,sav_CCC):
         CCCscore=np.zeros(ndata)
