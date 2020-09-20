@@ -152,6 +152,7 @@ def searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=Fal
     
     def cal_CCCF(data1,data2):
         from obspy.signal.cross_correlation import correlate_template
+        #len(data1)>=len(data2)
         CCF=xcorr_tools.correlate_template(data1,data2) #data1 should be longer than data2
         return CCF
 
