@@ -89,6 +89,45 @@ def catalog_USGS(times=['2000','2020'],area=[-156.357,-154.061,18.407,20.437],ma
 
 
 
+def make_catalog(times=['2000','2020'],dt=86400,lon_lat=[120,24],outname='testout.cat'):
+    #make fake catalog for downloading continuous data
+    assert len(times)==2, 'Please provide a range for time [time1,time2] the format can be [YYYY]MMDD  or <datetime> type'
+    time1=times[0]
+    time2=times[1]
+    #formatting check
+    if type(time1)==str:
+        if len(time1)<4:
+            print('Time must be at least [YYYY]MMDD  or <datetime> type')
+            sys.exit(2)
+        elif len(time1)==4:
+            time1=datetime.datetime(int(time1[:4]),1,1)
+        elif len(time1)==6:
+            time1=datetime.datetime(int(time1[:4]),int(time1[4:6]),1)
+        elif len(time1)==8:
+            time1=datetime.datetime(int(time1[:4]),int(time1[4:6]),int(time1[6:8]))
+        else:
+            print('Please make sure time1 format should be [YYYY]MMDD or in <datetime> type')
+    if type(time2)==str:
+        if len(time2)<4:
+            print('Time must be at least [YYYY]MMDD  or <datetime> type')
+            sys.exit(2)
+        elif len(time2)==4:
+            time2=datetime.datetime(int(time2[:4]),1,1)
+        elif len(time2)==6:
+            time2=datetime.datetime(int(time2[:4]),int(time2[4:6]),1)
+        elif len(time2)==8:
+            time2=datetime.datetime(int(time2[:4]),int(time2[4:6]),int(time2[6:8]))
+        else:
+            print('Please make sure time1 format should be [YYYY]MMDD or in <datetime> type')
+    time0=time1
+    timemax=time2
+    OUT1=open(outname,'w') #output catalog file
+    while time0<timemax:
+        format_time=time0.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        OUT1.write('%s,%f,%f,%s\n'%(format_time,lon_lat[1],lon_lat[0],'''6.81,2.95,ml,55,195,0.07168,0.11,us,us12345678,2000-01-01T00:00:00.000Z,"Fake Catalog",earthquake,0.0,0.0,0.0,0,reviewed,us,us'''))
+        time0+=datetime.timedelta(seconds=dt)
+    OUT1.close()
+
 def cattime2normal(timestr):
     '''
     convert '2000-01-01T06:58:39.780Z' to
