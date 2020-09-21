@@ -122,7 +122,7 @@ def make_catalog(times=['2000','2020'],dt=86400,lon_lat=[120,24],outname='testou
     time0=time1
     timemax=time2
     OUT1=open(outname,'w') #output catalog file
-    while time0<timemax:
+    while time0<=timemax:
         format_time=time0.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         OUT1.write('%s,%f,%f,%s\n'%(format_time,lon_lat[1],lon_lat[0],'''6.81,2.95,ml,55,195,0.07168,0.11,us,us12345678,2000-01-01T00:00:00.000Z,"Fake Catalog",earthquake,0.0,0.0,0.0,0,reviewed,us,us'''))
         time0+=datetime.timedelta(seconds=dt)

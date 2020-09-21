@@ -102,5 +102,8 @@ if search:
     analysis.measure_lag(home,project_name,lag_params,sequence_file,cata_name)
 
 
-
-
+#download continuous data
+#create fake catalog
+#download_tools.make_catalog(times=['2018','20180506'],dt=86400,lon_lat=[-154.9996667,19.3181667],outname=cata_out)
+#then download data by
+#download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_rad,channel,provider,waveforms_outdir)
