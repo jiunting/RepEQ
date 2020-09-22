@@ -316,7 +316,7 @@ def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],ra
     outstr=evtime.split('T')[0].replace('-','')+str(HH).zfill(2)+str(MM).zfill(2)+str(SS).zfill(2) #save dir as evid
     outmsdir=OUT+'/'+outstr+"/waveforms"
     outstadir=OUT+'/'+outstr+"/stations"
-    mdl.download(domain, restrictions,threads_per_client=200, mseed_storage=outmsdir,stationxml_storage=outstadir)
+    mdl.download(domain, restrictions,threads_per_client=20, mseed_storage=outmsdir,stationxml_storage=outstadir)
     return(outmsdir,outstadir)
 
 
@@ -324,7 +324,7 @@ def download_waves_catalog(cata_name,cata_filters,sec_bef_aft=[120,600],range_ra
     #T,lon,lat,dep,mag=EQfilter(cata_name,BT_time=['20170607020500','20191210000000'],BT_lon=[132,133],BT_lat=[30,31],BT_dep=[0,50],BT_mag=[5.0,9.0])
     T,lon,lat,dep,mag=EQfilter(cata_name,BT_time=cata_filters['filt_times'],BT_lon=cata_filters['filt_lon'],BT_lat=cata_filters['filt_lat'],
                                BT_dep=cata_filters['filt_dep'],BT_mag=cata_filters['filt_m'])
-    
+    import time
     for i,eqT in enumerate(T):
         if i==0:
             print('--------------start downloading------------')
@@ -332,7 +332,7 @@ def download_waves_catalog(cata_name,cata_filters,sec_bef_aft=[120,600],range_ra
             print('Now at #%d / %d'%(i,len(T)))
         
         download_waves(eqT,sec_bef_aft=sec_bef_aft,Ftype='circ',lon_lat=[lon[i],lat[i]],range_rad=range_rad,channel=channel,provider=provider,OUT=waveforms_outdir)
-
+        time.sleep(10)
 
 
 def rm_response(mseedpath,stapath,setlon,setlat,stainfo_path=None):
