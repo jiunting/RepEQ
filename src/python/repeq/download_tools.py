@@ -316,7 +316,7 @@ def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],ra
     outstr=evtime.split('T')[0].replace('-','')+str(HH).zfill(2)+str(MM).zfill(2)+str(SS).zfill(2) #save dir as evid
     outmsdir=OUT+'/'+outstr+"/waveforms"
     outstadir=OUT+'/'+outstr+"/stations"
-    mdl.download(domain, restrictions,threads_per_client=20, mseed_storage=outmsdir,stationxml_storage=outstadir)
+    mdl.download(domain, restrictions,threads_per_client=200, mseed_storage=outmsdir,stationxml_storage=outstadir)
     return(outmsdir,outstadir)
 
 
