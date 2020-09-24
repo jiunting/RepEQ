@@ -335,6 +335,17 @@ def download_waves_catalog(cata_name,cata_filters,sec_bef_aft=[120,600],range_ra
         time.sleep(10)
 
 
+def get_waveforms(net,sta,comp,chn,t1,t2):
+    #simple waveform query if net,sta,comp,chn are known
+    from obspy.clients.fdsn import Client
+    client = Client("IRIS")
+    #t1 = UTCDateTime("2010-02-27T06:30:00.000")
+    #t2 = t1 + 5
+    st = client.get_waveforms(net, sta, chn, comp, t1, t2)
+    return st
+
+
+
 def rm_response(mseedpath,stapath,setlon,setlat,stainfo_path=None):
     import obspy
     from obspy.clients.fdsn.mass_downloader import CircularDomain,RectangularDomain,Restrictions, MassDownloader
