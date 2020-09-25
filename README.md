@@ -26,4 +26,7 @@ vi ~/.bash_profile
 ```bash
 #set MLARGE
 export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/RepEQ/src/python
-```    
+```
+
+## 2. Download catalog
+
