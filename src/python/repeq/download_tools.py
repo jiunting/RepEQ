@@ -2,7 +2,7 @@
 import requests
 import datetime
 import obspy
-
+from obspy import UTCDateTime
 
 def catalog_USGS(times=['2000','2020'],area=[-156.357,-154.061,18.407,20.437],magnitude=[3.0,6.5],outname='testout.cat'):
     #download the earthquake catalog from USGS earthquake API
@@ -343,6 +343,39 @@ def get_waveforms(net,sta,comp,chn,t1,t2):
     #t2 = t1 + 5
     st = client.get_waveforms(net, sta, chn, comp, t1, t2)
     return st
+
+
+def get_stations(net,sta,chn="BH*,HH*",t1=UTCDateTime("2015-01-01"),t2=UTCDateTime("2015-01-02"),longitude=-155.27,latitude=19.34,minradius=0,maxradius=1):
+    from obspy.clients.fdsn import Client
+    client = Client("IRIS")
+    #starttime = UTCDateTime("2001-01-01")
+    #endtime = UTCDateTime("2001-01-02")
+    inventory = client.get_stations(network=net,station=sta,channel=chn,starttime=t1,endtime=t2,longitude=longitude,latitude=latitude,minradius=minradius,maxradius=maxradius)
+    sav_net=[]
+    sav_sta=[]
+    sav_lon=[]
+    sav_lat=[]
+    sav_heigh=[]
+    for i in inventory:
+        tmp_net = i.code
+        #stations below are all in the same network
+        for ii in i:
+            tmp_sta = ii.code
+            sav_net.append(tmp_net)
+            sav_sta.append(tmp_sta)
+            sav_lon.append(ii.longitude)
+            sav_lat.append(ii.latitude)
+            sav_heigh.append(ii.elevation)
+
+    return sav_net,sav_sta,sav_lon,sav_lat,sav_heigh
+
+
+
+
+def download_continuous_cent(sta,comp,chn,t1,t2,lon,lat):
+    #download continuous data based on a center point
+
+
 
 
 
