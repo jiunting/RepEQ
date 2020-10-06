@@ -3,6 +3,7 @@ import requests
 import datetime
 import obspy
 from obspy import UTCDateTime
+import numpy as np
 
 def catalog_USGS(times=['2000','2020'],area=[-156.357,-154.061,18.407,20.437],magnitude=[3.0,6.5],outname='testout.cat'):
     #download the earthquake catalog from USGS earthquake API
@@ -345,12 +346,12 @@ def get_waveforms(net,sta,comp,chn,t1,t2):
     return st
 
 
-def get_stations(net,sta,chn="BH*,HH*",t1=UTCDateTime("2015-01-01"),t2=UTCDateTime("2015-01-02"),longitude=-155.27,latitude=19.34,minradius=0,maxradius=1):
+def get_stations(net,sta,comp="BH*,HH*",t1=UTCDateTime("2015-01-01"),t2=UTCDateTime("2015-01-02"),longitude=-155.27,latitude=19.34,minradius=0,maxradius=1):
     from obspy.clients.fdsn import Client
     client = Client("IRIS")
     #starttime = UTCDateTime("2001-01-01")
     #endtime = UTCDateTime("2001-01-02")
-    inventory = client.get_stations(network=net,station=sta,channel=chn,starttime=t1,endtime=t2,longitude=longitude,latitude=latitude,minradius=minradius,maxradius=maxradius)
+    inventory = client.get_stations(network=net,station=sta,channel=comp,starttime=t1,endtime=t2,longitude=longitude,latitude=latitude,minradius=minradius,maxradius=maxradius)
     sav_net=[]
     sav_sta=[]
     sav_lon=[]
@@ -372,9 +373,31 @@ def get_stations(net,sta,chn="BH*,HH*",t1=UTCDateTime("2015-01-01"),t2=UTCDateTi
 
 
 
-def download_continuous_cent(sta,comp,chn,t1,t2,lon,lat):
+def download_continuous_cent(sta,comp,chn,sampl,t1,t2,lon,lat):
     #download continuous data based on a center point
-
+    sav_net,sav_sta,sav_lon,sav_lat,sav_heigh = get_stations(net='*',sta='*',comp='BH*,HH*',
+                                                             t1=UTCDateTime("2015-01-01"),t2=UTCDateTime("2015-01-02"),longitude=-155.27,latitude=19.34)
+    all_tr=[]
+    print('Total %d stations to be downloaded'%(len(sav_net)))
+    for i,net in enumerate(sav_net):
+        print('Now in',net,sav_sta[i])
+        try:
+            tr = get_waveforms(net,sav_sta[i],comp=comp,chn=chn,t1=t1,t2=t2)
+        except:
+            pass #data unavailable
+        print('now tr=',tr)
+        tr.merge()
+        if isinstance(tr[0].data, np.ma.masked_array):
+            print('-----INSIDE IF----------------')
+            tr[0].data = tr[0].data.filled()
+        tr.detrend()
+        tr.filter("bandpass",freqmin=2,freqmax=7)
+        tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
+        tr.interpolate(sampling_rate=sampl, starttime=t1)
+        tr.trim(starttime=t1, endtime=t2, nearest_sample=True, pad=True, fill_value=0)
+        all_tr += tr
+        print(all_tr)
+    return all_tr
 
 
 
