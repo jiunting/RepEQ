@@ -378,26 +378,33 @@ def download_continuous_cent(sta,comp,chn,sampl,t1,t2,lon,lat,r1=0,r2=1):
     sav_net,sav_sta,sav_lon,sav_lat,sav_heigh = get_stations(net='*',sta='*',comp='BH*,HH*',
                                                              t1=UTCDateTime("2015-01-01"),t2=UTCDateTime("2015-01-02"),
                                                              longitude=-155.27,latitude=19.34,minradius=r1,maxradius=r2)
-    all_tr=[]
+    #all_tr=[]
     print('Total %d stations to be downloaded'%(len(sav_net)))
     for i,net in enumerate(sav_net):
         try:
             tr = get_waveforms(net,sav_sta[i],comp=comp,chn=chn,t1=t1,t2=t2)
         except:
             pass #data unavailable
+        print(net,sav_sta[i],comp,chn,t1,t2)
         tr.merge()
-        if isinstance(tr[0].data, np.ma.masked_array):
-            tr[0].data = tr[0].data.filled()
+        for itr in range(len(tr)):
+            if isinstance(tr[itr].data, np.ma.masked_array):
+                tr[itr].data = tr[itr].data.filled()
         tr.detrend()
-        #tr.filter("bandpass",freqmin=2,freqmax=7)
+        tr.filter("bandpass",freqmin=2,freqmax=7)
+        #tr.filter("bandpass",freqmin=1,freqmax=8)
         tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
         tr.interpolate(sampling_rate=sampl, starttime=t1)
         tr.trim(starttime=t1, endtime=t2, nearest_sample=True, pad=True, fill_value=0)
-        all_tr += tr
+        try:
+            all_tr += tr
+        except:
+            all_tr = tr
     return all_tr
 
 
 def batch_download_continuous_cent(home,project_name,download_params,waveforms_outdir='.'):
+    import os
     #download all continuous data given the time range t1-t2 and lon/lat range
     sta = download_params['sta']
     comp = download_params['comp']
@@ -413,7 +420,14 @@ def batch_download_continuous_cent(home,project_name,download_params,waveforms_o
     st = t1
     ed = t1 + 86400
     while True:
+        print('start downloading:',st,'-',ed)
         all_tr = download_continuous_cent(sta,comp,chn,sampl,st,ed,lon=cent_lon,lat=cent_lat,r1=min_radius,r2=max_radius)
+        #all_tr.
+        #write the file
+        outdir = t1.strftime('%Y%m%d%H%M%S')
+        if not(os.path.exists(waveforms_outdir+'/'+outdir)):
+            os.makedirs(waveforms_outdir+'/'+outdir)
+        all_tr.write(waveforms_outdir+'/'+outdir+'/merged.ms',format='MSEED')
         st += 86400
         ed += 86400
         if ed>t2:
