@@ -424,7 +424,7 @@ def batch_download_continuous_cent(home,project_name,download_params,waveforms_o
         all_tr = download_continuous_cent(sta,comp,chn,sampl,st,ed,lon=cent_lon,lat=cent_lat,r1=min_radius,r2=max_radius)
         #all_tr.
         #write the file
-        outdir = t1.strftime('%Y%m%d%H%M%S')
+        outdir = st.strftime('%Y%m%d%H%M%S')
         if not(os.path.exists(waveforms_outdir+'/'+outdir)):
             os.makedirs(waveforms_outdir+'/'+outdir)
         all_tr.write(waveforms_outdir+'/'+outdir+'/merged.ms',format='MSEED')
