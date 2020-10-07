@@ -35,5 +35,5 @@ if init:
     Repeq_starter.create_dirs(home,project_name)
 
 if get_waveform:
-    download_tools.batch_download_continuous_cent(home,project_name,download_params,waveforms_outdir=waveforms_outdir)
+    download_tools.bulk_download_continuous_cent(home,project_name,download_params,waveforms_outdir=waveforms_outdir)
 

@@ -238,7 +238,8 @@ def EQfilter(catalog,BT_time=['20170607020500','20191210000000'],BT_lon=[132,133
 
 def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],range_rad=[0,6],channel=["BHZ","HHZ"],provider=["IRIS"],OUT='.'):
     import obspy
-    from obspy.clients.fdsn.mass_downloader import CircularDomain,RectangularDomain,Restrictions, MassDownloader
+    #from obspy.clients.fdsn.mass_downloader import CircularDomain,RectangularDomain,Restrictions, MassDownloader
+    from My_mass_downloader.mass_downloader import CircularDomain,RectangularDomain,Restrictions, MassDownloader
     import datetime
     import glob
     import pandas as pd
@@ -373,20 +374,42 @@ def get_stations(net,sta,comp="BH*,HH*",t1=UTCDateTime("2015-01-01"),t2=UTCDateT
 
 
 
-def download_continuous_cent(sta,comp,chn,sampl,t1,t2,lon,lat,r1=0,r2=1):
+def download_continuous_cent(net,sta,comp,chn,sampl,t1,t2,lon,lat,r1=0,r2=1):
     #download continuous data based on a center point
-    sav_net,sav_sta,sav_lon,sav_lat,sav_heigh = get_stations(net='*',sta='*',comp='BH*,HH*',
-                                                             t1=UTCDateTime("2015-01-01"),t2=UTCDateTime("2015-01-02"),
-                                                             longitude=-155.27,latitude=19.34,minradius=r1,maxradius=r2)
+    sav_net,sav_sta,sav_lon,sav_lat,sav_heigh = get_stations(net=net,sta=sta,comp=comp,
+                                                             t1=t1,t2=t2,
+                                                             longitude=lon,latitude=lat,minradius=r1,maxradius=r2)
     #all_tr=[]
+    staInfo_pre={
+    'net':sav_net,
+    'sta':sav_sta,
+    'lon':sav_lon,
+    'lat':sav_lat,
+    'heigh':sav_heigh,
+    }
+    staInfo_fail = staInfo_pre.copy()
+    staInfo_post = {
+    'net':[],
+    'sta':[],
+    'lon':[],
+    'lat':[],
+    'heigh':[],
+    'comp':[],
+    'chn':[],
+    }
     print('Total %d stations to be downloaded'%(len(sav_net)))
     for i,net in enumerate(sav_net):
         try:
             tr = get_waveforms(net,sav_sta[i],comp=comp,chn=chn,t1=t1,t2=t2)
         except:
-            pass #data unavailable
+            staInfo_fail['net'].append(net)
+            staInfo_fail['sta'].append(sav_sta[i])
+            staInfo_fail['lon'].append(sav_lon[i])
+            staInfo_fail['lat'].append(sav_lat[i])
+            staInfo_fail['heigh'].append(sav_heigh[i])
+            continue #data unavailable
         print(net,sav_sta[i],comp,chn,t1,t2)
-        tr.merge()
+        tr.merge() #now tr can be same station but different component
         for itr in range(len(tr)):
             if isinstance(tr[itr].data, np.ma.masked_array):
                 tr[itr].data = tr[itr].data.filled()
@@ -396,16 +419,26 @@ def download_continuous_cent(sta,comp,chn,sampl,t1,t2,lon,lat,r1=0,r2=1):
         tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
         tr.interpolate(sampling_rate=sampl, starttime=t1)
         tr.trim(starttime=t1, endtime=t2, nearest_sample=True, pad=True, fill_value=0)
+        for itr in tr:
+            staInfo_post['net'].append(itr.stats.network)
+            staInfo_post['sta'].append(itr.stats.station)
+            staInfo_post['comp'].append(itr.stats.channel)
+            staInfo_post['chn'].append(itr.stats.location)
+            staInfo_post['lon'].append(sav_lon[i])
+            staInfo_post['lat'].append(sav_lat[i])
+            staInfo_post['heigh'].append(sav_heigh[i])
         try:
             all_tr += tr
         except:
             all_tr = tr
-    return all_tr
+    return all_tr,staInfo_pre,staInfo_post,staInfo_fail
 
 
-def batch_download_continuous_cent(home,project_name,download_params,waveforms_outdir='.'):
+def bulk_download_continuous_cent(home,project_name,download_params,n_cores=1,waveforms_outdir='.'):
     import os
+    import time
     #download all continuous data given the time range t1-t2 and lon/lat range
+    net = download_params['net']
     sta = download_params['sta']
     comp = download_params['comp']
     chn = download_params['chn']
@@ -417,21 +450,33 @@ def batch_download_continuous_cent(home,project_name,download_params,waveforms_o
     t1 = download_params['t1']
     t2 = download_params['t2']
     #loop through t1-t2
-    st = t1
-    ed = t1 + 86400
-    while True:
+    N = int((t2 - t1) / 86400) #number of days to be dealt with
+    def run_loop(n):
+        st = t1 + 86400 * n
+        ed = st + 86400
         print('start downloading:',st,'-',ed)
-        all_tr = download_continuous_cent(sta,comp,chn,sampl,st,ed,lon=cent_lon,lat=cent_lat,r1=min_radius,r2=max_radius)
-        #all_tr.
-        #write the file
+        #time.sleep(5)
+        #return True
+        all_tr,staInfo_pre,staInfo_post,staInfo_fail = download_continuous_cent(net,sta,comp,chn,sampl,st,ed,lon=cent_lon,lat=cent_lat,r1=min_radius,r2=max_radius)
+        #write the waveform file
         outdir = st.strftime('%Y%m%d%H%M%S')
         if not(os.path.exists(waveforms_outdir+'/'+outdir)):
             os.makedirs(waveforms_outdir+'/'+outdir)
         all_tr.write(waveforms_outdir+'/'+outdir+'/merged.ms',format='MSEED')
-        st += 86400
-        ed += 86400
-        if ed>t2:
-            break
+        #write station npy files in dictionary format
+        np.save(waveforms_outdir+'/'+outdir+'/staInfo_pre.npy',staInfo_pre)
+        np.save(waveforms_outdir+'/'+outdir+'/staInfo_post.npy',staInfo_post)
+        np.save(waveforms_outdir+'/'+outdir+'/staInfo_fail.npy',staInfo_fail)
+        
+    #run loop by one core or multiple cores
+    if n_cores==1:
+        for i in range(N):
+            run_loop(i)
+    else:
+        from joblib import Parallel, delayed
+        results = Parallel(n_jobs=n_cores,prefer="threads")(delayed(run_loop)(i) for i in range(N))
+        print('Parallel finished')
+
 
 
 
