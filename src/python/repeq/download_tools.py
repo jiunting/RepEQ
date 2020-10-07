@@ -409,9 +409,11 @@ def download_continuous_cent(net,sta,comp,chn,sampl,t1,t2,lon,lat,r1=0,r2=1):
             staInfo_fail['heigh'].append(sav_heigh[i])
             continue #data unavailable
         print(net,sav_sta[i],comp,chn,t1,t2)
+        tr.detrend()
         tr.merge() #now tr can be same station but different component
         for itr in range(len(tr)):
             if isinstance(tr[itr].data, np.ma.masked_array):
+                tr[itr].data.fill_value = 0
                 tr[itr].data = tr[itr].data.filled()
         tr.detrend()
         tr.filter("bandpass",freqmin=2,freqmax=7)
