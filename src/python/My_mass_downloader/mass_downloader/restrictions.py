@@ -14,7 +14,9 @@ from __future__ import (absolute_import, division, print_function,
 from future.builtins import *  # NOQA
 from future.utils import native_str
 
-from obspy.core.compatibility import collections_abc
+#from obspy.core.compatibility import collections_abc
+from _collections_abc import *
+from _collections_abc import __all__
 
 import obspy
 
