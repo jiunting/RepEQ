@@ -17,7 +17,7 @@ from future.utils import native_str
 #from obspy.core.compatibility import collections_abc
 #from _collections_abc import *
 #from _collections_abc import __all__
-from My_mass_downloader import collections_abc
+from My_mass_downloader import collections as collections_abc
 
 import obspy
 
