@@ -19,6 +19,6 @@ def merge_daily(home,project_name,sampling_rate,filter=[0.2,8]):
         if filter:
             st.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
         st.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
-        st.interpolate(sampling_rate=sr, starttime=t1)
+        st.interpolate(sampling_rate=sampling_rate, starttime=t1)
         st.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
 
