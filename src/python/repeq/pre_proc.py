@@ -13,8 +13,7 @@ def merge_daily(home,project_name,sampling_rate,filter=[0.2,8]):
         print('In dir:',D)
         t1 = UTCDateTime(D.split('/')[-1])
         t2 = t1 + 86400 #this is daily so exactly +86400 sec
-        files = glob.glob(D+'/waveforms/*.mseed')
-        st = obspy.read(files)
+        st = obspy.read(D+'/waveforms/*.mseed')
         st.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
         st.detrend()
         if filter:
