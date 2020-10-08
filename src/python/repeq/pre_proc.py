@@ -21,4 +21,4 @@ def merge_daily(home,project_name,sampling_rate,filter=[0.2,8]):
         st.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
         st.interpolate(sampling_rate=sampling_rate, starttime=t1)
         st.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
-
+        st.write(D+'/waveforms/merged.ms',format="MSEED")
