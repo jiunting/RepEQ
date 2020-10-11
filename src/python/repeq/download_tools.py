@@ -481,6 +481,93 @@ def bulk_download_continuous_cent(home,project_name,download_params,n_cores=1,wa
 
 
 
+def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
+    '''
+        download template by event ID
+        function by: Amanda Thomas
+    '''
+    from obspy.clients.fdsn import Client
+    from libcomcat.search import get_event_by_id
+    from libcomcat.dataframes import get_phase_dataframe
+    from obspy import Stream
+    client = Client("IRIS")
+    # make templates
+    regional=df['Regional']
+    eventid = regional+str(df['ID'])
+    detail = get_event_by_id(eventid, includesuperseded=True)
+    phases = get_phase_dataframe(detail, catalog=regional)
+    phases = phases[phases['Status'] == 'manual']
+    phases=phases[~phases.duplicated(keep='first',subset=['Channel','Phase'])]
+    st=Stream()
+    tr=Stream()
+    for ii in range(len(phases)):
+        net = phases.iloc[ii]['Channel'].split('.')[0]
+        sta = phases.iloc[ii]['Channel'].split('.')[1]
+        comp = phases.iloc[ii]['Channel'].split('.')[2]
+        #phase = phases.iloc[ii]['Phase']
+        arr = UTCDateTime(phases.iloc[ii]['Arrival Time'])
+        #print(int(np.round(arr.microsecond/(1/sampling_rate*10**6))*1/sampling_rate*10**6)==1000000)
+        if int(np.round(arr.microsecond/(1/sampling_rate*10**6))*1/sampling_rate*10**6)==1000000:
+            arr.microsecond=0
+            #arr.second=arr.second+1
+            arr=arr+1
+        #print('arrival Time after arrangement',arr)
+        else:
+            arr.microsecond=int(np.round(arr.microsecond/(1/sampling_rate*10**6))*1/sampling_rate*10**6)
+        t1 = arr-tcs_length[0]
+        t2 = arr+tcs_length[1]
+        try:
+            tr = client.get_waveforms(net, sta, "*", comp, t1-2, t2+2)
+        except:
+            continue
+        #print("No data for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
+        else:
+            #print("Data available for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
+            tr.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
+            tr.detrend()
+            tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
+            if filter:
+                tr.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
+            tr.interpolate(sampling_rate=sampling_rate, starttime=t1)
+            tr.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
+            st += tr
+    return st
+
+
+
+def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
+    from obspy import UTCDateTime
+    #looping through all df, download templates, and output .txt file for checking
+    OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','w') #clean the previous summary file(if exist)
+    OUT1.write('%s %s %s %s %s %s %s %s %s\n'%('#idx','Template_path','phases','Date','EVID','Lon','Lat','Dep','Mag')) #write header
+    OUT1.close()
+    OUT2 = open(home+'/'+project_name+'/waveforms_template/'+'template_fail.txt','w')
+    OUT2.close()
+    for idf in range(len(dfs)):
+        DT = dfs.iloc[idf].Date+'T'+dfs.iloc[idf].Time #DateTime
+        EVID = dfs.iloc[idf].Regional+dfs.iloc[idf].ID #eventID
+        st = make_template(dfs.iloc[idf],sampling_rate,filter,tcs_length) #assume this always work!
+        if len(st)==0:
+            print('Template cannot be downloaded')
+            OUT2 = open(home+'/'+project_name+'/waveforms_template/'+'template_fail.txt','a')
+            OUT2.write('%d %s %s %.5f %.5f %.3f %.3f\n'%(idf,DT,EVID,dfs.iloc[idf].Lon,dfs.iloc[idf].Lat,dfs.iloc[idf].Depth,dfs.iloc[idf].Magnitude))
+            OUT2.close()
+            continue
+        else:
+            outfile = home+'/'+project_name+'/waveforms_template/'+'template_%05d.ms'%(idf)
+            st.write(outfile,format='MSEED')
+            OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','a')
+            
+            OUT1.write('%d %s %d %s %s  %.5f %.5f %.3f %.3f\n'%(idf,outfile,len(st),DT,EVID,dfs.iloc[idf].Lon,dfs.iloc[idf].Lat,dfs.iloc[idf].Depth,dfs.iloc[idf].Magnitude))
+            OUT1.close()
+
+
+
+
+
+
+
+
 
 
 

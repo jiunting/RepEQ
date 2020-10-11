@@ -8,6 +8,7 @@ def create_dirs(home,project_name,overwrite=False):
     if not(os.path.exists(home+'/'+project_name)):
         os.makedirs(home+'/'+project_name) #main dir
         os.makedirs(home+'/'+project_name+'/'+'waveforms') #put all the waveforms in here
+        os.makedirs(home+'/'+project_name+'/'+'waveforms_template') #put all the waveforms in here
         os.makedirs(home+'/'+project_name+'/'+'structure') #put velocity model .mod file here
         main_REPEQ=os.environ['REPEQ'] #the uppest dir of the REPEQ
         shutil.copy(main_REPEQ+'/examples/model/example.mod',home+'/'+project_name+'/'+'structure/example.mod')
