@@ -8,12 +8,13 @@ from obspy import UTCDateTime
 init = 0             #initial project
 get_catalog = 1     #download waveforms
 get_waveform = 1     #download waveforms
+get_template = 0
 
 #================Parameter settings================
 home = '/Users/timlin/Documents/Project/TestREPEQ'
 project_name = 'QQQ'
 cata_name = 'continuous.cat'
-
+cata_name2 = 'area1_1.0.cat'  #template catalog. download this catalog by download_tools.catalog_USGS (see control.py for example)
 
 ##dealing with catalog: download or make fakecatalog
 cata_times = ['20180101','20180505'] #this can be large
@@ -28,10 +29,10 @@ dt = 86400
 ##filter the catalog
 cata_filters={
 #'filt_times':['20170101','20190105'],
-'filt_times':['20000101','20300101'],
+'filt_times':['19000101','20500101'],
 'filt_lon':[-180, 180],
 'filt_lat':[-90, 90],
-'filt_dep':[0,300],
+'filt_dep':[0,800],
 'filt_m':[0.0,10.0],
 }
 
@@ -42,8 +43,8 @@ Ftype = 'circ' #circ or rect
 lon_lat = [120,24] #if Ftype=="circ", center of the circle. if Ftype=='rect', [lon1,lon2,lat1,lat2] 4 points boundary
 range_rad = [0,6] #range of the searching circle. Must be provided if Ftype=="circ"
 channel = ['BHZ','HHZ']
-#channel = 'BHZ,HHZ' #try this on
 provider = ["IRIS"]
+sampling_rate = 25
 waveforms_outdir = home+'/'+project_name+'/'+'waveforms'
 
 #================Parameter settings END================
@@ -62,8 +63,15 @@ if get_catalog:
 if get_waveform:
     #get continuous waveform based on the fakecatalog
     download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_rad,channel,provider,waveforms_outdir)
-    
+    #merge all the mseed data into a large merged.ms file
+    from repeq import pre_proc
+    pre_proc.merge_daily(home,project_name,sampling_rate,filter=None)
 
+if get_template:
+    #download template based on (real)catalog with manual pick
+    from repeq import template
+    T = template.Template(home,project_name,cata_name2,True,sampling_rate,filter=[0.2,8],tcs_length=[1,9],filt_CC=0.2,filt_nSTA=5)
+    T.template_load()
 
 
 '''
