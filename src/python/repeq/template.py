@@ -53,7 +53,7 @@ class Template():
             #start download templates
             if not(os.path.exists(home+'/'+project_name+'/waveforms_template')):
                 os.makedirs(home+'/'+project_name+'/waveforms_template')
-            download_toole.bulk_make_template(home,project_name,self.catalog,self.sampling_rate,self.filter,self.tcs_length)
+            download_tools.bulk_make_template(home,project_name,self.catalog,self.sampling_rate,self.filter,self.tcs_length)
         else:
             #read previously downloaded templetes
             if not(os.path.exists(home+'/'+project_name+'/waveforms_template')):
