@@ -73,6 +73,9 @@ class Template():
         from obspy import UTCDateTime,read
         import glob
         from obspy.signal.cross_correlation import correlate_template
+        import matplotlib
+        matplotlib.use('pdf') #instead using interactive backend
+        import matplotlib.pyplot as plt
         
         home = self.home
         project_name = self.project_name
