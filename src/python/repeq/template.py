@@ -95,6 +95,7 @@ class Template():
                 
                 #read all directories of daily data
                 dayst_paths = glob.glob(home+'/'+project_name+'/waveforms/'+'*000000')
+                dayst_paths.sort()
                 
                 sav_mean_sh_CCF=[] #save all the daily CCF for later plotting
                 #loop the daily data
@@ -166,14 +167,18 @@ class Template():
                         #new_dayst[0].stats.starttime+time[np.argmax(mean_sh_CCF)] #find itself
                         print('    New event found:',i_dayst[0].stats.starttime+time[neqid]) #find earthquakes,
                         OUT1.write('%s %.3f %d %s\n'%((i_dayst[0].stats.starttime+time[neqid]).strftime('%Y-%m-%dT%H:%M:%S.%f'),
-                                                      mean_sh_CCF[neqid],len(sav_STA),'template_'+str(ind)))
-                                        
+                                                      mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
+
                     sav_mean_sh_CCF.append(mean_sh_CCF)
                                         
                     #-----Only for checking: plot the one with largest CC value and check (find itself if the template and daily are the same day)-----
                     plt.figure(1)
                     for n in range(len(sav_template)):
-                        cut_daily = sav_continuousdata[n][np.argmax(mean_sh_CCF)+travel_npts[n]:np.argmax(mean_sh_CCF)+travel_npts[n]+len(sav_template[n])]
+                        #print('continuous data=',sav_continuousdata[n])
+                        #print('slice from:',np.argmax(mean_sh_CCF))
+                        #print('plus:',sav_travel_npts[n])
+                        #print('len temp:',len(sav_template[n]))
+                        cut_daily = sav_continuousdata[n][np.argmax(mean_sh_CCF)+sav_travel_npts[n]:np.argmax(mean_sh_CCF)+sav_travel_npts[n]+len(sav_template[n])]
                         cut_daily = cut_daily/np.max(np.abs(cut_daily))
                         plt.plot(cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
                         plt.plot(sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
@@ -183,16 +188,16 @@ class Template():
                     plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'tmp_%05d_daily_%s.png'%(tmp_idx,YMD))
                     plt.close()
                                         
-                    #----plot the mean_shifted_CCF----
-                    plt.figure(1)
-                    for n in range(len(sav_mean_sh_CCF)):
-                        plt.plot(sav_mean_sh_CCF[n]+n)
-                    plt.title('Mean CCF (template_%05d)'%(tmp_idx),fontsize=16)
-                    plt.ylabel('Days after %s'%(dayst_paths[0].split('/')[-1][:8]),fontsize=16)
-                    plt.savefig('./Figs/MeanCCF_%05d.png'%(tmp_idx))
-                    plt.close()
-                                        
-                    OUT1.close()
+                #----plot the mean_shifted_CCF for all days----
+                plt.figure(1)
+                for n in range(len(sav_mean_sh_CCF)):
+                    plt.plot(sav_mean_sh_CCF[n]+n)
+                plt.title('Mean CCF (template_%05d)'%(tmp_idx),fontsize=16)
+                plt.ylabel('Days after %s'%(dayst_paths[0].split('/')[-1][:8]),fontsize=16)
+                plt.savefig('./Figs/MeanCCF_%05d.png'%(tmp_idx))
+                plt.close()
+                OUT1.close()
+
                                         
                                         
                                         
