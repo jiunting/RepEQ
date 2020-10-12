@@ -14,6 +14,9 @@ def create_dirs(home,project_name,overwrite=False):
         shutil.copy(main_REPEQ+'/examples/model/example.mod',home+'/'+project_name+'/'+'structure/example.mod')
         os.makedirs(home+'/'+project_name+'/'+'catalog') #catalog file in USGS format
         os.makedirs(home+'/'+project_name+'/'+'output')
+        os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match')
+        os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Figs')
+        os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Detections')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'logs')
         shutil.copy(main_REPEQ+'/examples/notes/Format_log.txt',home+'/'+project_name+'/'+'output/logs/Format_log.txt')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'lags')
