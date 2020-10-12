@@ -93,6 +93,7 @@ class Template():
                 #read all directories of daily data
                 dayst_paths = glob.glob(home+'/'+project_name+'/waveforms/'+'*000000')
                 
+                sav_mean_sh_CCF=[] #save all the daily CCF for later plotting
                 #loop the daily data
                 for dayst_path in dayst_paths:
                     sav_STA=[]; sav_CHN=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
