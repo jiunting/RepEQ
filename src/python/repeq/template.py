@@ -12,7 +12,7 @@ import pandas as pd
 
 
 class Template():
-    def __init__(self,home,project_name,catalog,download,sampling_rate,filter,tcs_length=[1,9],filt_CC=0.2,filt_nSTA=5):
+    def __init__(self,home,project_name,catalog,download,sampling_rate,filter,tcs_length=[1,9],filt_CC=0.2,filt_nSTA=5,plot_check=False):
         '''
             home: path of the home working directory <str>
             project_name: project name <str>
@@ -21,9 +21,9 @@ class Template():
             sampling_rate: sampling rate of data <int>
             filter: bandpass filter frequency range [min_freq,max_freq] <list with length=2>
             tcs_length: download data length center at the arrival time [t1,t2] i.e. from T-t1 to T+t2 <list with length=2>
-            filt_CC: 
-            filt_nSTA:
-            
+            filt_CC: individual CC value larger than this threshold <float>
+            filt_nSTA: N station larger than this threshold <int>
+            plot_check: plot detailed figure for checking <boolean>
         '''
         self.home = home
         self.project_name = project_name
@@ -36,6 +36,7 @@ class Template():
         self.tcs_length = tcs_length
         self.filt_CC = filt_CC
         self.filt_nSTA = filt_nSTA
+        self.plot_check = plot_check
         self.ms = None
         #read catalog
         cat = np.genfromtxt(catalog, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U19",float,float,float,float,"|U2","|U19"))
@@ -175,21 +176,18 @@ class Template():
                     sav_daily_nSTA.append(len(sav_CCF))
                     
                     #-----Only for checking: plot the one with largest CC value and check (find itself if the template and daily are the same day)-----
-                    plt.figure(1)
-                    for n in range(len(sav_template)):
-                        #print('continuous data=',sav_continuousdata[n])
-                        #print('slice from:',np.argmax(mean_sh_CCF))
-                        #print('plus:',sav_travel_npts[n])
-                        #print('len temp:',len(sav_template[n]))
-                        cut_daily = sav_continuousdata[n][np.argmax(mean_sh_CCF)+sav_travel_npts[n]:np.argmax(mean_sh_CCF)+sav_travel_npts[n]+len(sav_template[n])]
-                        cut_daily = cut_daily/np.max(np.abs(cut_daily))
-                        plt.plot(cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
-                        plt.plot(sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
-                        plt.text(len(cut_daily),n,sav_STA[n]+'.'+sav_CHN[n])
+                    if self.plot_check:
+                        plt.figure(1)
+                        for n in range(len(sav_template)):
+                            cut_daily = sav_continuousdata[n][np.argmax(mean_sh_CCF)+sav_travel_npts[n]:np.argmax(mean_sh_CCF)+sav_travel_npts[n]+len(sav_template[n])]
+                            cut_daily = cut_daily/np.max(np.abs(cut_daily))
+                            plt.plot(cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
+                            plt.plot(sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
+                            plt.text(len(cut_daily),n,sav_STA[n]+'.'+sav_CHN[n])
+                            plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
                         plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
-                    plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
-                    plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'tmp_%05d_daily_%s.png'%(tmp_idx,YMD))
-                    plt.close()
+                        plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'tmp_%05d_daily_%s.png'%(tmp_idx,YMD))
+                        plt.close()
                                         
                 #----plot the mean_shifted_CCF for all days----
                 plt.figure(1)
