@@ -86,6 +86,7 @@ class Template():
         else:
             #loop the templates (paths)
             for i_tmp in self.ms:
+                print('----------------------------------------------')
                 print('In template: %s'%(i_tmp))
                 tmp_idx = int(i_tmp.split('/')[-1].split('_')[-1].split('.')[0])
                 OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/Detected_tmp_%05d.txt'%(tmp_idx),'w') #output earthquake origin time
@@ -98,11 +99,12 @@ class Template():
                 dayst_paths.sort()
                 
                 sav_mean_sh_CCF=[] #save all the daily CCF for later plotting
+                sav_daily_nSTA=[] #number of stations for each daily CCF
                 #loop the daily data
                 for dayst_path in dayst_paths:
                     sav_STA=[]; sav_CHN=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
                     YMD = dayst_path.split('/')[-1][:8]
-                    print('--Reading daily data: %s'%(dayst_path))
+                    print(' --Reading daily data: %s'%(dayst_path))
                     i_dayst = read(dayst_path+'/waveforms/merged.ms') #load daily data
                     #print(i_dayst.__str__(extended=True))
                     for i in range(len(st)):
@@ -146,7 +148,7 @@ class Template():
                             sav_template.append(template)
                                         
                     if len(sav_CCF)<self.filt_nSTA:
-                        print('  Number of CCF: %d, not enough for threshold'%(len(sav_CCF)))
+                        print('   Number of CCF: %d, not enough for threshold'%(len(sav_CCF)))
                         continue #not enough data available, continue to next daily data
 
                     #----------dealing with shifting of each CCF----------
@@ -156,7 +158,7 @@ class Template():
                     for ii in range(len(sh_sav_CCF)):
                         sh_sav_CCF[ii] = np.roll(sav_CCF[ii],-int(sav_travel_npts[ii]))
                     
-                    print('  Number of CCF: %d, continue searching earthquakes'%(len(sav_CCF)))
+                    print('   Number of CCF: %d, continue searching earthquakes'%(len(sav_CCF)))
                     mean_sh_CCF = np.mean(sh_sav_CCF,axis=0) #stack/mean all the CCFs.
                                         
                     #----------Find earthquakes by the mean CCF----------
@@ -165,12 +167,13 @@ class Template():
                                         
                     for neqid in eq_idx:
                         #new_dayst[0].stats.starttime+time[np.argmax(mean_sh_CCF)] #find itself
-                        print('    New event found:',i_dayst[0].stats.starttime+time[neqid]) #find earthquakes,
-                        OUT1.write('%s %.3f %d %s\n'%((i_dayst[0].stats.starttime+time[neqid]).strftime('%Y-%m-%dT%H:%M:%S.%f'),
+                        print('    New event found:',i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]) #find earthquakes,this is the arrival for template.st
+                        OUT1.write('%s %.3f %d %s\n'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%Y-%m-%dT%H:%M:%S.%f'),
                                                       mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
 
                     sav_mean_sh_CCF.append(mean_sh_CCF)
-                                        
+                    sav_daily_nSTA.append(len(sav_CCF))
+                    
                     #-----Only for checking: plot the one with largest CC value and check (find itself if the template and daily are the same day)-----
                     plt.figure(1)
                     for n in range(len(sav_template)):
@@ -182,7 +185,7 @@ class Template():
                         cut_daily = cut_daily/np.max(np.abs(cut_daily))
                         plt.plot(cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
                         plt.plot(sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
-                        plt.text(400,n,sav_STA[n])
+                        plt.text(len(cut_daily),n,sav_STA[n]+'.'+sav_CHN[n])
                         plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
                     plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
                     plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'tmp_%05d_daily_%s.png'%(tmp_idx,YMD))
@@ -192,9 +195,10 @@ class Template():
                 plt.figure(1)
                 for n in range(len(sav_mean_sh_CCF)):
                     plt.plot(sav_mean_sh_CCF[n]+n)
+                    plt.text(len(sav_mean_sh_CCF[n]),n,'%d'%(sav_daily_nSTA[n])) #number of stations
                 plt.title('Mean CCF (template_%05d)'%(tmp_idx),fontsize=16)
                 plt.ylabel('Days after %s'%(dayst_paths[0].split('/')[-1][:8]),fontsize=16)
-                plt.savefig('./Figs/MeanCCF_%05d.png'%(tmp_idx))
+                plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'MeanCCF_%05d.png'%(tmp_idx))
                 plt.close()
                 OUT1.close()
 
