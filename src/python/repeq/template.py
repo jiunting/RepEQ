@@ -202,20 +202,8 @@ class Template():
                 plt.close()
                 OUT1.close()
 
-                                        
-                                        
-                                        
 
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
+
+
 
 
