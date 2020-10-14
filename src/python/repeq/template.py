@@ -193,7 +193,10 @@ class Template():
                 plt.figure(1)
                 for n in range(len(sav_mean_sh_CCF)):
                     plt.plot(sav_mean_sh_CCF[n]+n)
-                    plt.text(len(sav_mean_sh_CCF[n]),n,'%d'%(sav_daily_nSTA[n])) #number of stations
+                    if n==0:
+                        plt.text(len(sav_mean_sh_CCF[n]),n,'N=%d'%(sav_daily_nSTA[n])) #number of stations
+                    else:
+                        plt.text(len(sav_mean_sh_CCF[n]),n,'%d'%(sav_daily_nSTA[n])) #number of stations
                 plt.title('Mean CCF (template_%05d)'%(tmp_idx),fontsize=16)
                 plt.ylabel('Days after %s'%(dayst_paths[0].split('/')[-1][:8]),fontsize=16)
                 plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'MeanCCF_%05d.png'%(tmp_idx))
