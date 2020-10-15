@@ -5,8 +5,8 @@ import obspy
 from obspy import UTCDateTime
 
 
-def merge_daily(home,project_name,sampling_rate,filter=[0.2,8]):
-    Ds = glob.glob(home+'/'+project_name+'/waveforms/'+'*000000')
+def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'):
+    Ds = glob.glob(home+'/'+project_name+'/waveforms/'+pattern)
     Ds.sort()
     print('Number of dirs=%d'%(len(Ds)))
     for D in Ds:
