@@ -110,8 +110,9 @@ class Template():
                     #print(i_dayst.__str__(extended=True))
                     for i in range(len(st)):
                         #-----loop individual pick/station/comp of template-----
-                        STA=st[i].stats.station
-                        CHN=st[i].stats.channel
+                        NET = st[i].stats.network
+                        STA = st[i].stats.station
+                        CHN = st[i].stats.channel
                                         
                         #in daily data... search for same station,channel,comp,sampling rate....that matches the i_th pick in particular template
                         tmp_dayst = i_dayst.select(network=st[i].stats.network,station=STA,sampling_rate=st[i].stats.sampling_rate,
