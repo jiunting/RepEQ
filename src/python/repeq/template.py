@@ -192,17 +192,20 @@ class Template():
                     
                     #-----Only for checking: plot the one with largest CC value and check (find itself if the template and daily are the same day)-----
                     if self.plot_check:
-                        plt.figure(1)
-                        for n in range(len(sav_template)):
-                            cut_daily = sav_continuousdata[n][np.argmax(mean_sh_CCF)+sav_travel_npts[n]:np.argmax(mean_sh_CCF)+sav_travel_npts[n]+len(sav_template[n])]
-                            cut_daily = cut_daily/np.max(np.abs(cut_daily))
-                            plt.plot(cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
-                            plt.plot(sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
-                            plt.text(len(cut_daily),n,sav_STA[n]+'.'+sav_CHN[n])
-                            plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
-                        plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
-                        plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'template_%05d_daily_%s.png'%(tmp_idx,YMD))
-                        plt.close()
+                        for i_eqidx,neqid in enumerate(eq_idx):
+                            #loop in detection
+                            plt.figure(1)
+                            for n in range(len(sav_template)):
+                                #loop in every station
+                                #cut_daily = sav_continuousdata[n][np.argmax(mean_sh_CCF)+sav_travel_npts[n]:np.argmax(mean_sh_CCF)+sav_travel_npts[n]+len(sav_template[n])] #old version only plot maximum
+                                cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
+                                cut_daily = cut_daily/np.max(np.abs(cut_daily))
+                                plt.plot(cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
+                                plt.plot(sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
+                                plt.text(len(cut_daily),n,sav_STA[n]+'.'+sav_CHN[n])
+                            plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),np.max(mean_sh_CCF)))
+                            plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'template_%05d_daily_%s_%03d.png'%(tmp_idx,YMD,i_eqidx))
+                            plt.close()
                                         
                 #----plot the mean_shifted_CCF for all days----
                 plt.figure(1)
