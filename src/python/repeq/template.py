@@ -167,7 +167,7 @@ class Template():
                     #save the individual CCF in Stream
                     if save_CCF:
                         ST = Stream()
-                        for ii,iCCF in enumerate(sav_CCF):
+                        for ii,iCCF in enumerate(sh_sav_CCF):
                             tmpCCF = Trace(iCCF)
                             tmpCCF.stats.sampling_rate = i_dayst[0].stats.sampling_rate
                             tmpCCF.stats.starttime = i_dayst[0].stats.starttime
@@ -175,7 +175,7 @@ class Template():
                             tmpCCF.stats.station = sav_STA[ii]
                             tmpCCF.stats.channel = sav_CHN[ii]
                             ST += tmpCCF
-                        ST.save(home+'/'+project_name+'/output/Template_match/CCF_records/'+'template_%05d_daily_%s.ms'%(tmp_idx,YMD),format="MSEED")
+                        ST.write(home+'/'+project_name+'/output/Template_match/CCF_records/'+'shftCCF_template_%05d_daily_%s.ms'%(tmp_idx,YMD),format="MSEED")
                     
                     #----------Find earthquakes by the mean CCF----------
                     time = i_dayst[0].times()
