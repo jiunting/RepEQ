@@ -207,7 +207,9 @@ class Template():
                             plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),mean_sh_CCF[neqid]))
                             plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'template_%05d_daily_%s_%03d.png'%(tmp_idx,YMD,i_eqidx))
                             plt.close()
-                                        
+                            if i_eqidx>99:
+                                break #don't plot if more than 99 plots in the same day
+                            
                 #----plot the mean_shifted_CCF for all days----
                 plt.figure(1)
                 for n in range(len(sav_mean_sh_CCF)):
