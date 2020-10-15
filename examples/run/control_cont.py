@@ -70,8 +70,14 @@ if get_waveform:
 if get_template:
     #download template based on (real)catalog with manual pick
     from repeq import template
+    #if download data
     T = template.Template(home,project_name,cata_name2,True,sampling_rate,filter=[0.2,8],tcs_length=[1,9],filt_CC=0.2,filt_nSTA=5)
-    T.template_load()
+    #if data already exist
+    T.download=False
+    T.template_load() 
+
+#run xcorr
+T.xcorr_cont(save_CCF=False) #True means save all the CCF function in Template_match/CCF_records/
 
 
 '''
