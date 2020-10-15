@@ -70,8 +70,8 @@ class Template():
                 MS.sort()
                 self.ms = MS  #this is template paths
 
-    def xcorr_cont(self):
-        from obspy import UTCDateTime,read
+    def xcorr_cont(self,save_CCF=False):
+        from obspy import UTCDateTime,read,Stream,Trace
         import glob
         from obspy.signal.cross_correlation import correlate_template
         import matplotlib
@@ -103,7 +103,7 @@ class Template():
                 sav_daily_nSTA=[] #number of stations for each daily CCF
                 #loop the daily data
                 for dayst_path in dayst_paths:
-                    sav_STA=[]; sav_CHN=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
+                    sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
                     YMD = dayst_path.split('/')[-1][:8]
                     print(' --Reading daily data: %s'%(dayst_path))
                     i_dayst = read(dayst_path+'/waveforms/merged.ms') #load daily data
@@ -141,6 +141,7 @@ class Template():
                             CCF = np.nan_to_num(CCF)
                             
                             #save for later checking
+                            sav_NET.append(NET)
                             sav_STA.append(STA)
                             sav_CHN.append(CHN)
                             sav_travel_npts.append(travel_npts)
@@ -161,7 +162,20 @@ class Template():
                     
                     print('   Number of CCF: %d, continue searching earthquakes'%(len(sav_CCF)))
                     mean_sh_CCF = np.mean(sh_sav_CCF,axis=0) #stack/mean all the CCFs.
-                                        
+                    
+                    #save the individual CCF in Stream
+                    if save_CCF:
+                        ST = Stream()
+                        for ii,iCCF in enumerate(sav_CCF):
+                            tmpCCF = Trace(iCCF)
+                            tmpCCF.stats.sampling_rate = i_dayst[0].stats.sampling_rate
+                            tmpCCF.stats.starttime = i_dayst[0].stats.starttime
+                            tmpCCF.stats.network = sav_NET[ii]
+                            tmpCCF.stats.station = sav_STA[ii]
+                            tmpCCF.stats.channel = sav_CHN[ii]
+                            ST += tmpCCF
+                        ST.save(home+'/'+project_name+'/output/Template_match/CCF_records/'+'template_%05d_daily_%s.ms'%(tmp_idx,YMD),"MSEED")
+                    
                     #----------Find earthquakes by the mean CCF----------
                     time = i_dayst[0].times()
                     eq_idx = np.where(mean_sh_CCF>=self.filt_CC)[0]
@@ -186,7 +200,7 @@ class Template():
                             plt.text(len(cut_daily),n,sav_STA[n]+'.'+sav_CHN[n])
                             plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
                         plt.title('CC=%5.2f'%(np.max(mean_sh_CCF)))
-                        plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'tmp_%05d_daily_%s.png'%(tmp_idx,YMD))
+                        plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'template_%05d_daily_%s.png'%(tmp_idx,YMD))
                         plt.close()
                                         
                 #----plot the mean_shifted_CCF for all days----
