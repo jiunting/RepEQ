@@ -286,7 +286,8 @@ def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],ra
     endtime=origin_time + sec_bef_aft[1],
     # You might not want to deal with gaps in the data. If this setting is
     # True, any trace with a gap/overlap will be discarded.
-    reject_channels_with_gaps=True,
+    #reject_channels_with_gaps=True,
+    reject_channels_with_gaps=False,
     # And you might only want waveforms that have data for at least 95 % of
     # the requested time span. Any trace that is shorter than 95 % of the
     # desired total duration will be discarded.
