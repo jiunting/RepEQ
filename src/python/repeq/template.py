@@ -174,7 +174,7 @@ class Template():
                             tmpCCF.stats.station = sav_STA[ii]
                             tmpCCF.stats.channel = sav_CHN[ii]
                             ST += tmpCCF
-                        ST.save(home+'/'+project_name+'/output/Template_match/CCF_records/'+'template_%05d_daily_%s.ms'%(tmp_idx,YMD),"MSEED")
+                        ST.save(home+'/'+project_name+'/output/Template_match/CCF_records/'+'template_%05d_daily_%s.ms'%(tmp_idx,YMD),format="MSEED")
                     
                     #----------Find earthquakes by the mean CCF----------
                     time = i_dayst[0].times()
