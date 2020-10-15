@@ -291,7 +291,7 @@ def download_waves(evtime,sec_bef_aft=[120,600],Ftype='circ',lon_lat=[120,24],ra
     # And you might only want waveforms that have data for at least 95 % of
     # the requested time span. Any trace that is shorter than 95 % of the
     # desired total duration will be discarded.
-    minimum_length=0.9,
+    minimum_length=0.8,
     # No two stations should be closer than 10 km to each other. This is
     # useful to for example filter out stations that are part of different
     # networks but at the same physical station. Settings this option to
