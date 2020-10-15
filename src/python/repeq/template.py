@@ -203,7 +203,8 @@ class Template():
                                 plt.plot(cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
                                 plt.plot(sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
                                 plt.text(len(cut_daily),n,sav_STA[n]+'.'+sav_CHN[n])
-                            plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),np.max(mean_sh_CCF)))
+                            #plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),np.max(mean_sh_CCF)))
+                            plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),mean_sh_CCF[neqid]))
                             plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'template_%05d_daily_%s_%03d.png'%(tmp_idx,YMD,i_eqidx))
                             plt.close()
                                         
