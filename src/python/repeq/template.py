@@ -210,7 +210,7 @@ class Template():
                 #----plot the mean_shifted_CCF for all days----
                 plt.figure(1)
                 for n in range(len(sav_mean_sh_CCF)):
-                    plt.plot(sav_mean_sh_CCF[n]+n)
+                    plt.plot(sav_mean_sh_CCF[n]+n,linewidth=1)
                     if n==0:
                         plt.text(len(sav_mean_sh_CCF[n]),n,'N=%d'%(sav_daily_nSTA[n])) #number of stations
                     else:
