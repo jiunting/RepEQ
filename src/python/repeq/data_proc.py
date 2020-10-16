@@ -74,11 +74,11 @@ def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'mi
 
             if (DT-tmp_DT)>=filter_params['diff_t']:
                 Ngps += 1
-                sav_gps[Ngps] = {'DT':DT,'CC':float(line.split()[1])} #add a new group
+                sav_gps[Ngps] = {'DT':DT.datetime,'CC':float(line.split()[1])} #add a new group
                 tmp_DT = DT
             else:
                 if sav_gps[Ngps]['CC'] < float(line.split()[1]):
-                    sav_gps[Ngps]['DT'] = DT #new replace the old
+                    sav_gps[Ngps]['DT'] = DT.datetime #new replace the old
                     sav_gps[Ngps]['CC'] = float(line.split()[1])
                 tmp_DT=DT
         All_eqs[templateID] = sav_gps
