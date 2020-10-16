@@ -2,6 +2,7 @@
 
 import glob
 import obspy
+import numpy as np
 from obspy import UTCDateTime
 
 
@@ -33,7 +34,7 @@ def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'
         st.write(D+'/waveforms/merged.ms',format="MSEED")
 
 
-def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'min_CC':0.5},fmt=1):
+def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'min_CC':0.3},fmt=1):
     '''
     fmt = 1, format in:
      #OriginTime meanCC nSTA templateIDX
@@ -51,11 +52,11 @@ def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'mi
     for file in files:
         print('In:',file)
         IN1 = open(file,'r')
+        templateID = int(file.split('/')[-1].split('_')[-1].split('.')[0]) #this will be the key for All_eqs
         sav_gps = {} #groups in a template detection
         Ngps = 0 #number of group
         tmp_DT = UTCDateTime("1900-01-01") #initial tmp_DT
         for line in IN1.readlines():
-            #print(line)
             if line[0] == '#':
                 continue #header
 
@@ -65,26 +66,28 @@ def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'mi
             #2.filter by CC value
             if float(line.split()[1])<filter_params['min_CC']:
                 continue
-            
+
             #2018-05-01T04:25:52.525000 0.260 6 template_393
             Date_Time = line.split()[0]
             DT = UTCDateTime(Date_Time)
-            templateID = int(line.split()[-1].split('_')[1]) #this will be the key for All_eqs
+            #templateID = int(line.split()[-1].split('_')[1]) #this will be the key for All_eqs
 
-            if (DT-tmp_DT).total_seconds()>=filter_params['diff_t']:
+            if (DT-tmp_DT)>=filter_params['diff_t']:
                 Ngps += 1
                 sav_gps[Ngps] = {'DT':DT,'CC':float(line.split()[1])} #add a new group
                 tmp_DT = DT
             else:
                 if sav_gps[Ngps]['CC'] < float(line.split()[1]):
-                    sav_gps[Ngps]['DT'] = DT#new replace the old
+                    sav_gps[Ngps]['DT'] = DT #new replace the old
                     sav_gps[Ngps]['CC'] = float(line.split()[1])
                 tmp_DT=DT
-
-        All_eqs[template] = sav_gps
-        clean_All_eqs[template] = np.array([j['DT'] for i,j in sav_gps.items()]) #a clean version of All_eqs
+        All_eqs[templateID] = sav_gps
+        clean_All_eqs[templateID] = np.array([j['DT'] for i,j in sav_gps.items()]) #a clean version of All_eqs
+        IN1.close()
+    np.save(home+'/'+project_name+'/output/Template_match/Detections/summaryEQ_detail.npy',All_eqs)
+    np.save(home+'/'+project_name+'/output/Template_match/Detections/summaryEQ_clean.npy',clean_All_eqs)
             
-    return All_eqs, clean_All_eqs
+    return All_eqs,clean_All_eqs
 
 
 
