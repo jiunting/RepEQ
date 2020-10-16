@@ -60,10 +60,10 @@ def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'mi
                 continue #header
 
             #1.filter by Nstations
-            if int(line.split()[2]) < filter_param['min_sta']:
+            if int(line.split()[2]) < filter_params['min_sta']:
                 continue
             #2.filter by CC value
-            if float(line.split()[1])<filter_param['min_CC']:
+            if float(line.split()[1])<filter_params['min_CC']:
                 continue
             
             #2018-05-01T04:25:52.525000 0.260 6 template_393
@@ -71,7 +71,7 @@ def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'mi
             DT = UTCDateTime(Date_Time)
             templateID = int(line.split()[-1].split('_')[1]) #this will be the key for All_eqs
 
-            if (DT-tmp_DT).total_seconds()>=filter_param['diff_t']:
+            if (DT-tmp_DT).total_seconds()>=filter_params['diff_t']:
                 Ngps += 1
                 sav_gps[Ngps] = {'DT':DT,'CC':float(line.split()[1])} #add a new group
                 tmp_DT = DT
