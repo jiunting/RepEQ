@@ -1,4 +1,4 @@
-#some data pre-processing tools
+#some data processing tools
 
 import glob
 import obspy

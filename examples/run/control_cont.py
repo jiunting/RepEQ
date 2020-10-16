@@ -64,8 +64,8 @@ if get_waveform:
     #get continuous waveform based on the fakecatalog
     download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_rad,channel,provider,waveforms_outdir)
     #merge all the mseed data into a large merged.ms file
-    from repeq import pre_proc
-    pre_proc.merge_daily(home,project_name,sampling_rate,filter=None)
+    from repeq import data_proc
+    data_proc.merge_daily(home,project_name,sampling_rate,filter=None)
 
 if get_template:
     #download template based on (real)catalog with manual pick
