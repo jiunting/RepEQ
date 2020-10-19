@@ -47,6 +47,8 @@ provider = ["IRIS"]
 sampling_rate = 25
 waveforms_outdir = home+'/'+project_name+'/'+'waveforms'
 
+filter=[1,8]
+
 #================Parameter settings END================
 
 
@@ -65,19 +67,28 @@ if get_waveform:
     download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_rad,channel,provider,waveforms_outdir)
     #merge all the mseed data into a large merged.ms file
     from repeq import data_proc
-    data_proc.merge_daily(home,project_name,sampling_rate,filter=None)
+    data_proc.merge_daily(home,project_name,sampling_rate,filter=filter,pattern='20*')
 
 if get_template:
     #download template based on (real)catalog with manual pick
     from repeq import template
     #if download data
-    T = template.Template(home,project_name,cata_name2,True,sampling_rate,filter=[0.2,8],tcs_length=[1,9],filt_CC=0.2,filt_nSTA=5)
+    T = template.Template(home,project_name,cata_name2,True,sampling_rate,filter=filter,tcs_length=[1,9],filt_CC=0.3,filt_nSTA=6,plot_check=True)
     #if data already exist
     T.download=False
     T.template_load() 
 
-#run xcorr
+#run xcorr calculation
 T.xcorr_cont(save_CCF=False) #True means save all the CCF function in Template_match/CCF_records/
+
+#read all measurements in project_name/output/Template_match/Detections and make summary file based on the given filter criteria
+from repeq import data_proc
+filter_params={
+'diff_t':60,
+'min_sta':6,
+'min_CC':0.3
+}
+data_proc.read_detections(home,project_name,filter_params)
 
 
 '''
