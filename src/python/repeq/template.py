@@ -243,14 +243,14 @@ class Template():
                                 maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
                                 midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
-                                plt.text(np.max(-1)*0.05,n,'CC=%.2f,max_CCC=%.2f,lag=%.3f'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec))
+                                plt.text(np.max(-1)*0.05,n,'CC=%.2f,max_CCC=%.2f,dt=%.3f'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec),va='center')
                                 #Future improvement: if fmt==2, the value have been calculated, just get the value
                                 #if fmt == 1:
                                 #elif fmt ==2:
                                     
                                  
                             #plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),np.max(mean_sh_CCF)))
-                            plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),mean_sh_CCF[neqid]))
+                            plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S.%f'),mean_sh_CCF[neqid]))
                             plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'template_%05d_daily_%s_%03d.png'%(tmp_idx,YMD,i_eqidx))
                             plt.close()
                             if i_eqidx>99:
