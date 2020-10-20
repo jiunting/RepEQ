@@ -243,7 +243,7 @@ class Template():
                                 maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
                                 midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
-                                plt.text(np.max(-1)*0.05,n,'CC=%.3f,max_CCC=%.3f,lag=%fsec'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec))
+                                plt.text(np.max(-1)*0.05,n,'CC=%.2f,max_CCC=%.2f,lag=%.3f'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec))
                                 #Future improvement: if fmt==2, the value have been calculated, just get the value
                                 #if fmt == 1:
                                 #elif fmt ==2:
