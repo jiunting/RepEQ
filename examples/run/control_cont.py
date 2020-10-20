@@ -79,7 +79,7 @@ if get_template:
     T.template_load() 
 
 #run xcorr calculation
-T.xcorr_cont(save_CCF=False) #True means save all the CCF function in Template_match/CCF_records/
+T.xcorr_cont(save_CCF=False,fmt=1) #True means save all the CCF function in Template_match/CCF_records/
 
 #read all measurements in project_name/output/Template_match/Detections and make summary file based on the given filter criteria
 from repeq import data_proc

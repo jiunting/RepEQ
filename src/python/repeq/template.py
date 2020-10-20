@@ -207,16 +207,19 @@ class Template():
                     for neqid in eq_idx:
                         #new_dayst[0].stats.starttime+time[np.argmax(mean_sh_CCF)] #find itself
                         print('    New event found:',i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]) #find earthquakes,this is the arrival for template.st
-                        if fmt==1:
+                        if fmt == 1:
                             OUT1.write('%s %.3f %d %s\n'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%Y-%m-%dT%H:%M:%S.%f'),mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
-                        elif fmt==2:
+                        elif fmt == 2:
                             #calculate CCC for individual stations
-                            sav_maxCCC = []
+                            sav_maxCCC = []; #sav_sh_sec=[]
                             for n in range(len(sav_template)):
                                 #loop in every station
                                 cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
-                                maxCCC,lag = cal_CCF(cut_daily,sav_template[n])
+                                maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
+                                midd = (p2_D_w1_slice[0].stats.npts)-1  #length of b?? at this idx, refdata align with target data
+                                sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
                                 sav_maxCCC.append(maxCCC)
+                                #sav_sh_sec.append(sh_sec)
                             OUT1.write('%s %.4f %d %s %.4f\n'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%Y-%m-%dT%H:%M:%S.%f'),mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx),np.mean(sav_maxCCC)))
 
                     sav_mean_sh_CCF.append(mean_sh_CCF)
@@ -224,6 +227,7 @@ class Template():
                     
                     #-----Only for checking: plot the one with largest CC value and check (find itself if the template and daily are the same day)-----
                     if self.plot_check:
+                        tmp_T = st[0].times()
                         for i_eqidx,neqid in enumerate(eq_idx):
                             #loop in detection
                             plt.figure(1)
@@ -232,9 +236,19 @@ class Template():
                                 #cut_daily = sav_continuousdata[n][np.argmax(mean_sh_CCF)+sav_travel_npts[n]:np.argmax(mean_sh_CCF)+sav_travel_npts[n]+len(sav_template[n])] #old version only plot maximum
                                 cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
                                 cut_daily = cut_daily/np.max(np.abs(cut_daily))
-                                plt.plot(cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
-                                plt.plot(sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
-                                plt.text(len(cut_daily),n,sav_STA[n]+'.'+sav_CHN[n])
+                                plt.plot(tmp_T,cut_daily+n,'k',linewidth=2) #time series cutted from daily time series
+                                plt.plot(tmp_T,sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
+                                plt.text(tmp_T[-1],n,sav_STA[n]+'.'+sav_CHN[n])
+                                #---add individual CC value and max_CCC value---
+                                maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
+                                midd = (p2_D_w1_slice[0].stats.npts)-1  #length of b?? at this idx, refdata align with target data
+                                sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
+                                plt.text(np.max(-1)*0.05,n,'CC=%.3f,max_CCC=%.3f,lag=%fsec'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec))
+                                #Future improvement: if fmt==2, the value have been calculated, just get the value
+                                #if fmt == 1:
+                                #elif fmt ==2:
+                                    
+                                 
                             #plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),np.max(mean_sh_CCF)))
                             plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),mean_sh_CCF[neqid]))
                             plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'template_%05d_daily_%s_%03d.png'%(tmp_idx,YMD,i_eqidx))
