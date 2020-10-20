@@ -216,7 +216,7 @@ class Template():
                                 #loop in every station
                                 cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
                                 maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
-                                midd = (p2_D_w1_slice[0].stats.npts)-1  #length of b?? at this idx, refdata align with target data
+                                midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
                                 sav_maxCCC.append(maxCCC)
                                 #sav_sh_sec.append(sh_sec)
@@ -241,7 +241,7 @@ class Template():
                                 plt.text(tmp_T[-1],n,sav_STA[n]+'.'+sav_CHN[n])
                                 #---add individual CC value and max_CCC value---
                                 maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
-                                midd = (p2_D_w1_slice[0].stats.npts)-1  #length of b?? at this idx, refdata align with target data
+                                midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
                                 plt.text(np.max(-1)*0.05,n,'CC=%.3f,max_CCC=%.3f,lag=%fsec'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec))
                                 #Future improvement: if fmt==2, the value have been calculated, just get the value
