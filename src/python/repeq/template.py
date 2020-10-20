@@ -71,9 +71,18 @@ class Template():
                 MS.sort()
                 self.ms = MS  #this is template paths
 
-    def xcorr_cont(self,save_CCF=False):
+    def xcorr_cont(self,save_CCF=False,fmt=1):
+        '''
+            save_CCF: save individual CCFs in project_name/output/Template_match/CCF_records/
+            fmt: output format if
+                fmt=1:
+                    #OriginTime meanCC nSTA templateIDX
+                fmt=2:
+                    #OriginTime meanCC nSTA templateIDX mean_maxCCC
+        '''
         from obspy import UTCDateTime,read,Stream,Trace
         import glob
+        from scipy import signal
         from obspy.signal.cross_correlation import correlate_template
         import matplotlib
         matplotlib.use('pdf') #instead using interactive backend
@@ -81,6 +90,16 @@ class Template():
         
         home = self.home
         project_name = self.project_name
+        
+        def cal_CCF(data1,data2):
+            #calculate normalize CCF, find max CCC, and lag idx
+            tmpccf=signal.correlate(data1,data2,'full')
+            auto1=signal.correlate(data1,data1,'full')
+            auto2=signal.correlate(data2,data2,'full')
+            tmpccf=tmpccf/np.sqrt(np.max(auto1)*np.max(auto2))
+            maxCCC=np.max(tmpccf)
+            lag=tmpccf.argmax()
+            return(maxCCC,lag)
         
         if self.ms == None:
             print('Run .template_load() first')
@@ -92,7 +111,10 @@ class Template():
                 print('In template: %s'%(i_tmp))
                 tmp_idx = int(i_tmp.split('/')[-1].split('_')[-1].split('.')[0])
                 OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/Detected_tmp_%05d.txt'%(tmp_idx),'w') #output earthquake origin time
-                OUT1.write('#OriginTime meanCC nSTA templateIDX\n')
+                if fmt==1:
+                    OUT1.write('#OriginTime meanCC nSTA templateIDX\n')
+                elif fmt==2:
+                    OUT1.write('#OriginTime meanCC nSTA templateIDX mean_maxCCC\n') # mean(max CCC for each stations), so that shift in each sta is negletable
                 origintime = UTCDateTime(self.catalog.iloc[tmp_idx].Date+'T'+self.catalog.iloc[tmp_idx].Time)
                 st = read(i_tmp) #read template in
                 
@@ -185,8 +207,17 @@ class Template():
                     for neqid in eq_idx:
                         #new_dayst[0].stats.starttime+time[np.argmax(mean_sh_CCF)] #find itself
                         print('    New event found:',i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]) #find earthquakes,this is the arrival for template.st
-                        OUT1.write('%s %.3f %d %s\n'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%Y-%m-%dT%H:%M:%S.%f'),
-                                                      mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
+                        if fmt==1:
+                            OUT1.write('%s %.3f %d %s\n'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%Y-%m-%dT%H:%M:%S.%f'),mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
+                        elif fmt==2:
+                            #calculate CCC for individual stations
+                            sav_maxCCC = []
+                            for n in range(len(sav_template)):
+                                #loop in every station
+                                cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
+                                maxCCC,lag = cal_CCF(cut_daily,sav_template[n])
+                                sav_maxCCC.append(maxCCC)
+                            OUT1.write('%s %.4f %d %s %.4f\n'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%Y-%m-%dT%H:%M:%S.%f'),mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx),np.mean(sav_maxCCC)))
 
                     sav_mean_sh_CCF.append(mean_sh_CCF)
                     sav_daily_nSTA.append(len(sav_CCF))
