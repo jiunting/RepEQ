@@ -124,6 +124,7 @@ class Template():
                 
                 sav_mean_sh_CCF=[] #save all the daily CCF for later plotting
                 sav_daily_nSTA=[] #number of stations for each daily CCF
+                sav_alldays_eq_sta = {} #detailed info for CC,CCC,shifts for every station for all searched days by the same template
                 #loop the daily data
                 for dayst_path in dayst_paths:
                     sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
@@ -203,12 +204,15 @@ class Template():
                     #----------Find earthquakes by the mean CCF----------
                     time = i_dayst[0].times()
                     eq_idx = np.where(mean_sh_CCF>=self.filt_CC)[0]
-                                        
+                    
+                    sav_eq_sta = {} #save the detailed result(lag info, CCC value) for use later
                     for neqid in eq_idx:
                         #new_dayst[0].stats.starttime+time[np.argmax(mean_sh_CCF)] #find itself
+                        detected_OT = i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0] #Origin time of which detection
+                        detected_OT_str = detected_OT.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-4] #accuracy to 0.01 sec
                         print('    New event found:',i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]) #find earthquakes,this is the arrival for template.st
                         if fmt == 1:
-                            OUT1.write('%s %.3f %d %s\n'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%Y-%m-%dT%H:%M:%S.%f'),mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
+                            OUT1.write('%s %.3f %d %s\n'%(detected_OT_str,mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
                         elif fmt == 2:
                             #calculate CCC for individual stations
                             sav_maxCCC = []; #sav_sh_sec=[]
@@ -219,17 +223,31 @@ class Template():
                                 midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
                                 sav_maxCCC.append(maxCCC)
+                                if detected_OT_str in sav_eq_sta:
+                                    sav_eq_sta[detected_OT_str]['sta'].append(sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n])
+                                    sav_eq_sta[detected_OT_str]['CCC'].append(maxCCC)
+                                    sav_eq_sta[detected_OT_str]['CC'].append(sh_sav_CCF[n][neqid])
+                                    sav_eq_sta[detected_OT_str]['shift'].append(sh_sec)
+                                
+                                else:
+                                    #initial dictionary
+                                    sav_eq_sta[detected_OT_str] = {}
+                                    sav_eq_sta[detected_OT_str]['sta'] = [sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]]
+                                    sav_eq_sta[detected_OT_str]['CCC'] = [maxCCC]
+                                    sav_eq_sta[detected_OT_str]['CC'] = [sh_sav_CCF[n][neqid]] #sh_sav_CCF[n][neqid]
+                                    sav_eq_sta[detected_OT_str]['shift'] = [sh_sec]
+    
+                                        
                                 #sav_sh_sec.append(sh_sec)
-                            OUT1.write('%s %.4f %d %s %.4f\n'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%Y-%m-%dT%H:%M:%S.%f'),mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx),np.mean(sav_maxCCC)))
+                            OUT1.write('%s %.4f %d %s %.4f\n'%(detected_OT_str,mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx),np.mean(sav_maxCCC)))
 
-                    sav_mean_sh_CCF.append(mean_sh_CCF)
-                    sav_daily_nSTA.append(len(sav_CCF))
-                    
                     #-----Only for checking: plot the one with largest CC value and check (find itself if the template and daily are the same day)-----
                     if self.plot_check:
                         tmp_T = st[0].times()
                         for i_eqidx,neqid in enumerate(eq_idx):
                             #loop in detection
+                            detected_OT = i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0] #Origin time of which detection
+                            detected_OT_str = detected_OT.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-4] #accuracy to 0.01 sec
                             plt.figure(1)
                             for n in range(len(sav_template)):
                                 #loop in every station
@@ -240,9 +258,13 @@ class Template():
                                 plt.plot(tmp_T,sav_template[n]/np.max(np.abs(sav_template[n]))+n,'r',linewidth=1.2) #template data
                                 plt.text(tmp_T[-1],n,sav_STA[n]+'.'+sav_CHN[n])
                                 #---add individual CC value and max_CCC value---
-                                maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
-                                midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
-                                sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
+                                if fmt==1:
+                                    maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
+                                    midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
+                                    sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
+                                elif fmt==2:
+                                    maxCCC = sav_eq_sta[detected_OT_str]['CCC'][n]
+                                    sh_sec = sav_eq_sta[detected_OT_str]['shift'][n]
                                 plt.text(np.max(-1)*0.05,n,'CC=%.2f,max_CCC=%.2f,dt=%.3f'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec),ha='center')
                                 #Future improvement: if fmt==2, the value have been calculated, just get the value
                                 #if fmt == 1:
@@ -255,7 +277,19 @@ class Template():
                             plt.close()
                             if i_eqidx>99:
                                 break #don't plot if more than 99 plots in the same day
-                            
+                    
+                    sav_mean_sh_CCF.append(mean_sh_CCF)
+                    sav_daily_nSTA.append(len(sav_CCF))
+                    
+                    sav_alldays_eq_sta.update(sav_eq_sta) #not support for fmt=1
+                        
+                ##------output detailed data(lag information for each station) in .npy ---------
+                #only if fmt=2, fmt=1 didnt calculate the CCC
+                if fmt==2:
+                    np.save(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_%05d.npy',sav_alldays_eq_sta)
+                    
+                
+                
                 #----plot the mean_shifted_CCF for all days----
                 plt.figure(1)
                 for n in range(len(sav_mean_sh_CCF)):
