@@ -259,18 +259,18 @@ class Template():
                                 plt.text(tmp_T[-1],n,sav_STA[n]+'.'+sav_CHN[n])
                                 #---add individual CC value and max_CCC value---
                                 if fmt==1:
-                                    maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
-                                    midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
-                                    sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
+                                    #maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
+                                    #midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
+                                    #sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
+                                    plt.text(np.max(tmp_T)[-1]*0.05,n,'CC=%.2f'%(sh_sav_CCF[n][neqid]))
                                 elif fmt==2:
                                     maxCCC = sav_eq_sta[detected_OT_str]['CCC'][n]
                                     sh_sec = sav_eq_sta[detected_OT_str]['shift'][n]
-                                plt.text(np.max(-1)*0.05,n,'CC=%.2f,max_CCC=%.2f,dt=%.3f'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec),ha='center')
+                                    plt.text(np.max(tmp_T)[-1]*0.05,n,'CC=%.2f,max_CCC=%.2f,dt=%.3f'%(sh_sav_CCF[n][neqid],maxCCC,sh_sec))
                                 #Future improvement: if fmt==2, the value have been calculated, just get the value
                                 #if fmt == 1:
                                 #elif fmt ==2:
-                                    
-                                 
+                                
                             #plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S'),np.max(mean_sh_CCF)))
                             plt.title('Time:%s  CC=%5.2f'%((i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]).strftime('%H:%M:%S.%f'),mean_sh_CCF[neqid]))
                             plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'template_%05d_daily_%s_%03d.png'%(tmp_idx,YMD,i_eqidx))
@@ -286,7 +286,7 @@ class Template():
                 ##------output detailed data(lag information for each station) in .npy ---------
                 #only if fmt=2, fmt=1 didnt calculate the CCC
                 if fmt==2:
-                    np.save(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_%05d.npy',sav_alldays_eq_sta)
+                    np.save(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_%05d.npy'%(tmp_idx),sav_alldays_eq_sta)
                     
                 
                 
