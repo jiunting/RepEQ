@@ -187,6 +187,7 @@ class Template():
                     
                     print('   Number of CCF: %d, continue searching earthquakes'%(len(sav_CCF)))
                     mean_sh_CCF = np.mean(sh_sav_CCF,axis=0) #stack/mean all the CCFs.
+                    std_sh_CCF = np.std(sh_sav_CCF,axis=0) #also calculate std
                     
                     #save the individual CCF in Stream
                     if save_CCF:
@@ -212,7 +213,7 @@ class Template():
                         detected_OT_str = detected_OT.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-4] #accuracy to 0.01 sec
                         print('    New event found:',i_dayst[0].stats.starttime+time[neqid]+self.tcs_length[0]) #find earthquakes,this is the arrival for template.st
                         if fmt == 1:
-                            OUT1.write('%s %.3f %d %s\n'%(detected_OT_str,mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
+                            OUT1.write('%s %.3f %.3f %d %s\n'%(detected_OT_str,mean_sh_CCF[neqid],std_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx)))
                         elif fmt == 2:
                             #calculate CCC for individual stations
                             sav_maxCCC = []; #sav_sh_sec=[]
@@ -239,7 +240,7 @@ class Template():
     
                                         
                                 #sav_sh_sec.append(sh_sec)
-                            OUT1.write('%s %.4f %d %s %.4f\n'%(detected_OT_str,mean_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx),np.mean(sav_maxCCC)))
+                            OUT1.write('%s %.3f %.3f %d %s %.3f\n'%(detected_OT_str,mean_sh_CCF[neqid],std_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx),np.mean(sav_maxCCC)))
 
                     #-----Only for checking: plot the one with largest CC value and check (find itself if the template and daily are the same day)-----
                     if self.plot_check:
