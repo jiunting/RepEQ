@@ -144,7 +144,12 @@ def make_sta_table(home,project_name,pattern='*000000'):
                 all_stlat.append(sav_stlat[i])
                 all_stname.append(sav_stname[i])
 
+    #write table txt file in project_name/stations
+    OUT1 = open(home+'/'+project_name+'/stations/'+'stations.txt','w')
+    for i in range(len(all_stname)):
+        OUT1.write('%f %f %s\n'%(all_stlon[i],all_stlat[i],all_stname[i]))
 
+    OUT1.close()
     return all_stlon,all_stlat,all_stname
 
 
