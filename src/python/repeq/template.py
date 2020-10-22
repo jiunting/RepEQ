@@ -112,9 +112,9 @@ class Template():
                 tmp_idx = int(i_tmp.split('/')[-1].split('_')[-1].split('.')[0])
                 OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/Detected_tmp_%05d.txt'%(tmp_idx),'w') #output earthquake origin time
                 if fmt==1:
-                    OUT1.write('#OriginTime meanCC nSTA templateIDX\n')
+                    OUT1.write('#OriginTime meanCC stdCC nSTA templateIDX\n')
                 elif fmt==2:
-                    OUT1.write('#OriginTime meanCC nSTA templateIDX mean_maxCCC\n') # mean(max CCC for each stations), so that shift in each sta is negletable
+                    OUT1.write('#OriginTime meanCC stdCC nSTA templateIDX mean_maxCCC std_maxCCC\n') # mean(max CCC for each stations), so that shift in each sta is negletable
                 origintime = UTCDateTime(self.catalog.iloc[tmp_idx].Date+'T'+self.catalog.iloc[tmp_idx].Time)
                 st = read(i_tmp) #read template in
                 
@@ -189,7 +189,7 @@ class Template():
                     mean_sh_CCF = np.mean(sh_sav_CCF,axis=0) #stack/mean all the CCFs.
                     std_sh_CCF = np.std(sh_sav_CCF,axis=0) #also calculate std
                     
-                    #save the individual CCF in Stream
+                    #save the individual CCF in Stream (for only debug purpose)
                     if save_CCF:
                         ST = Stream()
                         for ii,iCCF in enumerate(sh_sav_CCF):
@@ -221,6 +221,8 @@ class Template():
                                 #loop in every station
                                 cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
                                 maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
+                                if np.isnsn(maxCCC):
+                                    maxCCC = 0 #this is probalby due to cross-correlate on a zero array
                                 midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
                                 sav_maxCCC.append(maxCCC)
@@ -240,7 +242,7 @@ class Template():
     
                                         
                                 #sav_sh_sec.append(sh_sec)
-                            OUT1.write('%s %.3f %.3f %d %s %.3f\n'%(detected_OT_str,mean_sh_CCF[neqid],std_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx),np.mean(sav_maxCCC)))
+                            OUT1.write('%s %.3f %.3f %d %s %.3f %.3f\n'%(detected_OT_str,mean_sh_CCF[neqid],std_sh_CCF[neqid],len(sav_STA),'template_%05d'%(tmp_idx),np.mean(sav_maxCCC),np.std(sav_maxCCC)))
 
                     #-----Only for checking: plot the one with largest CC value and check (find itself if the template and daily are the same day)-----
                     if self.plot_check:
