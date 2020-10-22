@@ -102,7 +102,7 @@ def make_sta_table(home,project_name,pattern='*000000'):
         xml_files = glob.glob(date_path+'/'+'stations/'+'*.xml')
         sav_stlon = []
         sav_stlat = []
-        sav_name = []
+        sav_stname = []
         for xml_file in xml_files:
             net_sta = xml_file.split('/')[-1].split('.')
             net_sta = net_sta[0]+'.'+net_sta[1]
