@@ -92,6 +92,63 @@ def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'mi
 
 
 
+def make_sta_table(home,project_name,pattern='*000000'):
+    #make station table in Lon Lat Name
+    import glob
+    from bs4 import BeautifulSoup
+
+    #Read stations file and get stlon,stlat
+    def get_staloc(date_path):
+        xml_files = glob.glob(date_path+'/'+'stations/'+'*.xml')
+        sav_stlon = []
+        sav_stlat = []
+        sav_name = []
+        for xml_file in xml_files:
+            net_sta = xml_file.split('/')[-1].split('.')
+            net_sta = net_sta[0]+'.'+net_sta[1]
+            tmpIN1 = open(xml_file,'r').read()
+            soup = BeautifulSoup(tmpIN1)
+            stlon = float(soup.find_all('longitude' or 'Longitude')[0].text)
+            stlat = float(soup.find_all('latitude' or 'Latitude')[0].text)
+            sav_stlon.append(stlon)
+            sav_stlat.append(stlat)
+            sav_stname.append(net_sta)
+        sav_stlon = np.array(sav_stlon)
+        sav_stlat = np.array(sav_stlat)
+        sav_stname = np.array(sav_stname)
+        return sav_stlon,sav_stlat,sav_stname
+
+    #search all the date in waveforms directory
+    Ds = glob.glob(home+'/'+project_name+'/waveforms/'+pattern)
+    Ds.sort()
+    #create list without repeatly count
+    all_stlon = []
+    all_stlat = []
+    all_stname = []
+    for D in Ds:
+        sav_stlon,sav_stlat,sav_stname = get_staloc(D)
+        for i,i_name in enumerate(sav_stname):
+            if not (i_name in all_stname):
+                all_stlon.append(sav_stlon[i])
+                all_stlat.append(sav_stlat[i])
+                all_stname.append(sav_stname[i])
+
+    #search all the date in waveforms_template
+    Ds = glob.glob(home+'/'+project_name+'/waveforms_template/'+pattern)
+    Ds.sort()
+    for D in Ds:
+        sav_stlon,sav_stlat,sav_stname = get_staloc(D)
+        for i,i_name in enumerate(sav_stname):
+            if not (i_name in all_stname):
+                all_stlon.append(sav_stlon[i])
+                all_stlat.append(sav_stlat[i])
+                all_stname.append(sav_stname[i])
+
+
+    return all_stlon,all_stlat,all_stname
+
+
+
 
 
 
