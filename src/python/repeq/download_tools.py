@@ -525,15 +525,20 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
         t2 = arr+tcs_length[1]
         #try:
         i_attempt = 0 #reset number of attempt
+        tr = 0
         while i_attempt<5:
             try:
                 tr = client.get_waveforms(net, sta, "*", comp, t1-2, t2+2)
+                break
             except:
                 time.sleep(2) #wait 2 sec and try again later...
                 i_attempt += 1
-        except:
+                continue
+        
+        if tr==0:
+            #some unexpected error when attemp to client.get_waveforms
+            #print("No data for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
             continue
-        #print("No data for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
         else:
             #print("Data available for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
             tr.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
