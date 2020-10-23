@@ -485,7 +485,8 @@ def bulk_download_continuous_cent(home,project_name,download_params,n_cores=1,wa
 def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     '''
         download template by event ID
-        function by: Amanda Thomas
+        original function by: Amanda Thomas
+        modified by: Tim Lin
     '''
     from obspy.clients.fdsn import Client
     from libcomcat.search import get_event_by_id
@@ -525,17 +526,18 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
         t2 = arr+tcs_length[1]
         #try:
         i_attempt = 0 #reset number of attempt
-        tr = 0
+        tr_exist = False
         while i_attempt<5:
             try:
                 tr = client.get_waveforms(net, sta, "*", comp, t1-2, t2+2)
+                tr_exist = True
                 break
             except:
                 time.sleep(2) #wait 2 sec and try again later...
                 i_attempt += 1
                 continue
         
-        if tr==0:
+        if not(tr_exist):
             #some unexpected error when attemp to client.get_waveforms
             #print("No data for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
             continue
