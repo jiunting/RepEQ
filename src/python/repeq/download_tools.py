@@ -501,10 +501,15 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     phases=phases[~phases.duplicated(keep='first',subset=['Channel','Phase'])]
     st=Stream()
     tr=Stream()
+    sav_net_sta_comp = []
+    sav_phase = []
+    sav_arr = []
+    All_info = {}
     for ii in range(len(phases)):
         net = phases.iloc[ii]['Channel'].split('.')[0]
         sta = phases.iloc[ii]['Channel'].split('.')[1]
         comp = phases.iloc[ii]['Channel'].split('.')[2]
+        Phase = phases.iloc[ii]['Phase'] #P or S wave, save this info for further relocation
         #phase = phases.iloc[ii]['Phase']
         arr = UTCDateTime(phases.iloc[ii]['Arrival Time'])
         #print(int(np.round(arr.microsecond/(1/sampling_rate*10**6))*1/sampling_rate*10**6)==1000000)
@@ -532,7 +537,16 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             tr.interpolate(sampling_rate=sampling_rate, starttime=t1)
             tr.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
             st += tr
-    return st
+            #save name, time and "phase" info for later relocation
+            #.ms only gives starttime (know arrival time) but not P or S wave
+            sav_net_sta_comp.append(net+'.'+sta+'.'+comp)
+            sav_phase.append(Phase)
+            sav_arr.append(arr.isoformat()[:-4])
+    All_info['net_sta_comp'] = np.array(sav_net_sta_comp)
+    All_info['phase'] = np.array(sav_phase)
+    All_info['arrival'] = np.array(sav_arr)
+    
+    return st,All_info
 
 
 
@@ -540,25 +554,31 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
     from obspy import UTCDateTime
     #looping through all df, download templates, and output .txt file for checking
     OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','w') #clean the previous summary file(if exist)
-    OUT1.write('%s %s %s %s %s %s %s %s %s\n'%('#idx','Template_path','phases','Date','EVID','Lon','Lat','Dep','Mag')) #write header
+    OUT1.write('%s %s %s %s %s %s %s %s %s\n'%('#idx','Template_path','Nphases','Date','EVID','Lon','Lat','Dep','Mag')) #write header
     OUT1.close()
     OUT2 = open(home+'/'+project_name+'/waveforms_template/'+'template_fail.txt','w')
     OUT2.close()
     for idf in range(len(dfs)):
         DT = dfs.iloc[idf].Date+'T'+dfs.iloc[idf].Time #DateTime
         EVID = dfs.iloc[idf].Regional+dfs.iloc[idf].ID #eventID
-        st = make_template(dfs.iloc[idf],sampling_rate,filter,tcs_length) #assume this always work!
+        st,All_info = make_template(dfs.iloc[idf],sampling_rate,filter,tcs_length) #assume this always work!
         if len(st)==0:
-            print('Template cannot be downloaded')
+            print('Template cannot be downloaded, probably no manual picks')
             OUT2 = open(home+'/'+project_name+'/waveforms_template/'+'template_fail.txt','a')
             OUT2.write('%d %s %s %.5f %.5f %.3f %.3f\n'%(idf,DT,EVID,dfs.iloc[idf].Lon,dfs.iloc[idf].Lat,dfs.iloc[idf].Depth,dfs.iloc[idf].Magnitude))
             OUT2.close()
             continue
         else:
+            #template successfully downloaded
             outfile = home+'/'+project_name+'/waveforms_template/'+'template_%05d.ms'%(idf)
             st.write(outfile,format='MSEED')
-            OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','a')
             
+            #write phase information
+            outfile_info = home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(idf)
+            np.save(outfile_info,All_info)
+            
+            #write log file
+            OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','a')
             OUT1.write('%d %s %d %s %s  %.5f %.5f %.3f %.3f\n'%(idf,outfile,len(st),DT,EVID,dfs.iloc[idf].Lon,dfs.iloc[idf].Lat,dfs.iloc[idf].Depth,dfs.iloc[idf].Magnitude))
             OUT1.close()
 
