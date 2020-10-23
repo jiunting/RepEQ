@@ -491,6 +491,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     from libcomcat.search import get_event_by_id
     from libcomcat.dataframes import get_phase_dataframe
     from obspy import Stream
+    import time
     client = Client("IRIS")
     # make templates
     regional=df['Regional']
@@ -522,8 +523,14 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             arr.microsecond=int(np.round(arr.microsecond/(1/sampling_rate*10**6))*1/sampling_rate*10**6)
         t1 = arr-tcs_length[0]
         t2 = arr+tcs_length[1]
-        try:
-            tr = client.get_waveforms(net, sta, "*", comp, t1-2, t2+2)
+        #try:
+        i_attempt = 0 #reset number of attempt
+        while i_attempt<5:
+            try:
+                tr = client.get_waveforms(net, sta, "*", comp, t1-2, t2+2)
+            except:
+                time.sleep(2) #wait 2 sec and try again later...
+                i_attempt += 1
         except:
             continue
         #print("No data for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
