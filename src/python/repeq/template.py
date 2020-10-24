@@ -118,6 +118,9 @@ class Template():
                 origintime = UTCDateTime(self.catalog.iloc[tmp_idx].Date+'T'+self.catalog.iloc[tmp_idx].Time)
                 st = read(i_tmp) #read template in
                 
+                #load info data(mainly for P or S wave info)
+                pick_info = np.load(home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(tmp_idx),allow_pickle=True)
+                
                 #read all directories of daily data
                 dayst_paths = glob.glob(home+'/'+project_name+'/waveforms/'+'*000000')
                 dayst_paths.sort()
@@ -127,7 +130,7 @@ class Template():
                 sav_alldays_eq_sta = {} #detailed info for CC,CCC,shifts for every station for all searched days by the same template
                 #loop the daily data
                 for dayst_path in dayst_paths:
-                    sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
+                    sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_phase=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
                     YMD = dayst_path.split('/')[-1][:8]
                     print(' --Reading daily data: %s'%(dayst_path))
                     i_dayst = read(dayst_path+'/waveforms/merged.ms') #load daily data
@@ -165,10 +168,14 @@ class Template():
                             CCF = correlate_template(continuousdata,template)
                             CCF = np.nan_to_num(CCF)
                             
+                            #load info data
+                            pick_info = np.load(home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(tmp_idx),allow_pickle=True)
+                            
                             #save for later checking
                             sav_NET.append(NET)
                             sav_STA.append(STA)
                             sav_CHN.append(CHN)
+                            sav_phase.append(pick_info['phase'][i]) #P or S phase
                             sav_travel_npts.append(travel_npts)
                             sav_CCF.append(CCF)
                             sav_continuousdata.append(continuousdata)
@@ -228,6 +235,7 @@ class Template():
                                 sav_maxCCC.append(maxCCC)
                                 if detected_OT_str in sav_eq_sta:
                                     sav_eq_sta[detected_OT_str]['net_sta_comp'].append(sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n])
+                                    sav_eq_sta[detected_OT_str]['phase'].append(sav_phase[n])
                                     sav_eq_sta[detected_OT_str]['CCC'].append(maxCCC)
                                     sav_eq_sta[detected_OT_str]['CC'].append(sh_sav_CCF[n][neqid])
                                     sav_eq_sta[detected_OT_str]['shift'].append(sh_sec)
@@ -236,6 +244,7 @@ class Template():
                                     #initial dictionary
                                     sav_eq_sta[detected_OT_str] = {}
                                     sav_eq_sta[detected_OT_str]['net_sta_comp'] = [sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]]
+                                    sav_eq_sta[detected_OT_str]['phase'] = [sav_phase[n]]
                                     sav_eq_sta[detected_OT_str]['CCC'] = [maxCCC]
                                     sav_eq_sta[detected_OT_str]['CC'] = [sh_sav_CCF[n][neqid]] #sh_sav_CCF[n][neqid]
                                     sav_eq_sta[detected_OT_str]['shift'] = [sh_sec]
