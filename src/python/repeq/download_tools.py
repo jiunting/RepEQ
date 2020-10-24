@@ -508,9 +508,12 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     sav_arr = []
     All_info = {}
     for ii in range(len(phases)):
-        net = phases.iloc[ii]['Channel'].split('.')[0]
-        sta = phases.iloc[ii]['Channel'].split('.')[1]
-        comp = phases.iloc[ii]['Channel'].split('.')[2]
+        elems = phases.iloc[ii]['Channel'].split('.')
+        net = elems[0]
+        sta = elems[1]
+        comp = elems[2]
+        location = elems[3]
+        
         Phase = phases.iloc[ii]['Phase'] #P or S wave, save this info for further relocation
         #phase = phases.iloc[ii]['Phase']
         arr = UTCDateTime(phases.iloc[ii]['Arrival Time'])
@@ -529,7 +532,8 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
         tr_exist = False
         while i_attempt<5:
             try:
-                tr = client.get_waveforms(net, sta, "*", comp, t1-2, t2+2)
+                #tr = client.get_waveforms(net, sta, "*", comp, t1-2, t2+2) #Be careful, this may query more than 1 trace channel i.e. '00','01'...
+                tr = client.get_waveforms(net, sta, location, comp, t1-2, t2+2) #Be careful, this may query more than 1 trace channel i.e. '00','01'...
                 tr_exist = True
                 break
             except:
@@ -543,7 +547,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             #print("No data for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
             continue
         else:
-            #print("Data available for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
+            print("Data available:",net, sta, location, comp, t1-2, t2+2)
             tr.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
             tr.detrend()
             tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
@@ -551,6 +555,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
                 tr.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
             tr.interpolate(sampling_rate=sampling_rate, starttime=t1)
             tr.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
+            assert len(tr)==1, 'Unexpecting error when query:%s %s %s %s %s %s'%(net, sta, location, comp, t1-2, t2+2)
             st += tr
             #save name, time and "phase" info for later relocation
             #.ms only gives starttime (know arrival time) but not P or S wave
@@ -559,7 +564,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             tmp_arrT = arr.strftime('%Y-%m-%dT%H:%M:%S.%f') #arrival time in isoformat i.e. 2018-05-05T17:44:18 or 2018-05-05T17:44:23.960000
             if len(tmp_arrT)==26:
                 tmp_arrT = tmp_arrT[:-4]
-            print('Time:',tmp_arrT)
+            #print('Time:',tmp_arrT)
             sav_arr.append(tmp_arrT)
     All_info['net_sta_comp'] = np.array(sav_net_sta_comp)
     All_info['phase'] = np.array(sav_phase)
