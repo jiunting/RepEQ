@@ -547,7 +547,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             #print("No data for "+net+" "+sta+" "+comp+" "+str(t1)+" "+str(t2))
             continue
         else:
-            print("Data available:",net, sta, location, comp, t1-2, t2+2)
+            #print("Data available:",net, sta, location, comp, t1-2, t2+2)
             tr.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
             tr.detrend()
             tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
