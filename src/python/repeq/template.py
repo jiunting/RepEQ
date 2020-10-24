@@ -229,7 +229,7 @@ class Template():
                                 #loop in every station
                                 cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
                                 maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
-                                if np.isnsn(maxCCC):
+                                if np.isnan(maxCCC):
                                     maxCCC = 0 #this is probalby due to cross-correlate on a zero array
                                 midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
