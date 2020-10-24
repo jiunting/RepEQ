@@ -533,6 +533,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
                 tr_exist = True
                 break
             except:
+                #print('Attempts %d'%(i_attempt),net, sta, "*", comp, t1-2, t2+2)
                 time.sleep(2) #wait 2 sec and try again later...
                 i_attempt += 1
                 continue
@@ -555,7 +556,11 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             #.ms only gives starttime (know arrival time) but not P or S wave
             sav_net_sta_comp.append(net+'.'+sta+'.'+comp)
             sav_phase.append(Phase)
-            sav_arr.append(arr.isoformat()[:-4])
+            tmp_arrT = arr.strftime('%Y-%m-%dT%H:%M:%S.%f') #arrival time in isoformat i.e. 2018-05-05T17:44:18 or 2018-05-05T17:44:23.960000
+            if len(tmp_arrT)==26:
+                tmp_arrT = tmp_arrT[:-4]
+            print('Time:',tmp_arrT)
+            sav_arr.append(tmp_arrT)
     All_info['net_sta_comp'] = np.array(sav_net_sta_comp)
     All_info['phase'] = np.array(sav_phase)
     All_info['arrival'] = np.array(sav_arr)

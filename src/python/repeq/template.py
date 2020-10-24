@@ -227,7 +227,7 @@ class Template():
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
                                 sav_maxCCC.append(maxCCC)
                                 if detected_OT_str in sav_eq_sta:
-                                    sav_eq_sta[detected_OT_str]['sta'].append(sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n])
+                                    sav_eq_sta[detected_OT_str]['net_sta_comp'].append(sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n])
                                     sav_eq_sta[detected_OT_str]['CCC'].append(maxCCC)
                                     sav_eq_sta[detected_OT_str]['CC'].append(sh_sav_CCF[n][neqid])
                                     sav_eq_sta[detected_OT_str]['shift'].append(sh_sec)
@@ -235,7 +235,7 @@ class Template():
                                 else:
                                     #initial dictionary
                                     sav_eq_sta[detected_OT_str] = {}
-                                    sav_eq_sta[detected_OT_str]['sta'] = [sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]]
+                                    sav_eq_sta[detected_OT_str]['net_sta_comp'] = [sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]]
                                     sav_eq_sta[detected_OT_str]['CCC'] = [maxCCC]
                                     sav_eq_sta[detected_OT_str]['CC'] = [sh_sav_CCF[n][neqid]] #sh_sav_CCF[n][neqid]
                                     sav_eq_sta[detected_OT_str]['shift'] = [sh_sec]
