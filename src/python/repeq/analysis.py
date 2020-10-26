@@ -24,8 +24,13 @@ def build_TauPyModel(home,project_name,vel_mod_file,background_model='PREM'):
     #mudpy source folder
 
     #load user specified .mod infromation
-    structure = genfromtxt(vel_mod_file)
-    shutil.copy(vel_mod_file,home+'/'+project_name+'/structure/'+vel_mod_file.split('/')[-1])
+    try:
+        structure = genfromtxt(vel_mod_file)
+    except:
+        structure = genfromtxt(home+'/'+project_name+'/structure/'+vel_mod_file.split('/')[-1])
+
+    if not(path.exists(home+'/'+project_name+'/structure/'+vel_mod_file.split('/')[-1])):
+        shutil.copy(vel_mod_file,home+'/'+project_name+'/structure/'+vel_mod_file.split('/')[-1])
     #load background velocity structure
     if background_model=='PREM':
         #get the background file from obspy
@@ -34,8 +39,9 @@ def build_TauPyModel(home,project_name,vel_mod_file,background_model='PREM'):
         Qkappa=1300
         Qmu=600
         #Write new _nd file one line at a time
-        nd_name=path.basename(vel_mod_file).split('.')[0]
-        nd_name=nd_name+'.nd'
+        #nd_name=path.basename(vel_mod_file).split('.')[0]
+        #nd_name=nd_name+'.nd'
+        nd_name=vel_mod_file.split('/')[-1].replace('mod','nd')
         f=open(home+'/'+project_name+'/structure/'+nd_name,'w')
         #initalize
         ztop=0
