@@ -92,7 +92,12 @@ def get_lonlat(sta_table,sta):
         sav_lat.append(sta_table.stlat[idx])
     return np.array(sav_lon),np.array(sav_lat)
 
-
+def get_all_sta(detc):
+    #input detc, output all the net.staname in array
+    all_sta = []
+    for k in detc.keys():
+        all_sta += detc[k]['net_sta_comp']
+    return list(set(all_sta))
 
 def clean_detc(detc,filter_detc):
     new_detc = {}
@@ -141,7 +146,8 @@ def clean_detc(detc,filter_detc):
     return new_detc
 
 
-
+def cal_VR(y,yhat):
+    return 1-(np.sum((y-yhat)**2)/np.sum(y**2))
 
 def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
     '''
@@ -155,6 +161,8 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
         T0: reference time in UTCDateTime format
     '''
     from repeq import analysis
+    from obspy.geodetics import kilometers2degrees
+    
     #load catalog in pd
     catalog=home+'/'+project_name+'/catalog/'+catalog.split('/')[-1]
     cat = np.genfromtxt(catalog, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U23",float,float,float,float,"|U2","|U23")) #accur
@@ -204,6 +212,8 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
         OT = UTCDateTime(df.iloc[neqid].Date+'T'+df.iloc[neqid].Time)
         if eqdep<0:
             eqdep=0.01
+        #all station in the dictionary
+        #all_sta = get_all_sta(detc)
         sav_M_km = [] #save inversion parameters
         sav_reloc = [] #final result of relocation
         sav_VR = []
