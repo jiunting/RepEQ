@@ -95,7 +95,7 @@ def get_lonlat(sta_table,sta):
 
 
 
-def EQreloc(home,project_name,catalog,station_table,vel_model,fiter_inv,T0):
+def EQreloc(home,project_name,catalog,vel_model,fiter_inv,T0):
     '''
         Main relocation
         fiter_inv={
@@ -119,6 +119,9 @@ def EQreloc(home,project_name,catalog,station_table,vel_model,fiter_inv,T0):
     else:
         #npz file already exist
         model_path = home+'/'+project_name+'/structure/'+vel_model.replace('mod','npz')
+
+    ##load station table in home/project_nam/stations/stations.txt
+    sta_table = pd.read_table(home+'/'+project_name+'/stations/'+'stations.txt',header=None,names=['stlon','stlat','stelev','stname'],sep=' ')
 
     #=====small step for calculating derivative=====
     #change these only if necessarily
