@@ -88,7 +88,37 @@ filter_params={
 'min_sta':6,
 'min_CC':0.3
 }
-data_proc.read_detections(home,project_name,filter_params)
+data_proc.read_detections(home,project_name,filter_params) #this doesn't work for the newest format, read the data manually
+
+
+#Repeating EQ relocation
+from repeq import EQreloc
+
+#set some filtering criteria
+#Filter 1: focus on each detection .npy file
+filter_detc={
+        'diff_t':120,  #[sec] event interval. detected events should be at least longer than this time. Only apply to the events with same templateID
+        'min_stan':5,  #at least number of stations. Delete the detection if not enough station constraint
+        'min_CC':0.3   #minimum mean(CC) value. Delete the detection if too low mean CC value
+}
+
+#Filter 2: focus on inversion part
+fiter_inv={
+        'CCC_threshold':0.3,  #use observed shift with CCC greater than this threshold
+        'min_stan':5,         #minumim observations
+        'max_shift':2,        #maximum shift seconds(observation). Data larger than 2sec will be droped
+        'VR':0.3,             #after inversion, check the VR. Only keep the result if VR is high
+}
+vel_model = 'Hawaii.litho.mod'  #1D velocity model same as fk format
+T0 = UTCDateTime("2018-05-04T22:32:54.65")  #output data time will be related to this datetime
+EQreloc.EQreloc(home,project_name,cata_name,vel_model,filter_detc,fiter_inv,T0)
+
+
+
+
+
+
+
 
 
 '''
