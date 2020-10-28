@@ -131,6 +131,9 @@ def EQreloc(home,project_name,catalog,station_table,vel_model,fiter_inv,T0):
     #load all detailed detection .npy files
     detect_details = glob.glob(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_*.npy')
     detect_details.sort()
+    OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/'+'EQreloc_info.txt','w')
+    OUT1.write('#dx dy dz dt VR nstan refT ref_tempT eqlon eqlat eqdep templateID\n')
+    OUT1.close()
     for ndet,detect_detail in enumerate(detect_details):
         #detect_detail=detect_details[3]
         #detect_detail=detect_details[18]
