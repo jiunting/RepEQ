@@ -268,7 +268,7 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
         sav_date = np.array(sav_date)
         if len(sav_reloc)>0:
             #save dX,dY,dZ,dT to a txt file
-            #OUT1 = open('diff_info.txt','a')
+            OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/'+'EQreloc_info.txt','a')
             if sav_M_km.ndim==1:
                 OUT1.write('%f %f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[0],sav_M_km[1],sav_M_km[2],sav_M_km[3],sav_VR[0],sav_nstan[0],sav_date[0],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
             else:
