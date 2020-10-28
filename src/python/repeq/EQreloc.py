@@ -106,6 +106,7 @@ def EQreloc(home,project_name,catalog,vel_model,fiter_inv,T0):
         }
         T0: reference time in UTCDateTime format
     '''
+    from repeq import analysis
     #load catalog in pd
     catalog=home+'/'+project_name+'/catalog/'+catalog.split('/')[-1]
     cat = np.genfromtxt(catalog, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U23",float,float,float,float,"|U2","|U23")) #accur
