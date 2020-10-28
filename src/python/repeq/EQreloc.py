@@ -5,6 +5,11 @@ Created on Mon Oct 26 14:46:02 2020
 
 @author: TimLin
 """
+import numpy as np
+import obspy
+import glob
+from obspy import UTCDateTime
+import pandas as pd
 
 #--------repeating earthquake relocation tools------------
 
@@ -89,7 +94,61 @@ def get_lonlat(sta_table,sta):
 
 
 
-#def EQreloc(home,project_name):
+def EQreloc(home,project_name,catalog,station_table,vel_model,fiter_inv,T0):
+    '''
+        Main relocation
+        fiter_inv={
+        'CCC_threshold':0.3,  #use observed shift with CCC greater than this threshold
+        'min_stan':5,         #minumim observations
+        'max_shift':2,        #maximum shift seconds(observation)
+        'VR':0.5,             #after inversion, check the VR
+        }
+        T0: reference time in UTCDateTime format
+    '''
+    #load catalog in pd
+    catalog=home+'/'+project_name+'/catalog/'+catalog.split('/')[-1]
+    cat = np.genfromtxt(catalog, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U23",float,float,float,float,"|U2","|U23")) #accur
+    df = pd.DataFrame(cat, columns=['ID','Time','Magnitude','Lat','Lon','Depth','Regional'])
+    for ii in range(len(cat)):
+        df = df.append({'ID': cat[ii][6][2:],'Time': cat[ii][0][11:], 'Magnitude': cat[ii][4], 'Date': cat[ii][0][:10],'Lat': cat[ii][1], 'Lon': cat[ii][2], 'Depth': cat[ii][3], 'Regional': cat[ii][5]}, ignore_index=True)
+
+    #make velocity model (.mod to .npz)
+    TauPy_name = analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
+    #model = TauPyModel(model=TauPy_name)
+    model_path = home+'/'+project_name+'/structure/'+vel_model.replace('mod','npz')
+
+
+    detect_details = glob.glob(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_*.npy')
+    detect_details.sort()
+    for ndet,detect_detail in enumerate(detect_details):
+        #detect_detail=detect_details[3]
+        #detect_detail=detect_details[18]
+        print('=========Now in:%s==========='%(detect_detail))
+        #detailed detection file(CCC value and time shift)
+        detc = np.load(detect_detail,allow_pickle=True)
+        detc = detc.item()
+        detc = clean_detc(detc,filter_detc)
+        if detc=={}:
+            continue
+        neqid = int(detect_detail.split('_')[-1].split('.')[0])
+        #get eqinfo
+        eqlon = df.iloc[neqid].Lon
+        eqlat = df.iloc[neqid].Lat
+        eqdep = df.iloc[neqid].Depth
+        OT = UTCDateTime(df.iloc[neqid].Date+'T'+df.iloc[neqid].Time)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
