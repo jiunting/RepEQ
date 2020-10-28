@@ -111,7 +111,7 @@ fiter_inv={
 }
 vel_model = 'Hawaii.litho.mod'  #1D velocity model same as fk format
 T0 = UTCDateTime("2018-05-04T22:32:54.65")  #output data time will be related to this datetime
-EQreloc.EQreloc(home,project_name,cata_name,vel_model,filter_detc,fiter_inv,T0)
+EQreloc.EQreloc(home,project_name,cata_name,vel_model,filter_detc,fiter_inv,T0)  #final result will be in output/Template_match/Detections/EQreloc_info.txt
 
 
 
