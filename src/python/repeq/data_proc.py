@@ -102,6 +102,7 @@ def make_sta_table(home,project_name,pattern='*000000'):
         xml_files = glob.glob(date_path+'/'+'stations/'+'*.xml')
         sav_stlon = []
         sav_stlat = []
+        sav_stelev = []
         sav_stname = []
         for xml_file in xml_files:
             net_sta = xml_file.split('/')[-1].split('.')
@@ -110,13 +111,16 @@ def make_sta_table(home,project_name,pattern='*000000'):
             soup = BeautifulSoup(tmpIN1)
             stlon = float(soup.find_all('longitude' or 'Longitude')[0].text)
             stlat = float(soup.find_all('latitude' or 'Latitude')[0].text)
+            stelev = float(soup.find_all('elevation' or 'Elevation')[0].text)
             sav_stlon.append(stlon)
             sav_stlat.append(stlat)
+            sav_stelev.append(stelev)
             sav_stname.append(net_sta)
         sav_stlon = np.array(sav_stlon)
         sav_stlat = np.array(sav_stlat)
+        sav_stelev = np.array(sav_stelev)
         sav_stname = np.array(sav_stname)
-        return sav_stlon,sav_stlat,sav_stname
+        return sav_stlon,sav_stlat,sav_stelev,sav_stname
 
     #search all the date in waveforms directory
     Ds = glob.glob(home+'/'+project_name+'/waveforms/'+pattern)
@@ -124,33 +128,36 @@ def make_sta_table(home,project_name,pattern='*000000'):
     #create list without repeatly count
     all_stlon = []
     all_stlat = []
+    all_stelev = []
     all_stname = []
     for D in Ds:
-        sav_stlon,sav_stlat,sav_stname = get_staloc(D)
+        sav_stlon,sav_stlat,sav_stelev,sav_stname = get_staloc(D)
         for i,i_name in enumerate(sav_stname):
             if not (i_name in all_stname):
                 all_stlon.append(sav_stlon[i])
                 all_stlat.append(sav_stlat[i])
+                all_stelev.append(sav_stelev[i])
                 all_stname.append(sav_stname[i])
 
     #search all the date in waveforms_template
     Ds = glob.glob(home+'/'+project_name+'/waveforms_template/'+pattern)
     Ds.sort()
     for D in Ds:
-        sav_stlon,sav_stlat,sav_stname = get_staloc(D)
+        sav_stlon,sav_stlat,sav_stelev,sav_stname = get_staloc(D)
         for i,i_name in enumerate(sav_stname):
             if not (i_name in all_stname):
                 all_stlon.append(sav_stlon[i])
                 all_stlat.append(sav_stlat[i])
+                all_stelev.append(sav_stelev[i])
                 all_stname.append(sav_stname[i])
 
     #write table txt file in project_name/stations
     OUT1 = open(home+'/'+project_name+'/stations/'+'stations.txt','w')
     for i in range(len(all_stname)):
-        OUT1.write('%f %f %s\n'%(all_stlon[i],all_stlat[i],all_stname[i]))
+        OUT1.write('%f %f %f %s\n'%(all_stlon[i],all_stlat[i],all_stelev[i],all_stname[i]))
 
     OUT1.close()
-    return all_stlon,all_stlat,all_stname
+    return all_stlon,all_stlat,all_stelev,all_stname
 
 
 
