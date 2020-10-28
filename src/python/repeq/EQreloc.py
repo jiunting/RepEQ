@@ -94,6 +94,59 @@ def get_lonlat(sta_table,sta):
 
 
 
+def clean_detc(detc,filter_detc):
+    new_detc = {}
+    Ngps = -1 #initialize group index
+    sav_gps = {} #create tmp dictionary for grouping
+    sav_k = []
+    #input dictionary detc and output a clean dictionary based on the filter
+    tmp_DT = UTCDateTime("1900-01-01")
+    tmp_CC = 0
+    keys = list(detc.keys())
+    keys.sort()
+    for k in keys:
+        #print('in k',k)
+        CC = detc[k]['CC']
+        #1.filter by Nstations
+        if int(len(CC))<filter_detc['min_stan']:
+            #print('number of stations=',len(CC))
+            continue
+        #2.filter by meanCC value
+        if np.mean(CC)<filter_detc['min_CC']:
+            #print('mean CC=',np.mean(CC))
+            continue
+        #dealing with time
+        DT = UTCDateTime(k)
+        if np.abs(DT-tmp_DT)>=filter_detc['diff_t']:
+            #found new group
+            Ngps += 1
+            #print('find new group',k)
+            #new_detc[k] = detc[k]
+            #sav_gps[Ngps] = {'DT':DT,'CC':np.mean(CC)} #add a new group
+            sav_gps[Ngps] = detc[k] #add a new group
+            sav_k.append(k) #append a templory k
+            tmp_DT = DT
+            tmp_CC = np.mean(CC)
+        else:
+            #print('replace old group',k)
+            if tmp_CC<np.mean(CC): #previous CC lower than new CC
+                sav_gps[Ngps] = detc[k]
+                sav_k[Ngps] = k #replace the previous k
+                #sav_gps[Ngps]['DT'] = DT #new replace the old
+                #sav_gps[Ngps]['CC'] = np.mean(CC)
+            tmp_DT = DT
+            tmp_CC = np.mean(CC)
+    for i_gp in range(len(sav_k)):
+        new_detc[sav_k[i_gp]] = sav_gps[i_gp]
+    return new_detc
+
+
+
+
+
+
+
+
 
 def EQreloc(home,project_name,catalog,vel_model,fiter_inv,T0):
     '''
