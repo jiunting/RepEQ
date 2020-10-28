@@ -143,12 +143,7 @@ def clean_detc(detc,filter_detc):
 
 
 
-
-
-
-
-
-def EQreloc(home,project_name,catalog,vel_model,fiter_inv,T0):
+def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
     '''
         Main relocation
         fiter_inv={
