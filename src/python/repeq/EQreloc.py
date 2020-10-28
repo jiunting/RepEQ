@@ -182,10 +182,14 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
 
     #=====small step for calculating derivative=====
     #change these only if necessarily
-    dx = 0.1 #[unit:km]
-    dy = 0.1
-    dz = 0.1
-    dt = 0.04
+    #dx = 0.1 #[unit:km]
+    #dy = 0.1
+    #dz = 0.1
+    #dt = 0.04
+    dx = 1 #[unit:km]
+    dy = 1
+    dz = 1
+    dt = 0.4
     #========================================
 
     #load all detailed detection .npy files
@@ -250,14 +254,17 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
                 VR = 1 # ()/sum(y**2) is nan means all y are zeros, and M=0
             #convert to original scale
             M_km = M*np.array([dx,dy,dz,dt]) #M to the original scale(km)
-            sav_M_km.append(M_km)
+            
             #convert shifted_km to shifted_deg
             sh_deg = kilometers2degrees(M_km[:2])
             #QC3. filter with unreasonable large M (almost impossible)
-            if np.abs(sh_deg[0])>2:
-                break #break and see what causes this!
+            if np.abs(sh_deg[0])>2 or np.abs(sh_deg[1])>2 or np.abs(M_km[2])>200:
+                #import sys
+                #sys.exit() # exit and see what causes this!
+                continue
             new_lon = eqlon+sh_deg[0]
             new_lat = eqlat+sh_deg[1]
+            sav_M_km.append(M_km)
             sav_reloc.append(np.array([new_lon,new_lat,eqdep+M_km[2],M_km[3]]))
             sav_date.append( (UTCDateTime(k)-T0)/86400.0)
             sav_VR.append(VR)
