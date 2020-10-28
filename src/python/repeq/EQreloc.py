@@ -10,6 +10,7 @@ import obspy
 import glob
 from obspy import UTCDateTime
 import pandas as pd
+import os
 
 #--------repeating earthquake relocation tools------------
 
@@ -112,12 +113,22 @@ def EQreloc(home,project_name,catalog,station_table,vel_model,fiter_inv,T0):
     for ii in range(len(cat)):
         df = df.append({'ID': cat[ii][6][2:],'Time': cat[ii][0][11:], 'Magnitude': cat[ii][4], 'Date': cat[ii][0][:10],'Lat': cat[ii][1], 'Lon': cat[ii][2], 'Depth': cat[ii][3], 'Regional': cat[ii][5]}, ignore_index=True)
 
-    #make velocity model (.mod to .npz)
-    TauPy_name = analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
-    #model = TauPyModel(model=TauPy_name)
-    model_path = home+'/'+project_name+'/structure/'+vel_model.replace('mod','npz')
+    #make velocity model (.mod to .npz) if not exist
+    if not(os.path.exists(home+'/'+project_name+'/structure/'+vel_model.replace('mod','npz'))):
+        model_path = analysis.build_TauPyModel(home,project_name,vel_model) #make .npz file
+    else:
+        #npz file already exist
+        model_path = home+'/'+project_name+'/structure/'+vel_model.replace('mod','npz')
 
+    #=====small step for calculating derivative=====
+    #change these only if necessarily
+    dx = 0.1 #[unit:km]
+    dy = 0.1
+    dz = 0.1
+    dt = 0.04
+    #========================================
 
+    #load all detailed detection .npy files
     detect_details = glob.glob(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_*.npy')
     detect_details.sort()
     for ndet,detect_detail in enumerate(detect_details):
@@ -136,7 +147,69 @@ def EQreloc(home,project_name,catalog,station_table,vel_model,fiter_inv,T0):
         eqlat = df.iloc[neqid].Lat
         eqdep = df.iloc[neqid].Depth
         OT = UTCDateTime(df.iloc[neqid].Date+'T'+df.iloc[neqid].Time)
-
+        if eqdep<0:
+            eqdep=0.01
+        sav_M_km = [] #save inversion parameters
+        sav_reloc = [] #final result of relocation
+        sav_VR = []
+        sav_nstan = []
+        sav_date = [] #tims relative to the T0
+        for k in detc.keys():
+            stlon,stlat = get_lonlat(sta_table,detc[k]['net_sta_comp'])
+            #pick information (P or S?)
+            phase = np.array(detc[k]['phase'])
+            #time shift. positive means arrives earlier, means timeline moves negative
+            #i.e. arrival of template=1.3sec, observation=1.1sec, then shift=0.2, while observation-template=-0.2
+            shifts = np.array(detc[k]['shift'])
+            CCC = np.array(detc[k]['CCC'])
+            #QC1. with min_stations and CCC threshold
+            use_idx = np.where( (CCC>=fiter_inv['CCC_threshold']) & (np.abs(shifts)<=fiter_inv['max_shift']))[0]
+            if len(use_idx) < fiter_inv['min_stan']:
+                continue
+            #only keep whe measurement with high CCC value
+            #print('k=',k)
+            stlon = stlon[use_idx]
+            stlat = stlat[use_idx]
+            phase = phase[use_idx]
+            shifts = shifts[use_idx]
+            CCC = CCC[use_idx]
+            #build G and do inversion
+            G,avail_idx = cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=dx,dy=dy,dz=dz,dt=dt)
+            M = GMD_solve(G,shifts[avail_idx]*-1) #note that positive time shift means arrives earlier
+            #QC2. filter with VR
+            VR = cal_VR(shifts[avail_idx]*-1,np.dot(G,M))
+            if not np.isnan(VR):
+                if VR<fiter_inv['VR']:
+                    continue
+            else:
+                VR = 1 # ()/sum(y**2) is nan means all y are zeros, and M=0
+            #convert to original scale
+            M_km = M*np.array([dx,dy,dz,dt]) #M to the original scale(km)
+            sav_M_km.append(M_km)
+            #convert shifted_km to shifted_deg
+            sh_deg = kilometers2degrees(M_km[:2])
+            #QC3. filter with unreasonable large M (almost impossible)
+            if np.abs(sh_deg[0])>2:
+                break #break and see what causes this!
+            new_lon = eqlon+sh_deg[0]
+            new_lat = eqlat+sh_deg[1]
+            sav_reloc.append(np.array([new_lon,new_lat,eqdep+M_km[2],M_km[3]]))
+            sav_date.append( (UTCDateTime(k)-T0)/86400.0)
+            sav_VR.append(VR)
+            sav_nstan.append(len(shifts))
+        #finally make all list to array
+        sav_M_km = np.array(sav_M_km)
+        sav_reloc = np.array(sav_reloc)
+        sav_date = np.array(sav_date)
+        if len(sav_reloc)>0:
+            #save dX,dY,dZ,dT to a txt file
+            #OUT1 = open('diff_info.txt','a')
+            if sav_M_km.ndim==1:
+                OUT1.write('%f %f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[0],sav_M_km[1],sav_M_km[2],sav_M_km[3],sav_VR[0],sav_nstan[0],sav_date[0],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
+            else:
+                for ii in range(len(sav_M_km)):
+                    OUT1.write('%f %f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[ii][0],sav_M_km[ii][1],sav_M_km[ii][2],sav_M_km[ii][3],sav_VR[ii],sav_nstan[ii],sav_date[ii],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
+            OUT1.close()
 
 
 
