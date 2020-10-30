@@ -75,7 +75,8 @@ def cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=0.1,dy=0.1,
         except:
             G = G_row.copy()
     avail_idx = np.array(avail_idx)
-    return G,avail_idx
+    #return G,avail_idx  #don't calculate time component
+    return G[:,:3],avail_idx
 
 
 
@@ -189,7 +190,7 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
     dx = 1 #[unit:km]
     dy = 1
     dz = 1
-    dt = 0.4
+    dt = 0.4 #don't use here
     #========================================
 
     #load all detailed detection .npy files
@@ -253,7 +254,8 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
             else:
                 VR = 1 # ()/sum(y**2) is nan means all y are zeros, and M=0
             #convert to original scale
-            M_km = M*np.array([dx,dy,dz,dt]) #M to the original scale(km)
+            #M_km = M*np.array([dx,dy,dz,dt]) #M to the original scale(km)
+            M_km = M*np.array([dx,dy,dz]) #M to the original scale(km)
             
             #convert shifted_km to shifted_deg
             sh_deg = kilometers2degrees(M_km[:2])
@@ -265,7 +267,7 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
             new_lon = eqlon+sh_deg[0]
             new_lat = eqlat+sh_deg[1]
             sav_M_km.append(M_km)
-            sav_reloc.append(np.array([new_lon,new_lat,eqdep+M_km[2],M_km[3]]))
+            sav_reloc.append(np.array([new_lon,new_lat,eqdep+M_km[2]]))
             sav_date.append( (UTCDateTime(k)-T0)/86400.0)
             sav_VR.append(VR)
             sav_nstan.append(len(shifts))
@@ -277,10 +279,10 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
             #save dX,dY,dZ,dT to a txt file
             OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/'+'EQreloc_info.txt','a')
             if sav_M_km.ndim==1:
-                OUT1.write('%f %f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[0],sav_M_km[1],sav_M_km[2],sav_M_km[3],sav_VR[0],sav_nstan[0],sav_date[0],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
+                OUT1.write('%f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[0],sav_M_km[1],sav_M_km[2],sav_VR[0],sav_nstan[0],sav_date[0],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
             else:
                 for ii in range(len(sav_M_km)):
-                    OUT1.write('%f %f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[ii][0],sav_M_km[ii][1],sav_M_km[ii][2],sav_M_km[ii][3],sav_VR[ii],sav_nstan[ii],sav_date[ii],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
+                    OUT1.write('%f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[ii][0],sav_M_km[ii][1],sav_M_km[ii][2],sav_VR[ii],sav_nstan[ii],sav_date[ii],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
             OUT1.close()
 
 
