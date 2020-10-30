@@ -244,6 +244,7 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
             shifts = shifts[use_idx]
             CCC = CCC[use_idx]
             #build G and do inversion
+            #note that this only invert once! while most of the methods use iterative inversion
             G,avail_idx = cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=dx,dy=dy,dz=dz,dt=dt)
             M = GMD_solve(G,shifts[avail_idx]*-1) #note that positive time shift means arrives earlier
             #QC2. filter with VR
