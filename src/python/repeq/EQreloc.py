@@ -25,6 +25,34 @@ def GMD_solve(G,D):
     return M
 
 
+
+def travel_time(model,stlon,stlat,phase,eqlon,eqlat,eqdep):
+    '''
+        Input:
+            model: TauPyModel object (i.e. model = TauPyModel(model=model_path) )
+            stlon/stlat: stlon/stlat in array or list
+            phase: phase type at the stlon/stlat ('P' or 'S'). same length as stlon/stlat
+            eqlon/eqlat/eqdep: EQ location. Note that eqdep should be positive [km]
+        Output:
+            predicted travel time at stlon/stlat [sec]
+    '''
+    sav_time = []
+    for ist in range(len(stlon)):
+        #calculate distance in degree
+        dist = obspy.geodetics.locations2degrees(lat1=eqlat,long1=eqlon,lat2=stlat[ist],long2=stlon[ist])
+        if phase[ist]=='P':
+            PS = model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist, phase_list=('P','p'), receiver_depth_in_km=0)
+        else:
+            PS = model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist, phase_list=('S','s'), receiver_depth_in_km=0)
+        try:
+            sav_time.append(PS[0].time)
+        except:
+            #ray unavailable
+            sav_time.append(np.nan)
+    sav_time = np.array(sav_time)
+    return sav_time
+
+
 def cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=0.1,dy=0.1,dz=0.1,dt=0.04):
     from obspy.taup import TauPyModel
     from obspy.geodetics import kilometers2degrees
@@ -66,8 +94,8 @@ def cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=0.1,dy=0.1,
             dTdz = PS_dz[0].time-PS[0].time
             dTdt = dt #the linear part in G
         except:
-            print('fail calculating traveltime: depth=%f km, dist=%f deg'%(eqdep,dist))
-            continue
+            print('fail calculating traveltime,appending nan: depth=%f km, dist=%f deg'%(eqdep,dist))
+            dTdx=dTdy=dTdz=dTdt=np.nan
         avail_idx.append(ist)
         G_row = np.array([dTdx,dTdy,dTdz,dTdt])
         try:
@@ -159,7 +187,7 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
         'max_shift':2,        #maximum shift seconds(observation)
         'VR':0.5,             #after inversion, check the VR
         }
-        T0: reference time in UTCDateTime format
+        T0: reference time in UTCDateTime format. Used in output data
     '''
     from repeq import analysis
     from obspy.geodetics import kilometers2degrees
