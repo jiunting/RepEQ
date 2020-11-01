@@ -83,7 +83,14 @@ def cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=0.1,dy=0.1,
 def iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon,stlat,phase,D,invsion_params):
     from obspy.taup import TauPyModel
     from obspy.geodetics import kilometers2degrees
-    #iterative inversion
+    #=====iterative inversion=========
+    '''
+    model_path: path of the velocity model .npz file
+    eqlon,eqlat,eqdep: original EQlocation (i.e. a referenced location that we known)
+    eqlon_init,eqlat_init,eqdep_init: initial guess of the unknown location
+    stlon,stlat: station location
+    phase: array or list of P,S wave
+    D: measured travel time differences from the reference location to an unknown location
     invsion_params={
         'CCC_threshold':0.3,  #use observed shift with CCC greater than this threshold
         'min_stan':5,         #minumim observations
@@ -96,6 +103,7 @@ def iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon
         'dz':0.05,            #
         'dt':0.04,            #
     }
+    '''
     #----------set default values----------
     if not('update_thres' in invsion_params):
         invsion_params['update_thres'] = 1e-9 #set default iter
