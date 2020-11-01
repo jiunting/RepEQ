@@ -66,45 +66,19 @@ def cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=0.1,dy=0.1,
     dx = kilometers2degrees(dx)
     dy = kilometers2degrees(dy)
     G = []
-    avail_idx = [] #all the available index. sometime the P or S arrival is not available,
-    #loop in every station
-    for ist in range(len(stlon)):
-        #calculate distance in degree
-        dist = obspy.geodetics.locations2degrees(lat1=eqlat,long1=eqlon,lat2=stlat[ist],long2=stlon[ist])
-        #distance perturbation
-        dist_add_dx = obspy.geodetics.locations2degrees(lat1=eqlat,long1=eqlon+dx,lat2=stlat[ist],long2=stlon[ist])
-        dist_add_dy = obspy.geodetics.locations2degrees(lat1=eqlat+dy,long1=eqlon,lat2=stlat[ist],long2=stlon[ist])
-        dist_add_dz = eqdep+dz
-        #phase type P or S
-        #print(stlon[ist],stlat[ist],dist)
-        if phase[ist]=='P':
-            PS = model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist, phase_list=('P','p'), receiver_depth_in_km=0)
-            PS_dx = model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_add_dx, phase_list=('P','p'), receiver_depth_in_km=0)
-            PS_dy = model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_add_dy, phase_list=('P','p'), receiver_depth_in_km=0)
-            PS_dz = model.get_travel_times(source_depth_in_km=dist_add_dz, distance_in_degree=dist_add_dy, phase_list=('P','p'), receiver_depth_in_km=0)
-        else:
-            PS = model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist, phase_list=('S','s'), receiver_depth_in_km=0)
-            PS_dx = model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_add_dx, phase_list=('S','s'), receiver_depth_in_km=0)
-            PS_dy = model.get_travel_times(source_depth_in_km=eqdep, distance_in_degree=dist_add_dy, phase_list=('S','s'), receiver_depth_in_km=0)
-            PS_dz = model.get_travel_times(source_depth_in_km=dist_add_dz, distance_in_degree=dist_add_dy, phase_list=('S','s'), receiver_depth_in_km=0)
-        #T derivates
-        try:
-            dTdx = PS_dx[0].time-PS[0].time
-            dTdy = PS_dy[0].time-PS[0].time
-            dTdz = PS_dz[0].time-PS[0].time
-            dTdt = dt #the linear part in G
-        except:
-            print('fail calculating traveltime,appending nan: depth=%f km, dist=%f deg'%(eqdep,dist))
-            dTdx=dTdy=dTdz=dTdt=np.nan
-        avail_idx.append(ist)
-        G_row = np.array([dTdx,dTdy,dTdz,dTdt])
-        try:
-            G = np.vstack([G,G_row])
-        except:
-            G = G_row.copy()
-    avail_idx = np.array(avail_idx)
-    #return G,avail_idx  #don't calculate time component
-    return G[:,:3],avail_idx
+    #avail_idx = [] #all the available index. sometime the P or S arrival is not available,
+    T0 = travel_time(model,stlon,stlat,phase,eqlon,eqlat,eqdep)
+    T_dx = travel_time(model,stlon,stlat,phase,eqlon+dx,eqlat,eqdep)
+    T_dy = travel_time(model,stlon,stlat,phase,eqlon,eqlat+dy,eqdep)
+    T_dz = travel_time(model,stlon,stlat,phase,eqlon,eqlat,eqdep+dz)
+    #time changes
+    dT_dx = T_dx-T0
+    dT_dy = T_dy-T0
+    dT_dz = T_dz-T0
+    #combine all into a G array
+    G = np.hstack([dT_dx.reshape(-1,1),dT_dy.reshape(-1,1),dT_dz.reshape(-1,1)])
+    return G
+    
 
 
 
