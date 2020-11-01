@@ -78,7 +78,106 @@ def cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=0.1,dy=0.1,
     #combine all into a G array
     G = np.hstack([dT_dx.reshape(-1,1),dT_dy.reshape(-1,1),dT_dz.reshape(-1,1)])
     return G
-    
+
+
+def iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon,stlat,phase,D,invsion_params):
+    from obspy.taup import TauPyModel
+    from obspy.geodetics import kilometers2degrees
+    #iterative inversion
+    invsion_params={
+        'CCC_threshold':0.3,  #use observed shift with CCC greater than this threshold
+        'min_stan':5,         #minumim observations
+        'max_shift':2,        #maximum shift seconds(observation)
+        'update_thres':1e-9,  #if update smaller than this, but inversion havent converged, add a perturbation
+        'misfit_thres':1e-3,  #modeled arrival time close enough to observation, inversion converged
+        'max_iter':50,        #maximum iterations
+        'dx':0.05,            #small step in x-dir to calculate time changes
+        'dy':0.05,            #
+        'dz':0.05,            #
+        'dt':0.04,            #
+    }
+    #----------set default values----------
+    if not('update_thres' in invsion_params):
+        invsion_params['update_thres'] = 1e-9 #set default iter
+    if not('misfit_thres' in invsion_params):
+        invsion_params['misfit_thres'] = 1e-3 #set default iter
+    if not('max_iter' in invsion_params):
+        invsion_params['max_iter'] = 50 #set default iter
+    if not('dx' in invsion_params):
+        invsion_params['dx'] = 0.05 #set default dx
+    if not('dy' in invsion_params):
+        invsion_params['dy'] = 0.05 #set default dy
+    if not('dz' in invsion_params):
+        invsion_params['dz'] = 0.05 #set default dz
+    if not('dt' in invsion_params):
+        invsion_params['dt'] = 0.04 #set default dt
+    dx = invsion_params['dx']
+    dy = invsion_params['dy']
+    dz = invsion_params['dz']
+    dt = invsion_params['dt']
+    update_thres = invsion_params['update_thres']
+    misfit_thres = invsion_params['misfit_thres']
+    #--------------------------------------
+    model = TauPyModel(model=model_path)
+    #calculate original time, this will be then compared with new_time calculated by new location
+    orig_time = travel_time(model,stlon,stlat,phase,eqlon,eqlat,eqdep)
+    converged_flag = 0
+    sav_invlon = []
+    sav_invlat = []
+    sav_invdep = []
+    sav_misft = [] #save all misfit. if inversion cannot converge, find the best result
+    pre_time = orig_time.copy()
+    for i in range(invsion_params['max_iter']):
+        G = cal_derivative(model_path,eqlon_init,eqlat_init,eqdep_init,stlon,stlat,phase,dx,dy,dz,dt)
+        availid_G = np.where(~np.isnan(G.sum(axis=1)))[0]
+        availid_D = np.where(~np.isnan(D))[0]  #the index without nan value in D
+        intersect_availid = list(set(availid_G).intersection(set(availid_D)))
+        intersect_availid.sort()
+        availid = np.array(intersect_availid)
+        M = GMD_solve(G[availid],D[availid])
+        MM = M*np.array([dx,dy,dz])         # M to the real original scale dx,dy,dz [unit:km], dt [sec]
+        sh_deg = kilometers2degrees(MM[:2])    # convert shifted_km to shifted_deg
+        eqlon_init += sh_deg[0]
+        eqlat_init += sh_deg[1]
+        #prevent depth become negative value
+        if eqdep_init+MM[2]<0:
+            #print('depth become negative, assign depth')
+            eqdep_init = 0.1    # np.random.rand()*10
+        else:
+            eqdep_init += MM[2]
+        new_time = travel_time(model,stlon,stlat,phase,eqlon_init,eqlat_init,eqdep_init)
+        diff_time = new_time-pre_time
+        D = D-diff_time
+        pre_time = new_time.copy()
+        #print(np.mean(np.abs(diff_time))) #update value
+        #print(np.abs(D).sum()) #print D misfit to see how D converge
+        sav_invlon.append(eqlon_init)
+        sav_invlat.append(eqlat_init)
+        sav_invdep.append(eqdep_init)
+        sav_misft.append(np.abs(D).sum())
+        #case 1. no update(diff_time almost zero), D still large
+        if (np.mean(np.abs(diff_time))<update_thres) & (np.abs(D).sum()>misfit_thres ) :
+            #print('Add a small perturbation')
+            eqlon_init += np.random.randn()*0.05 #std=0.05 deg
+            eqlat_init += np.random.randn()*0.05 #std=0.05 deg
+            eqdep_init += np.random.randn()*0.05 #std=0.05 deg
+            continue
+        #case 2. Converged, D very small, no need to update
+        if  np.abs(D).sum()<misfit_thres  :
+            print('Inversion converged after %d iterations'%(i+1),eqlon_init,eqlat_init,eqdep_init)
+            converged_flag = 1
+            break
+
+    sav_misft = np.array(sav_misft)
+    if converged_flag:
+        pass
+    else:
+        idx_minmisft = np.where(sav_misft==np.min(sav_misft))[0][0]
+        eqlon_init = sav_invlon[idx_minmisft]
+        eqlat_init = sav_invlat[idx_minmisft]
+        eqdep_init = sav_invdep[idx_minmisft]
+#        print('Inversion result:',sav_invlon[idx_minmisft],sav_invlat[idx_minmisft],sav_invdep[idx_minmisft])
+    return eqlon_init,eqlat_init,eqdep_init,converged_flag
 
 
 
@@ -159,7 +258,9 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
         'CCC_threshold':0.3,  #use observed shift with CCC greater than this threshold
         'min_stan':5,         #minumim observations
         'max_shift':2,        #maximum shift seconds(observation)
-        'VR':0.5,             #after inversion, check the VR
+        'update_thres':1e-9,  #if update smaller than this, but inversion havent converged, add a perturbation
+        'misfit_thres':1e-3,  #modeled arrival time close enough to observation, inversion converged
+        #'VR':0.5,             #after inversion, check the VR
         }
         T0: reference time in UTCDateTime format. Used in output data
     '''
@@ -189,9 +290,9 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
     #dy = 0.1
     #dz = 0.1
     #dt = 0.04
-    dx = 1 #[unit:km]
-    dy = 1
-    dz = 1
+    dx = 0.05 #[unit:km]
+    dy = 0.05
+    dz = 0.05
     dt = 0.4 #don't use here
     #========================================
 
@@ -245,7 +346,16 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
             phase = phase[use_idx]
             shifts = shifts[use_idx]
             CCC = CCC[use_idx]
-            #build G and do inversion
+            #========build G and do inversion (iterative inversion)========
+            #initial parameters
+            eqlon_init = eqlon
+            eqlat_init = eqlat
+            eqdep_init = eqdep
+            for i in range(50):
+                G = cal_derivative(model_path,eqlon_init,eqlat_init,eqdep_init,stlon,stlat,phase,dx,dy,dz,dt)
+                availid_G = np.where(~np.isnan(G.sum(axis=1)))[0]
+                availid_D = np.where(~np.isnan(D))[0]  #the index without nan value in D
+            
             #note that this only invert once! while most of the methods use iterative inversion
             G,avail_idx = cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=dx,dy=dy,dz=dz,dt=dt)
             M = GMD_solve(G,shifts[avail_idx]*-1) #note that positive time shift means arrives earlier
