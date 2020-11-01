@@ -259,10 +259,24 @@ def clean_detc(detc,filter_detc):
 def cal_VR(y,yhat):
     return 1-(np.sum((y-yhat)**2)/np.sum(y**2))
 
-def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
+def EQreloc(home,project_name,catalog,vel_model,filter_detc,invsion_params,T0):
     '''
         Main relocation
-        fiter_inv={
+        invsion_params={
+        'CCC_threshold':0.3,  #use observed shift with CCC greater than this threshold
+        'min_stan':5,         #minumim observations
+        'max_shift':2.0,      #maximum shift seconds(observation)
+        'update_thres':1e-9,  # (optional) if update smaller than this, but inversion havent converged, add a perturbation
+        'misfit_thres':1e-3,  # (optional) modeled arrival time close enough to observation, inversion converged
+        'max_iter':50,        # (optional) maximum iterations
+        'dx':0.05,            # (optional) small step in x-dir to calculate time changes
+        'dy':0.05,            # (optional)
+        'dz':0.05,            # (optional)
+        'dt':0.04,            # (optional)
+        }
+        
+        
+        invsion_params={
         'CCC_threshold':0.3,  #use observed shift with CCC greater than this threshold
         'min_stan':5,         #minumim observations
         'max_shift':2,        #maximum shift seconds(observation)
@@ -308,7 +322,7 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
     detect_details = glob.glob(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_*.npy')
     detect_details.sort()
     OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/'+'EQreloc_info.txt','w')
-    OUT1.write('#dx dy dz dt VR nstan refT ref_tempT eqlon eqlat eqdep templateID\n')
+    OUT1.write('#eqlon eqlat eqdep  inv_lon inv_lat inv_dep  convergence Nstan det_T temp_T tempID\n')
     OUT1.close()
     for ndet,detect_detail in enumerate(detect_details):
         #detect_detail=detect_details[3]
@@ -332,7 +346,7 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
         #all_sta = get_all_sta(detc)
         sav_M_km = [] #save inversion parameters
         sav_reloc = [] #final result of relocation
-        sav_VR = []
+        sav_convg = [] #stats of whether inversion converges or not
         sav_nstan = []
         sav_date = [] #tims relative to the T0
         for k in detc.keys():
@@ -344,8 +358,8 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
             shifts = np.array(detc[k]['shift'])
             CCC = np.array(detc[k]['CCC'])
             #QC1. with min_stations and CCC threshold
-            use_idx = np.where( (CCC>=fiter_inv['CCC_threshold']) & (np.abs(shifts)<=fiter_inv['max_shift']))[0]
-            if len(use_idx) < fiter_inv['min_stan']:
+            use_idx = np.where( (CCC>=invsion_params['CCC_threshold']) & (np.abs(shifts)<=invsion_params['max_shift']))[0]
+            if len(use_idx) < invsion_params['min_stan']:
                 continue
             #only keep whe measurement with high CCC value
             #print('k=',k)
@@ -353,57 +367,35 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,fiter_inv,T0):
             stlat = stlat[use_idx]
             phase = phase[use_idx]
             shifts = shifts[use_idx]
+            D = shifts*-1 #note that positive time shift means arrives earlier
             CCC = CCC[use_idx]
             #========build G and do inversion (iterative inversion)========
-            #initial parameters
+            #initial guess of eqloc 
             eqlon_init = eqlon
             eqlat_init = eqlat
             eqdep_init = eqdep
-            for i in range(50):
-                G = cal_derivative(model_path,eqlon_init,eqlat_init,eqdep_init,stlon,stlat,phase,dx,dy,dz,dt)
-                availid_G = np.where(~np.isnan(G.sum(axis=1)))[0]
-                availid_D = np.where(~np.isnan(D))[0]  #the index without nan value in D
-            
-            #note that this only invert once! while most of the methods use iterative inversion
-            G,avail_idx = cal_derivative(model_path,eqlon,eqlat,eqdep,stlon,stlat,phase,dx=dx,dy=dy,dz=dz,dt=dt)
-            M = GMD_solve(G,shifts[avail_idx]*-1) #note that positive time shift means arrives earlier
-            #QC2. filter with VR
-            VR = cal_VR(shifts[avail_idx]*-1,np.dot(G,M))
-            if not np.isnan(VR):
-                if VR<fiter_inv['VR']:
-                    continue
-            else:
-                VR = 1 # ()/sum(y**2) is nan means all y are zeros, and M=0
-            #convert to original scale
-            #M_km = M*np.array([dx,dy,dz,dt]) #M to the original scale(km)
-            M_km = M*np.array([dx,dy,dz]) #M to the original scale(km)
-            
-            #convert shifted_km to shifted_deg
-            sh_deg = kilometers2degrees(M_km[:2])
-            #QC3. filter with unreasonable large M (almost impossible)
-            if np.abs(sh_deg[0])>2 or np.abs(sh_deg[1])>2 or np.abs(M_km[2])>200:
-                #import sys
-                #sys.exit() # exit and see what causes this!
-                continue
-            new_lon = eqlon+sh_deg[0]
-            new_lat = eqlat+sh_deg[1]
-            sav_M_km.append(M_km)
-            sav_reloc.append(np.array([new_lon,new_lat,eqdep+M_km[2]]))
+            #run iterative inversion here
+            inv_eqlon,inv_eqlat,inv_eqdep,convg = iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon,stlat,phase,D,invsion_params)
+            #save inversion result
+            sav_reloc.append(np.array([inv_eqlon,inv_eqlat,inv_eqdep]))
+            sav_convg.append(convg)
+            sav_nstan.append(len(D)) #number of observation/constraints in inversion
             sav_date.append( (UTCDateTime(k)-T0)/86400.0)
-            sav_VR.append(VR)
-            sav_nstan.append(len(shifts))
         #finally make all list to array
-        sav_M_km = np.array(sav_M_km)
+        #sav_M_km = np.array(sav_M_km)
         sav_reloc = np.array(sav_reloc)
+        sav_convg = np.array(sav_convg)
+        sav_nstan = np.array(sav_nstan)
         sav_date = np.array(sav_date)
         if len(sav_reloc)>0:
             #save dX,dY,dZ,dT to a txt file
             OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/'+'EQreloc_info.txt','a')
-            if sav_M_km.ndim==1:
-                OUT1.write('%f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[0],sav_M_km[1],sav_M_km[2],sav_VR[0],sav_nstan[0],sav_date[0],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
+            if sav_reloc.ndim==1:
+                #OUT1.write('%f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[0],sav_M_km[1],sav_M_km[2],sav_VR[0],sav_nstan[0],sav_date[0],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid)) #old format no longer available
+                OUT1.write('%f %f %f  %f %f %f %d %d  %f %f %05d\n'%(eqlon, eqlat, eqdep, inv_eqlon,inv_eqlat,inv_eqdep, sav_convg[0], sav_nstan[0], sav_date[0], (OT-T0)/86400.0, neqid )  )
             else:
-                for ii in range(len(sav_M_km)):
-                    OUT1.write('%f %f %f  %f %d %f %f  %f %f %f %05d\n'%(sav_M_km[ii][0],sav_M_km[ii][1],sav_M_km[ii][2],sav_VR[ii],sav_nstan[ii],sav_date[ii],(OT-T0)/86400.0,eqlon,eqlat,eqdep,neqid))
+                for ii in range(len(sav_reloc)):
+                    OUT1.write('%f %f %f  %f %f %f %d %d  %f %f %05d\n'%(eqlon, eqlat, eqdep, sav_reloc[ii][0], sav_reloc[ii][1], sav_reloc[ii][2], sav_convg[ii], sav_nstan[ii], sav_date[ii], (OT-T0)/86400.0, neqid )  )
             OUT1.close()
 
 
