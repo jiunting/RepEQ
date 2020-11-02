@@ -180,6 +180,14 @@ def iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon
     if converged_flag:
         pass
     else:
+        #compare not nan value
+        notnan = np.where(~np.isnan(sav_misft))[0]
+        if len(notnan)==0:
+            return eqlon_init,eqlat_init,eqdep_init,-1
+        sav_misft = sav_misft[notnan]
+        sav_invlon = sav_invlon[notnan]
+        sav_invlat = sav_invlat[notnan]
+        sav_invdep = sav_invdep[notnan]
         idx_minmisft = np.where(sav_misft==np.min(sav_misft))[0][0]
         eqlon_init = sav_invlon[idx_minmisft]
         eqlat_init = sav_invlat[idx_minmisft]
