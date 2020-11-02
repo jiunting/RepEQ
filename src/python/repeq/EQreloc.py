@@ -177,6 +177,9 @@ def iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon
             break
 
     sav_misft = np.array(sav_misft)
+    sav_invlon = np.array(sav_invlon)
+    sav_invlat = np.array(sav_invlat)
+    sav_invdep = np.array(sav_invdep)
     if converged_flag:
         pass
     else:
