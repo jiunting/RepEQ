@@ -103,15 +103,22 @@ filter_detc={
 }
 
 #Filter 2: focus on inversion part
-fiter_inv={
+invsion_params={
         'CCC_threshold':0.3,  #use observed shift with CCC greater than this threshold
         'min_stan':5,         #minumim observations
-        'max_shift':2,        #maximum shift seconds(observation). Data larger than 2sec will be droped
-        'VR':0.3,             #after inversion, check the VR. Only keep the result if VR is high
+        'max_shift':2.0,        #maximum shift seconds(observation)
+        'update_thres':1e-9,  # (optional) if update smaller than this, but inversion havent converged, add a perturbation
+        'misfit_thres':1e-3,  # (optional) modeled arrival time close enough to observation, inversion converged
+        'max_iter':20,        # (optional) maximum iterations
+        'dx':0.05,            # (optional) small step in x-dir to calculate time changes
+        'dy':0.05,            # (optional)
+        'dz':0.05,            # (optional)
+        'dt':0.04,            # (optional)
 }
+
 vel_model = 'Hawaii.litho.mod'  #1D velocity model same as fk format
 T0 = UTCDateTime("2018-05-04T22:32:54.65")  #output data time will be related to this datetime
-EQreloc.EQreloc(home,project_name,cata_name,vel_model,filter_detc,fiter_inv,T0)  #final result will be in output/Template_match/Detections/EQreloc_info.txt
+EQreloc.EQreloc(home,project_name,cata_name,vel_model,filter_detc,invsion_params,T0)  #final result will be in output/Template_match/Detections/EQreloc_info.txt
 
 
 
