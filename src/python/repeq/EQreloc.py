@@ -323,12 +323,11 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,invsion_params,T0):
     #dy = 0.1
     #dz = 0.1
     #dt = 0.04
-    dx = 0.05 #[unit:km]
-    dy = 0.05
-    dz = 0.05
-    dt = 0.4 #don't use here
+#    dx = 0.05 #[unit:km]
+#    dy = 0.05
+#    dz = 0.05
+#    dt = 0.4 #don't use here
     #========================================
-
     #load all detailed detection .npy files
     detect_details = glob.glob(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_*.npy')
     detect_details.sort()
@@ -386,7 +385,15 @@ def EQreloc(home,project_name,catalog,vel_model,filter_detc,invsion_params,T0):
             eqlat_init = eqlat
             eqdep_init = eqdep
             #run iterative inversion here
-            inv_eqlon,inv_eqlat,inv_eqdep,convg = iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon,stlat,phase,D,invsion_params)
+            if np.sum(D)==0:
+                #D all zeros means location doesnt change
+                inv_eqlon,inv_eqlat,inv_eqdep,convg = eqlon,eqlat,eqdep,2
+            else:
+                try:
+                    inv_eqlon,inv_eqlat,inv_eqdep,convg = iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon,stlat,phase,D,invsion_params)
+                except:
+                    #inversion fail, probably encounter HUGE location(depth) update
+                    inv_eqlon,inv_eqlat,inv_eqdep,convg = eqlon,eqlat,eqdep,-2
             #save inversion result
             sav_reloc.append(np.array([inv_eqlon,inv_eqlat,inv_eqdep]))
             sav_convg.append(convg)
