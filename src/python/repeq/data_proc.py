@@ -253,6 +253,10 @@ def moving_std_all(home,project_name,pattern='20*',window_pts=45000,mov_pts=4500
             else:
                 sav_all_movstd[name] = {}
                 sav_all_movstd[name][T0] = np.array(mov_std)
+    #save the result in project_name/waveforms/
+    np.save(home+'/'+project_name+'/waveforms/'+'all_movstd.npy',sav_all_movstd)
+    np.save(home+'/'+project_name+'/waveforms/'+'avail_date.npy',avail_date)
+    np.save(home+'/'+project_name+'/waveforms/'+'mov_T.npy',mov_T)
     return sav_all_movstd,avail_date,mov_T
 
 
