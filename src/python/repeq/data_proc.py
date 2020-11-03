@@ -212,6 +212,54 @@ def make_sta_table(home,project_name,pattern='*000000'):
 
 
 
+def moving_std(time,data,window_pts,mov_pts):
+    #calculate moving std of a daily data
+    sav_time = []
+    sav_std = []
+    total_pts = len(data)
+    #initial st,ed
+    st = 0
+    ed = st+window_pts
+    while ed<=total_pts:
+        sav_std.append(np.std(data[st:ed]))
+        #sav_time.append((T0+np.mean(time[st:ed])).datetime) #datetime format
+        sav_time.append(np.mean(time[st:ed])  ) #second format
+        st += mov_pts
+        ed += mov_pts
+    return sav_time,sav_std
+
+
+
+def moving_std_all(home,project_name,pattern='20*',window_pts=45000,mov_pts=4500):
+    daily_dirs = glob.glob(home+'/'+project_name+'/waveforms/'+pattern)
+    daily_dirs.sort()
+    sav_all_movstd = {}
+    avail_date = []
+    for daily_dir in daily_dirs:
+        D = obspy.read(daily_dir+'/waveforms/merged.ms')
+        T0 = D[0].stats.starttime.strftime('%Y-%m-%d')
+        avail_date.append(T0)
+        for ist in range(len(D)):
+            #get net.sta.comp.loc
+            net = D[ist].stats.network
+            sta = D[ist].stats.station
+            comp = D[ist].stats.channel
+            loc = D[ist].stats.location
+            name = '.'.join([net,sta,comp,loc])
+            #calculate STD
+            mov_T,mov_std = moving_std(D[ist].times(),D[ist].data,window_pts,mov_pts)
+            if name in sav_all_movstd:
+                sav_all_movstd[name][T0] = np.array(mov_std)
+            else:
+                sav_all_movstd[name] = {}
+                sav_all_movstd[name][T0] = np.array(mov_std)
+    return sav_all_movstd,avail_date,mov_T
+
+
+
+
+
+
 
 
 
