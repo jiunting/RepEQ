@@ -270,5 +270,3 @@ def moving_std_all(home,project_name,pattern='20*',window_pts=45000,mov_pts=4500
 
 
 
-
-
