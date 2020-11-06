@@ -91,8 +91,16 @@ def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'mi
 
 
 
-
 def clean_detc(detc,filter_detc):
+    '''
+        clean detailed repeating EQs detections by filter_detc
+        example:
+        filter_detc = {
+        'min_stan':5, #number of stations
+        'min_CC':0.2, #min CC value
+        'diff_t':60, #time difference between events should larger than this
+        }
+    '''
     new_detc = {}
     Ngps = -1 #initialize group index
     sav_gps = {} #create tmp dictionary for grouping
