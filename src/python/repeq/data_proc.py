@@ -220,25 +220,47 @@ def make_sta_table(home,project_name,pattern='*000000'):
 
 
 
-def moving_std(time,data,window_pts,mov_pts):
-    #calculate moving std of a daily data
+def cal_moving(time,data,typ,window_pts,mov_pts):
+    #calculate moving std,avg,downsamp of a daily data
+    #typ = 'avg', 'std', or samp
     sav_time = []
-    sav_std = []
+    sav_data = []
     total_pts = len(data)
     #initial st,ed
     st = 0
     ed = st+window_pts
-    while ed<=total_pts:
-        sav_std.append(np.std(data[st:ed]))
-        #sav_time.append((T0+np.mean(time[st:ed])).datetime) #datetime format
-        sav_time.append(np.mean(time[st:ed])  ) #second format
-        st += mov_pts
-        ed += mov_pts
-    return sav_time,sav_std
+    if typ=='std':
+        while ed<=total_pts:
+            sav_data.append(np.std(data[st:ed]))
+            #sav_time.append((T0+np.mean(time[st:ed])).datetime) #datetime format
+            sav_time.append(np.mean(time[st:ed])  ) #second format
+            st += mov_pts
+            ed += mov_pts
+    elif typ=='avg':
+        while ed<=total_pts:
+            sav_data.append(np.mean(data[st:ed]))
+            #sav_time.append((T0+np.mean(time[st:ed])).datetime) #datetime format
+            sav_time.append(np.mean(time[st:ed])  ) #second format
+            st += mov_pts
+            ed += mov_pts
+    elif typ=='samp':
+        while ed<=total_pts:
+            sav_data.append(data[ int((st+ed)/2) ]) #just a sample in the middle of window (downsampling)
+            #sav_time.append((T0+np.mean(time[st:ed])).datetime) #datetime format
+            sav_time.append(np.mean(time[st:ed])  ) #second format
+            st += mov_pts
+            ed += mov_pts
+    else:
+        print('please specify typ=[std,avg,samp]')
+
+    return sav_time,sav_data
 
 
 
-def moving_std_all(home,project_name,pattern='20*',window_pts=45000,mov_pts=4500):
+def cal_moving_all(home,project_name,pattern='20*',typ='std',window_pts=45000,mov_pts=4500):
+    '''
+        get moving std for all the data in waveforms dir
+    '''
     daily_dirs = glob.glob(home+'/'+project_name+'/waveforms/'+pattern)
     daily_dirs.sort()
     sav_all_movstd = {}
@@ -255,21 +277,43 @@ def moving_std_all(home,project_name,pattern='20*',window_pts=45000,mov_pts=4500
             loc = D[ist].stats.location
             name = '.'.join([net,sta,comp,loc])
             #calculate STD
-            mov_T,mov_std = moving_std(D[ist].times(),D[ist].data,window_pts,mov_pts)
+            mov_T,mov_std = cal_moving(D[ist].times(),D[ist].data,typ,window_pts,mov_pts)
             if name in sav_all_movstd:
                 sav_all_movstd[name][T0] = np.array(mov_std)
             else:
                 sav_all_movstd[name] = {}
                 sav_all_movstd[name][T0] = np.array(mov_std)
     #save the result in project_name/waveforms/
-    np.save(home+'/'+project_name+'/waveforms/'+'all_movstd.npy',sav_all_movstd)
+    np.save(home+'/'+project_name+'/waveforms/'+'cal_moving_%s.npy'%(typ),sav_all_movstd)
     np.save(home+'/'+project_name+'/waveforms/'+'avail_date.npy',avail_date)
-    np.save(home+'/'+project_name+'/waveforms/'+'mov_T.npy',mov_T)
+    np.save(home+'/'+project_name+'/waveforms/'+'moving_T_%s.npy'%(typ),mov_T)
     return sav_all_movstd,avail_date,mov_T
 
 
-
-
+#class waveform_QC():
+#    def __init__(self,home,project_name,pattern='20*'):
+#    '''
+#        home: path of the home working directory <str>
+#        project_name: project name <str>
+#        pattern: search name pattern in the home/project_name/waveforms/ <str>
+#    '''
+#        self.home = home
+#        self.project_name = project_name
+#        self.pattern = pattern
+#        self.typ = typ
+#        self.window_pts = window_pts
+#        self.mov_pts = mov_pts
+#
+#    def cal_moving(self,typ='avg',window_pts=45000,mov_pts=4500):
+#    '''
+#        typ: tpye for calculation 'avg' or 'std' <str>
+#        window_pts: points per window <int>
+#        mov_pts: point for each move <int>
+#    '''
+#        import glob
+#        import numpy as np
+#        home = self.home
+#        project_name = self.project_name
 
 
 
