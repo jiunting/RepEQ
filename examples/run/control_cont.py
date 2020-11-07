@@ -79,8 +79,11 @@ if get_template:
     T.template_load() 
 
 #run xcorr calculation
-T.xcorr_cont(save_CCF=False,fmt=1) #True means save all the CCF function in Template_match/CCF_records/
+#T.xcorr_cont(save_CCF=False,fmt=1) #True means save all the CCF function in Template_match/CCF_records/
+T.xcorr_cont(save_CCF=False,fmt=2) #fmt=2 output detailed calculation
 
+
+# reading fmt=1 for T.xcorr_cont() (won't work for fmt=2)
 #read all measurements in project_name/output/Template_match/Detections and make summary file based on the given filter criteria
 from repeq import data_proc
 filter_params={
@@ -91,9 +94,9 @@ filter_params={
 data_proc.read_detections(home,project_name,filter_params) #this doesn't work for the newest format, read the data manually
 
 
+#------repEQ relocation---------
 #Repeating EQ relocation
 from repeq import EQreloc
-
 #set some filtering criteria
 #Filter 1: focus on each detection .npy file
 filter_detc={
@@ -119,10 +122,13 @@ invsion_params={
 vel_model = 'Hawaii.litho.mod'  #1D velocity model same as fk format
 T0 = UTCDateTime("2018-05-04T22:32:54.65")  #output data time will be related to this datetime
 EQreloc.EQreloc(home,project_name,cata_name,vel_model,filter_detc,invsion_params,T0)  #final result will be in output/Template_match/Detections/EQreloc_info.txt
+#------repEQ relocation END---------
 
 
 
-
+#-----continuous data QC-------
+from repeq import data_proc
+data_proc.cal_moving_all(home,project_name,pattern='*0000',type='samp',window_pts=50000,mov_pts=25000) #the 3 files will be saved under waveforms/
 
 
 
