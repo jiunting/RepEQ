@@ -487,6 +487,9 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
         download template by event ID
         original function by: Amanda Thomas
         modified by: Tim Lin
+         -merge data with interpolate data point 2020.09
+         -add multiple attemps when download has unexpected issue 2020.09
+         
     '''
     from obspy.clients.fdsn import Client
     from libcomcat.search import get_event_by_id
@@ -559,11 +562,12 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             st += tr
             #save name, time and "phase" info for later relocation
             #.ms only gives starttime (know arrival time) but not P or S wave
-            sav_net_sta_comp.append(net+'.'+sta+'.'+comp)
+            sav_net_sta_comp.append(net+'.'+sta+'.'+comp+'.'+location)
             sav_phase.append(Phase)
-            tmp_arrT = arr.strftime('%Y-%m-%dT%H:%M:%S.%f') #arrival time in isoformat i.e. 2018-05-05T17:44:18 or 2018-05-05T17:44:23.960000
-            if len(tmp_arrT)==26:
-                tmp_arrT = tmp_arrT[:-4]
+            #tmp_arrT = arr.strftime('%Y-%m-%dT%H:%M:%S.%f') #arrival time in isoformat i.e. 2018-05-05T17:44:18 or 2018-05-05T17:44:23.960000
+            tmp_arrT = arr.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-4] #accuracy to 0.01 sec
+            #if len(tmp_arrT)==26:
+            #    tmp_arrT = tmp_arrT[:-4]
             #print('Time:',tmp_arrT)
             sav_arr.append(tmp_arrT)
     All_info['net_sta_comp'] = np.array(sav_net_sta_comp)

@@ -130,7 +130,7 @@ class Template():
                 sav_alldays_eq_sta = {} #detailed info for CC,CCC,shifts for every station for all searched days by the same template
                 #loop the daily data
                 for dayst_path in dayst_paths:
-                    sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_phase=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
+                    sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_LOC=[]; sav_phase=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
                     YMD = dayst_path.split('/')[-1][:8]
                     print(' --Reading daily data: %s'%(dayst_path))
                     i_dayst = read(dayst_path+'/waveforms/merged.ms') #load daily data
@@ -140,7 +140,7 @@ class Template():
                         NET = st[i].stats.network
                         STA = st[i].stats.station
                         CHN = st[i].stats.channel
-                                        
+                        LOC = st[i].stats.location
                         #in daily data... search for same station,channel,comp,sampling rate....that matches the i_th pick in particular template
                         tmp_dayst = i_dayst.select(network=st[i].stats.network,station=STA,sampling_rate=st[i].stats.sampling_rate,
                                                    channel=st[i].stats.channel,location=st[i].stats.location)
@@ -176,6 +176,7 @@ class Template():
                             sav_NET.append(NET)
                             sav_STA.append(STA)
                             sav_CHN.append(CHN)
+                            sav_LOC.append(LOC)
                             sav_phase.append(pick_info['phase'][i]) #P or S phase
                             sav_travel_npts.append(travel_npts)
                             sav_CCF.append(CCF)
@@ -207,6 +208,7 @@ class Template():
                             tmpCCF.stats.network = sav_NET[ii]
                             tmpCCF.stats.station = sav_STA[ii]
                             tmpCCF.stats.channel = sav_CHN[ii]
+                            tmpCCF.stats.location = sav_LOC[ii]
                             ST += tmpCCF
                         ST.write(home+'/'+project_name+'/output/Template_match/CCF_records/'+'shftCCF_template_%05d_daily_%s.ms'%(tmp_idx,YMD),format="MSEED")
                     
@@ -235,7 +237,7 @@ class Template():
                                 sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
                                 sav_maxCCC.append(maxCCC)
                                 if detected_OT_str in sav_eq_sta:
-                                    sav_eq_sta[detected_OT_str]['net_sta_comp'].append(sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n])
+                                    sav_eq_sta[detected_OT_str]['net_sta_comp'].append(sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]+'.'+sav_LOC[n])
                                     sav_eq_sta[detected_OT_str]['phase'].append(sav_phase[n])
                                     sav_eq_sta[detected_OT_str]['CCC'].append(maxCCC)
                                     sav_eq_sta[detected_OT_str]['CC'].append(sh_sav_CCF[n][neqid])
@@ -244,7 +246,7 @@ class Template():
                                 else:
                                     #initial dictionary
                                     sav_eq_sta[detected_OT_str] = {}
-                                    sav_eq_sta[detected_OT_str]['net_sta_comp'] = [sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]]
+                                    sav_eq_sta[detected_OT_str]['net_sta_comp'] = [sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]+'.'+sav_LOC[n]]
                                     sav_eq_sta[detected_OT_str]['phase'] = [sav_phase[n]]
                                     sav_eq_sta[detected_OT_str]['CCC'] = [maxCCC]
                                     sav_eq_sta[detected_OT_str]['CC'] = [sh_sav_CCF[n][neqid]] #sh_sav_CCF[n][neqid]

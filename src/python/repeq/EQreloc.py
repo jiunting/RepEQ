@@ -202,7 +202,7 @@ def iter_inv(model_path,eqlon,eqlat,eqdep,eqlon_init,eqlat_init,eqdep_init,stlon
 
 def get_lonlat(sta_table,sta):
     #sta_table is all station lon, lat, name in pandas format
-    #sta: list of net.staname or net.stname.comp (the comp will be ignored)
+    #sta: list of net.staname or net.stname.comp... (the comp and the later will be ignored)
     #find sta lon,lat
     sta = [i.split('.')[0]+'.'+i.split('.')[1] for i in sta]
     sav_lon = []
