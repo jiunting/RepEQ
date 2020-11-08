@@ -1,9 +1,26 @@
-#some data processing tools
+#some data (pre/post)-processing tools
 
 import glob
 import obspy
 import numpy as np
 from obspy import UTCDateTime
+
+
+def cat2pd(cata_path):
+    '''
+        convert USGS catalog format to pandas
+    '''
+    import pandas as pd
+    import os
+    #load catalog in pandas
+    #read the full path
+    cat = np.genfromtxt(cata_path, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U22",float,float,float,float,"|U2","|U22"))
+    df = pd.DataFrame(cat, columns=['ID','Time','Magnitude','Lat','Lon','Depth','Regional'])
+    for ii in range(len(cat)):
+        df = df.append({'ID': cat[ii][6][2:],'Time': cat[ii][0][11:], 'Magnitude': cat[ii][4], 'Date': cat[ii][0][:10],'Lat': cat[ii][1], 'Lon': cat[ii][2], 'Depth': cat[ii][3], 'Regional': cat[ii][5]}, ignore_index=True)
+    return df
+
+
 
 
 def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'):
