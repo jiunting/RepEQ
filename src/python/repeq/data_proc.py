@@ -334,6 +334,37 @@ def cal_moving_all(home,project_name,pattern='20*',typ='std',window_pts=45000,mo
 
 
 
+def cut_dailydata(home,project_name,dect_file,filter_detc):
+    '''
+        dect_file: detailed detection file in home/project_name/output/Template_match/Detections
+        filter_detc: filter used by clean_detc
+        example
+        filter_detc = {
+        'min_stan':5, #number of stations
+        'min_CC':0.2, #min CC value
+        'diff_t':60, #time difference between events should larger than this
+        }
+    '''
+    #load detailed Detected_tmp_xxxxxx.npy file
+    detc = np.load(home+'/'+project_name+'/output/Template_match/Detections/'+dect_file,allow_pickle=True)
+    detc = detc.item()
+    detc = clean_detc(detc,filter_detc)
+
+    #get eqid and its corresponding phase info
+    eqid = dect_file.split('_')[-1].split('.')[0]
+    phase_info_file = home+'/'+project_name+'/waveforms_template/template_'+eqid+'.npy'
+    phase_info = np.load(phase_info_file,allow_pickle=True)
+    phase_info = phase_info.item() #phase_info= {'net_sta_comp':['HV.PHOD.HNZ', 'HV.PHOD.HNE',...] , 'phase':['P','S',..],'arrival':['2018-05-02T12:54:15.68','2018-05-02T12:54:16.44',...]}
+    
+    #loop every detection
+    for eq_time in detc.keys():
+        #find which daily data it is
+        YMD = eq_time.split('T')[0].replace('-','')
+        dir = glob.glob(home+'/'+project_name+'/waveforms/'+YMD+'*')[0]
+        
+        
+        UTCDateTime(eq_time)
+
 
 
 
