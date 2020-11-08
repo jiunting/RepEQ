@@ -501,6 +501,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     regional=df['Regional']
     eventid = regional+str(df['ID'])
     detail = get_event_by_id(eventid, includesuperseded=True)
+    OT = UTCDateTime(detail.time) #event origin time
     phases = get_phase_dataframe(detail, catalog=regional)
     phases = phases[phases['Status'] == 'manual']
     phases=phases[~phases.duplicated(keep='first',subset=['Channel','Phase'])]
@@ -509,6 +510,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     sav_net_sta_comp = []
     sav_phase = []
     sav_arr = []
+    sav_travel = []
     All_info = {}
     for ii in range(len(phases)):
         elems = phases.iloc[ii]['Channel'].split('.')
@@ -570,9 +572,11 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             #    tmp_arrT = tmp_arrT[:-4]
             #print('Time:',tmp_arrT)
             sav_arr.append(tmp_arrT)
+            sav_travel.append(arr-OT) #travel time (relative to the origin)
     All_info['net_sta_comp'] = np.array(sav_net_sta_comp)
     All_info['phase'] = np.array(sav_phase)
-    All_info['arrival'] = np.array(sav_arr)
+    All_info['arrival'] = np.array(sav_arr) #absolute arrival time
+    All_info['travel'] = np.array(sav_travel) #phase travel time (sec)
     
     return st,All_info
 
