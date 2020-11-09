@@ -392,6 +392,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             #print('    ',travel_time)
             elems = net_sta_comp.split('.')
             selected_D = D.select(network=elems[0],station=elems[1],channel=elems[2],location=elems[3])
+            selected_D = selected_D.copy()
             assert len(selected_D)==1, 'selected multiple data, something wrong'
             #cut data
             t1 = UTCDateTime(eq_time)+travel_time-cut_window[0]
@@ -400,7 +401,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             selected_D.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
             selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1)
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
-            St += selected_D[0].copy()
+            St += selected_D[0]
             sav_PS.append(PS)
         #return St #test the script
         sav_tcs[eq_time] = St
