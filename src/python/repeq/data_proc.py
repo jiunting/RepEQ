@@ -369,6 +369,7 @@ def cut_dailydata(home,project_name,dect_file,filter_detc):
     cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
     sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
     #loop every detection
+    sav_tcs = {}
     for eq_time in detc.keys():
         #find which daily data it is
         YMD = eq_time.split('T')[0].replace('-','')
@@ -390,7 +391,9 @@ def cut_dailydata(home,project_name,dect_file,filter_detc):
             selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1)
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
             St += selected_D[0]
-        return St #test the script
+        #return St #test the script
+        sav_tcs[eq_time] = St
+    return St
         #St finished
         #UTCDateTime(eq_time)
 
