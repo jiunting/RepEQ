@@ -404,6 +404,7 @@ class Template():
                     print('sav_CC, mean=',sav_CC,np.mean(sav_CC))
                     CC_template[ii,jj] = np.mean(sav_CC)
                     break
+                break
             CC_template = np.array(CC_template)
             return CC_template
 
