@@ -373,7 +373,7 @@ def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
     #loop every detection
     sum_tcs_phase = {} #info of tcs and PS phase
     sav_tcs = {}
-    all_sav_PS = [] #record P or S wave info for all detections
+    all_sav_PS = {} #record P or S wave info for all detections
     for eq_time in detc.keys():
         #find which daily data it is
         YMD = eq_time.split('T')[0].replace('-','')
@@ -401,7 +401,7 @@ def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
             sav_PS.append(PS)
         #return St #test the script
         sav_tcs[eq_time] = St
-        all_sav_PS.append(sav_PS)
+        all_sav_PS[eq_time] = sav_PS
     sum_tcs_phase['detc_tcs'] = sav_tcs
     sum_tcs_phase['phase'] = all_sav_PS
     #return sav_tcs,all_sav_PS
