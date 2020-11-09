@@ -334,44 +334,65 @@ def cal_moving_all(home,project_name,pattern='20*',typ='std',window_pts=45000,mo
 
 
 
-#def cut_dailydata(home,project_name,dect_file,filter_detc):
-#    '''
-#        dect_file: detailed detection file in home/project_name/output/Template_match/Detections
-#        filter_detc: filter used by clean_detc
-#        example
-#        filter_detc = {
-#        'min_stan':5, #number of stations
-#        'min_CC':0.2, #min CC value
-#        'diff_t':60, #time difference between events should larger than this
-#        }
-#    '''
-#    #load detailed Detected_tmp_xxxxxx.npy file
-#    detc = np.load(home+'/'+project_name+'/output/Template_match/Detections/'+dect_file,allow_pickle=True)
-#    detc = detc.item()
-#    detc = clean_detc(detc,filter_detc) #detc={'net_sta_comp':['HV.JOKA.HHZ', 'HV.KNHD.EHZ'...],'phase':['P','S'...],'CCC':[0.99,0.98...],'CC':[0.93,0.9...],'shift':[0.0,0.04...]}
-#
-#    #get eqid and its corresponding phase info
-#    eqid = dect_file.split('_')[-1].split('.')[0]
-#    phase_info_file = home+'/'+project_name+'/waveforms_template/template_'+eqid+'.npy'
-#    phase_info = np.load(phase_info_file,allow_pickle=True)
-#    phase_info = phase_info.item() #phase_info= {'net_sta_comp':['HV.PHOD.HNZ', 'HV.PHOD.HNE',...] , 'phase':['P','S',..],'arrival':['2018-05-02T12:54:15.68','2018-05-02T12:54:16.44',...]}
-#    
-#    #loop every detection
-#    for eq_time in detc.keys():
-#        #find which daily data it is
-#        YMD = eq_time.split('T')[0].replace('-','')
-#        dir = glob.glob(home+'/'+project_name+'/waveforms/'+YMD+'*')[0]
-#        #read merged daily data
-#        D = obspy.read(dir+'/waveforms/merged.ms')
-#        #select net_sta_comp
-#        St = obspy.Stream()
-#        for net_sta_comp in detc[eq_time]['net_sta_comp']:
-#            elems = net_sta_comp.split('.')
-#        
-#        D.select
-#        
-#        
-#        UTCDateTime(eq_time)
+def cut_dailydata(home,project_name,dect_file,filter_detc):
+    '''
+        dect_file: detailed detection file in home/project_name/output/Template_match/Detections
+        filter_detc: filter used by clean_detc
+        example
+        filter_detc = {
+        'min_stan':5, #number of stations
+        'min_CC':0.2, #min CC value
+        'diff_t':60, #time difference between events should larger than this
+        }
+    '''
+    #load detailed Detected_tmp_xxxxxx.npy file
+    detc = np.load(home+'/'+project_name+'/output/Template_match/Detections/'+dect_file,allow_pickle=True)
+    detc = detc.item()
+    detc = clean_detc(detc,filter_detc) #detc={'net_sta_comp':['HV.JOKA.HHZ.', 'HV.KNHD.EHZ.00'...],'phase':['P','S'...],'CCC':[0.99,0.98...],'CC':[0.93,0.9...],'shift':[0.0,0.04...]}
+
+    #get eqid and its corresponding phase info
+    eqid = dect_file.split('_')[-1].split('.')[0]
+    phase_info_file = home+'/'+project_name+'/waveforms_template/template_'+eqid+'.npy'
+    phase_info = np.load(phase_info_file,allow_pickle=True)
+    phase_info = phase_info.item() #phase_info= {'net_sta_comp':['HV.PHOD.HNZ.', 'HV.PHOD.HNE.',...] , 'phase':['P','S',..],'arrival':['2018-05-02T12:54:15.68','2018-05-02T12:54:16.44',...],'travel':[1.2,2.231,3.21...]}
+
+    #load template waveforms
+    temp_file = home+'/'+project_name+'/waveforms_template/template_'+eqid+'.ms'
+    temp = obspy.read(temp_file)
+
+
+    def get_travel(phase_info,net_sta_comp):
+        #get travel time(sec) from phase_info file by specifing a net_sta_comp (and loc) e.g. 'HV.PHOD.HNZ.'
+        idx = np.where(net_sta_comp==phase_info['net_sta_comp'])[0][0]
+        return phase_info['travel'][idx]
+
+    cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
+    sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
+    #loop every detection
+    for eq_time in detc.keys():
+        #find which daily data it is
+        YMD = eq_time.split('T')[0].replace('-','')
+        dir = glob.glob(home+'/'+project_name+'/waveforms/'+YMD+'*')[0]
+        #read merged daily data
+        D = obspy.read(dir+'/waveforms/merged.ms')
+        #select net_sta_comp
+        St = obspy.Stream()
+        for net_sta_comp in detc[eq_time]['net_sta_comp']:
+            #get travel time(sec) for this net_sta_comp (and loc)
+            travel_time = get_travel(phase_info,net_sta_comp)
+            elems = net_sta_comp.split('.')
+            selected_D = D.select(network=elems[0],station=elems[1],channel=elems[2],location=elems[3])
+            assert len(selected_D)==1, 'selected multiple data, something wrong'
+            #cut data
+            t1 = UTCDateTime(eq_time)+travel_time-cut_window[0]
+            t2 = UTCDateTime(eq_time)+travel_time+cut_window[1]
+            selected_D.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
+            selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1)
+            selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
+            St += selected_D[0]
+        return St #test the script
+        #St finished
+        #UTCDateTime(eq_time)
 
 
 
