@@ -400,6 +400,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             selected_D.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
             selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1)
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
+            print('    after cut ',selected_D[0].starttime.isoformat(),selected_D[0].endtime.isoformat())
             St += selected_D[0]
             sav_PS.append(PS)
         #return St #test the script
