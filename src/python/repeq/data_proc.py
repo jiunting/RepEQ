@@ -387,7 +387,9 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             #P or S?
             PS = detc[eq_time]['phase'][ista]
             #get travel time(sec) for this net_sta_comp (and loc)
+            print('Travel Time for=',net_sta_comp,PS)
             travel_time = get_travel(phase_info,net_sta_comp,PS)
+            print('    ',travel_time)
             elems = net_sta_comp.split('.')
             selected_D = D.select(network=elems[0],station=elems[1],channel=elems[2],location=elems[3])
             assert len(selected_D)==1, 'selected multiple data, something wrong'
