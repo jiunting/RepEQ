@@ -363,14 +363,15 @@ def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
     temp = obspy.read(temp_file)
 
 
-    def get_travel(phase_info,net_sta_comp):
+    def get_travel(phase_info,net_sta_comp,PS):
         #get travel time(sec) from phase_info file by specifing a net_sta_comp (and loc) e.g. 'HV.PHOD.HNZ.'
-        idx = np.where(net_sta_comp==phase_info['net_sta_comp'])[0][0]
+        idx = np.where((phase_info['net_sta_comp']==net_sta_comp) & (phase_info['phase']==PS) )[0][0]
         return phase_info['travel'][idx]
 
     #cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
     sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
     #loop every detection
+    sum_tcs_phase = {} #info of tcs and PS phase
     sav_tcs = {}
     all_sav_PS = [] #record P or S wave info for all detections
     for eq_time in detc.keys():
@@ -383,8 +384,10 @@ def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
         St = obspy.Stream()
         sav_PS = [] #record P or S wave info
         for ista,net_sta_comp in enumerate(detc[eq_time]['net_sta_comp']):
+            #P or S?
+            PS = detc[eq_time]['phase'][ista]
             #get travel time(sec) for this net_sta_comp (and loc)
-            travel_time = get_travel(phase_info,net_sta_comp)
+            travel_time = get_travel(phase_info,net_sta_comp,PS)
             elems = net_sta_comp.split('.')
             selected_D = D.select(network=elems[0],station=elems[1],channel=elems[2],location=elems[3])
             assert len(selected_D)==1, 'selected multiple data, something wrong'
@@ -395,11 +398,14 @@ def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
             selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1)
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
             St += selected_D[0]
-            sav_PS.append(detc[eq_time]['phase'][ista])
+            sav_PS.append(PS)
         #return St #test the script
         sav_tcs[eq_time] = St
         all_sav_PS.append(sav_PS)
-    return sav_tcs,all_sav_PS
+    sum_tcs_phase['detc_tcs'] = sav_tcs
+    sum_tcs_phase['phase'] = all_sav_PS
+    #return sav_tcs,all_sav_PS
+    return sum_tcs_phase
         #St finished
         #UTCDateTime(eq_time)
 
