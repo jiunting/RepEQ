@@ -394,7 +394,7 @@ class Template():
                             #get the data and calculate CC
                             data_j_ksta = st_j[selected_idx].data
                             data_i_ksta = st_i[ii].data
-                            CCC,lag = cal_CCF(data1,data2)
+                            CCC,lag = cal_CCF(data_i_ksta,data_j_ksta)
                             sav_CC.append(CCC)
                         else:
                             #data not found
