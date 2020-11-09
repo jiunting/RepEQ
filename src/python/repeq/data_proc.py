@@ -334,7 +334,7 @@ def cal_moving_all(home,project_name,pattern='20*',typ='std',window_pts=45000,mo
 
 
 
-def cut_dailydata(home,project_name,dect_file,filter_detc):
+def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
     '''
         dect_file: detailed detection file in home/project_name/output/Template_match/Detections
         filter_detc: filter used by clean_detc
@@ -368,7 +368,7 @@ def cut_dailydata(home,project_name,dect_file,filter_detc):
         idx = np.where(net_sta_comp==phase_info['net_sta_comp'])[0][0]
         return phase_info['travel'][idx]
 
-    cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
+    #cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
     sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
     #loop every detection
     sav_tcs = {}
