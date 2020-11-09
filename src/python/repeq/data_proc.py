@@ -372,6 +372,7 @@ def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
     sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
     #loop every detection
     sav_tcs = {}
+    all_sav_PS = [] #record P or S wave info for all detections
     for eq_time in detc.keys():
         #find which daily data it is
         YMD = eq_time.split('T')[0].replace('-','')
@@ -380,7 +381,8 @@ def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
         D = obspy.read(dir+'/waveforms/merged.ms')
         #select net_sta_comp
         St = obspy.Stream()
-        for net_sta_comp in detc[eq_time]['net_sta_comp']:
+        sav_PS = [] #record P or S wave info
+        for ista,net_sta_comp in enumerate(detc[eq_time]['net_sta_comp']):
             #get travel time(sec) for this net_sta_comp (and loc)
             travel_time = get_travel(phase_info,net_sta_comp)
             elems = net_sta_comp.split('.')
@@ -393,9 +395,11 @@ def cut_dailydata(home,project_name,dect_file,filter_detc,cut_window=[5,20]):
             selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1)
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
             St += selected_D[0]
+            sav_PS.append(detc[eq_time]['phase'][ista])
         #return St #test the script
         sav_tcs[eq_time] = St
-    return sav_tcs
+        all_sav_PS.append(sav_PS)
+    return sav_tcs,all_sav_PS
         #St finished
         #UTCDateTime(eq_time)
 
