@@ -396,6 +396,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             #cut data
             t1 = UTCDateTime(eq_time)+travel_time-cut_window[0]
             t2 = UTCDateTime(eq_time)+travel_time+cut_window[1]
+            print('    cut from ',t1.isoformat(),t2.isoformat())
             selected_D.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
             selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1)
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
