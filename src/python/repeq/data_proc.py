@@ -339,11 +339,13 @@ def cut_dailydata(home,project_name,dect_file,filter_detc):
         dect_file: detailed detection file in home/project_name/output/Template_match/Detections
         filter_detc: filter used by clean_detc
         example
+        dect_file = 'Detected_tmp_00000.npy'
         filter_detc = {
         'min_stan':5, #number of stations
         'min_CC':0.2, #min CC value
         'diff_t':60, #time difference between events should larger than this
         }
+        
     '''
     #load detailed Detected_tmp_xxxxxx.npy file
     detc = np.load(home+'/'+project_name+'/output/Template_match/Detections/'+dect_file,allow_pickle=True)
@@ -393,7 +395,7 @@ def cut_dailydata(home,project_name,dect_file,filter_detc):
             St += selected_D[0]
         #return St #test the script
         sav_tcs[eq_time] = St
-    return St
+    return sav_tcs
         #St finished
         #UTCDateTime(eq_time)
 
