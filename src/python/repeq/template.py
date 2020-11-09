@@ -389,8 +389,10 @@ class Template():
                         CHN_k = st_i[k].stats.channel
                         LOC_k = st_i[k].stats.location
                         #in daily data... search for same station,channel,comp,sampling rate....that matches the i_th pick in particular template
+                        print('    search',NET_k,STA_k,CHN_k,LOC_k,phase_i[k])
                         exist_flag,selected_idx = data_select(st_j,phase_j,NET_k,STA_k,CHN_k,LOC_k,phase_i[k])
                         if exist_flag:
+                            print('    found',st_j[selected_idx].stats)
                             #get the data and calculate CC
                             data_j_ksta = st_j[selected_idx].data
                             data_i_ksta = st_i[ii].data
@@ -399,7 +401,9 @@ class Template():
                         else:
                             #data not found
                             continue
+                    print('sav_CC, mean=',sav_CC,np.mean(sav_CC))
                     CC_template[ii,jj] = np.mean(sav_CC)
+                    break
             CC_template = np.array(CC_template)
             return CC_template
 
