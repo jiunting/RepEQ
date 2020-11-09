@@ -120,6 +120,7 @@ class Template():
                 
                 #load info data(mainly for P or S wave info)
                 pick_info = np.load(home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(tmp_idx),allow_pickle=True)
+                pick_info = pick_info.item()
                 
                 #read all directories of daily data
                 dayst_paths = glob.glob(home+'/'+project_name+'/waveforms/'+'*000000')
@@ -303,8 +304,6 @@ class Template():
                 #only if fmt=2, fmt=1 didnt calculate the CCC
                 if fmt==2:
                     np.save(home+'/'+project_name+'/output/Template_match/Detections/'+'Detected_tmp_%05d.npy'%(tmp_idx),sav_alldays_eq_sta)
-                    
-                
                 
                 #----plot the mean_shifted_CCF for all days----
                 plt.figure(1)
@@ -319,6 +318,87 @@ class Template():
                 plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'MeanCCF_%05d.png'%(tmp_idx))
                 plt.close()
                 OUT1.close()
+
+
+    def xcorr_temp(self):
+        #calculate xcorr between templates, return CC matrix
+        home = self.home
+        project_name = self.project_name
+        
+        def cal_CCF(data1,data2):
+            #calculate normalize CCF, find max CCC, and lag idx
+            tmpccf=signal.correlate(data1,data2,'full')
+            auto1=signal.correlate(data1,data1,'full')
+            auto2=signal.correlate(data2,data2,'full')
+            tmpccf=tmpccf/np.sqrt(np.max(auto1)*np.max(auto2))
+            maxCCC=np.max(tmpccf)
+            lag=tmpccf.argmax()
+            return(maxCCC,lag)
+        
+        def data_select(st,phase,net,sta,channel,location,PS):
+            #st is the Stream to be searched
+            #phase is the phase array with 'P' or 'S' in
+            #PS is 'P' or 'S'
+            assert len(st)==len(phase), "different length!, check the data"
+            exist_flag = False
+            for i in range(len(st)):
+                if st[i].stats.network==net and st[i].stats.station==sta and st[i].stats.channel==channel and st[i].stats.location==location and phase[i]==PS:
+                    exist_flag = True
+                    break
+            if exist_flag:
+                return exist_flag,i
+            else:
+                return exist_flag,False
+        
+        
+        if self.ms == None:
+            print('Run .template_load() first')
+            return False
+        else:
+            #loop the templates (paths)
+            temps = self.ms
+            CC_template = np.zeros([len(temps),len(temps)])*np.nan #create a nan matrix to save CC calculation
+            for ii,i_tmp in enumerate(temps):
+                print('----------------------------------------------')
+                for jj,j_tmp in enumerate(temps):
+                    print('In template: %s-%s'%(i_tmp,j_tmp))
+                    tmp_idx_i = int(i_tmp.split('/')[-1].split('_')[-1].split('.')[0])
+                    tmp_idx_j = int(j_tmp.split('/')[-1].split('_')[-1].split('.')[0])
+                    #origintime_i = UTCDateTime(self.catalog.iloc[tmp_idx].Date+'T'+self.catalog.iloc[tmp_idx].Time)
+                    st_i = read(i_tmp) #read template in
+                    st_j = read(j_tmp) #read template in
+                    #Since there are P/S in the same sta.comp.channel so also get phase info
+                    pick_info_i = np.load(home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(tmp_idx_i),allow_pickle=True)
+                    pick_info_i = pick_info_i.item()
+                    pick_info_j = np.load(home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(tmp_idx_j),allow_pickle=True)
+                    pick_info_j = pick_info_j.item()
+                    #get P/S
+                    phase_i = pick_info_i['phase'] #e.g. array(['P', 'P', 'S', 'P', 'P', 'P', 'P', 'P']
+                    phase_j = pick_info_j['phase']
+
+                    #-----find data in the st_i that are also in the st_j-----
+                    sav_CC = []
+                    for k in range(len(st_i)):
+                        #-----loop individual pick/station/comp of template-----
+                        NET_k = st_i[k].stats.network
+                        STA_k = st_i[k].stats.station
+                        CHN_k = st_i[k].stats.channel
+                        LOC_k = st_i[k].stats.location
+                        #in daily data... search for same station,channel,comp,sampling rate....that matches the i_th pick in particular template
+                        exist_flag,selected_idx = data_select(st_j,phase_j,NET_k,STA_k,CHN_k,LOC_k,phase_i[k])
+                        if exist_flag:
+                            #get the data and calculate CC
+                            data_j_ksta = st_j[selected_idx].data
+                            data_i_ksta = st_i[i].data
+                            CCC,lag = cal_CCF(data1,data2)
+                            sav_CC.append(CCC)
+                        else:
+                            #data not found
+                            continue
+                    CC_template[ii,jj] = np.mean(sav_CC)
+            CC_template = np.array(CC_template)
+            return CC_template
+
 
 
 
