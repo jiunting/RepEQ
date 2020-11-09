@@ -321,6 +321,10 @@ class Template():
 
 
     def xcorr_temp(self):
+        from obspy import UTCDateTime,read,Stream,Trace
+        import glob
+        from scipy import signal
+        from obspy.signal.cross_correlation import correlate_template
         #calculate xcorr between templates, return CC matrix
         home = self.home
         project_name = self.project_name
