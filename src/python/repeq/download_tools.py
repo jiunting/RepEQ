@@ -577,7 +577,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     All_info['phase'] = np.array(sav_phase)
     All_info['arrival'] = np.array(sav_arr) #absolute arrival time
     All_info['travel'] = np.array(sav_travel) #phase travel time (sec)
-    
+    All_info['OT_template'] = OT.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-4]
     return st,All_info
 
 

@@ -144,6 +144,7 @@ class Template():
                         #in daily data... search for same station,channel,comp,sampling rate....that matches the i_th pick in particular template
                         tmp_dayst = i_dayst.select(network=st[i].stats.network,station=STA,sampling_rate=st[i].stats.sampling_rate,
                                                    channel=st[i].stats.channel,location=st[i].stats.location)
+                        tmp_dayst = tmp_dayst.copy()
                         if len(tmp_dayst)!=1:
                             if len(tmp_dayst)==0:
                                 #print('No data found:%s, skip this station'%(STA+'.'+CHN))

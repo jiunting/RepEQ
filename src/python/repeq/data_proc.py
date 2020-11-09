@@ -357,6 +357,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     phase_info_file = home+'/'+project_name+'/waveforms_template/template_'+eqid+'.npy'
     phase_info = np.load(phase_info_file,allow_pickle=True)
     phase_info = phase_info.item() #phase_info= {'net_sta_comp':['HV.PHOD.HNZ.', 'HV.PHOD.HNE.',...] , 'phase':['P','S',..],'arrival':['2018-05-02T12:54:15.68','2018-05-02T12:54:16.44',...],'travel':[1.2,2.231,3.21...]}
+    OT_template = phase_info['OT_template']
 
     #load template waveforms
     temp_file = home+'/'+project_name+'/waveforms_template/template_'+eqid+'.ms'
@@ -370,7 +371,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
 
     #cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
     sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
-    #loop every detection
+    #---loop every detection---
     sum_tcs_phase = {} #info of tcs and PS phase
     sav_tcs = {}
     all_sav_PS = {} #record P or S wave info for all detections
@@ -408,6 +409,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
         all_sav_PS[eq_time] = sav_PS
     sum_tcs_phase['detc_tcs'] = sav_tcs
     sum_tcs_phase['phase'] = all_sav_PS
+    sum_tcs_phase['OT_template'] = OT_template   #origin time for template
     #return sav_tcs,all_sav_PS
     return sum_tcs_phase
         #St finished
