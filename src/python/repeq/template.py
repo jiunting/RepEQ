@@ -408,7 +408,6 @@ class Template():
                     #print('sav_CC, mean=',sav_CC,np.mean(sav_CC))
                     CC_template[ii,jj] = np.mean(sav_CC)
                     CC_template[jj,ii] = np.mean(sav_CC) #also copy to symmetric
-                break
             CC_template = np.array(CC_template)
             return CC_template
 
