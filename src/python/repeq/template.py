@@ -343,10 +343,11 @@ class Template():
             #st is the Stream to be searched
             #phase is the phase array with 'P' or 'S' in
             #PS is 'P' or 'S'
+            #NOTE someting the phase is Pg or Ss, only get the first character here
             assert len(st)==len(phase), "different length!, check the data"
             exist_flag = False
             for i in range(len(st)):
-                if st[i].stats.network==net and st[i].stats.station==sta and st[i].stats.channel==channel and st[i].stats.location==location and phase[i]==PS:
+                if st[i].stats.network==net and st[i].stats.station==sta and st[i].stats.channel==channel and st[i].stats.location==location and phase[i][0].capitalize()==PS[0].capitalize():
                     exist_flag = True
                     break
             if exist_flag:
