@@ -336,7 +336,7 @@ def cal_moving_all(home,project_name,pattern='20*',typ='std',window_pts=45000,mo
 
 def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     '''
-        detc_file: detailed detection file in home/project_name/output/Template_match/Detections
+        detc_file: detailed detection file in home/project_name/output/Template_match/Detections (either just name or full path)
         filter_detc: filter used by clean_detc
         example
         detc_file = 'Detected_tmp_00000.npy'
@@ -348,7 +348,13 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
         
     '''
     #load detailed Detected_tmp_xxxxxx.npy file
-    detc = np.load(home+'/'+project_name+'/output/Template_match/Detections/'+detc_file,allow_pickle=True)
+    try:
+        #detc_file in pure name
+        detc = np.load(home+'/'+project_name+'/output/Template_match/Detections/'+detc_file,allow_pickle=True)
+    except:
+        #detc_file in full path name
+        detc = np.load(detc_file,allow_pickle=True)
+    
     detc = detc.item()
     detc = clean_detc(detc,filter_detc) #detc={'net_sta_comp':['HV.JOKA.HHZ.', 'HV.KNHD.EHZ.00'...],'phase':['P','S'...],'CCC':[0.99,0.98...],'CC':[0.93,0.9...],'shift':[0.0,0.04...]}
 
@@ -414,6 +420,24 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     return sum_tcs_phase
         #St finished
         #UTCDateTime(eq_time)
+
+
+
+def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20]):
+    '''
+        bulk cut daily data from Detection results
+    '''
+    import glob
+    #get all data path
+    detc_files = glob.glob(home+'/'+project_name+'/output/Template_match/Detections/Detected_tmp_*.npy')
+    detc_files.sort()
+
+    #loop every detection
+    for detc_file in detc_files:
+        sum_tcs_phase = cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20])
+        #save the results
+        eqid = int(detc_file.split('/')[-1].split('.')[0].split('_')[-1])
+        np.save(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_%05d.npy'%(eqid),sum_tcs_phase)
 
 
 

@@ -18,6 +18,7 @@ def create_dirs(home,project_name,overwrite=False):
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Figs')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Detections')
+        os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Data_detection_cut') #data cut from daily waveforms
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'CCF_records')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'logs')
         shutil.copy(main_REPEQ+'/examples/notes/Format_log.txt',home+'/'+project_name+'/'+'output/logs/Format_log.txt')
