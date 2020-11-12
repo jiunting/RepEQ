@@ -141,17 +141,17 @@ class Template():
                         NET = st[i].stats.network
                         STA = st[i].stats.station
                         CHN = st[i].stats.channel
-                        LOC = st[i].stats.location #=============================LOC is LOC.P/S ==========================!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        LOC = st[i].stats.location
                         #in daily data... search for same station,channel,comp,sampling rate....that matches the i_th pick in particular template
                         tmp_dayst = i_dayst.select(network=NET,station=STA,sampling_rate=st[i].stats.sampling_rate,
                                                    channel=CHN,location=LOC)
                         tmp_dayst = tmp_dayst.copy()
                         if len(tmp_dayst)!=1:
                             if len(tmp_dayst)==0:
-                                #print('No data found:%s, skip this station'%(STA+'.'+CHN))
+                                #print('Case1. No data found:%s, skip this station'%(STA+'.'+CHN))
                                 pass
                             else:
-                                #print('Multiple data found:%d, probably breaking tcs, skip this station'%(len(tmp_dayst)))
+                                #print('Case2. Multiple data found:%d, probably breaking tcs, skip this station'%(len(tmp_dayst)))
                                 #print(tmp_dayst) #tmp_dayst should be only one
                                 pass
                             continue
@@ -180,29 +180,10 @@ class Template():
                             sav_CHN.append(CHN)
                             sav_LOC.append(LOC)
                             
+                            #Update 2020.11.12: order of .ms and pick_info.npy shoud now be the same
                             #Double check! to see if the starttime matchs the pick_info
-                            assert np.abs((UTCDateTime(pick_info['arrival'][i])-pick_info['tcs_length'][0])-st[i].stats.starttime)<0.02, 'starttime does NOT match!'
+                            assert np.abs((UTCDateTime(pick_info['arrival'][i])-pick_info['tcs_length'][0])-st[i].stats.starttime)<0.02, 'pick_info and ms starttime does NOT match!'
                             sav_phase.append(pick_info['phase'][i]) #P or S phase. Causion! previous wrong because ith index in the st is not the ith index in the pick_info
-                            #find PS info corresponding to NET.STA.CHN.LOC
-                            '''
-                            PS_idx = np.where((pick_info['net_sta_comp']=='.'.join([NET,STA,CHN,LOC])))[0] #typically this is just one value
-                            assert len(PS_idx)>=1, 'wrong! check the data '+'.'.join([NET,STA,CHN,LOC])
-                            if len(PS_idx)==1:
-                                PS = pick_info['phase'][PS_idx[0]]
-                            elif len(PS_idx)==2:
-                                #both P and S in the same data
-                                startTime = st[i].stats.starttime+self.tcs_length[0]
-                                tmp_t1 = UTCDateTime(pick_info['arrival'][PS_idx[0]])
-                                tmp_t2 = UTCDateTime(pick_info['arrival'][PS_idx[1]])
-                                #find which one is closer
-                                tmp_diff_t1 = np.abs(startTime-tmp_t1)
-                                tmp_diff_t2 = np.abs(startTime-tmp_t2)
-                                if tmp_diff_t1<tmp_diff_t2:
-                                    PS = pick_info['phase'][PS_idx[0]]
-                                else:
-                                    PS = pick_info['phase'][PS_idx[1]]
-                            sav_phase.append(PS) #
-                            '''
                             #debug
                             #print('appending info:',NET+'.'+STA+'.'+CHN+'.'+LOC,PS)
                             sav_travel_npts.append(travel_npts)
@@ -369,7 +350,7 @@ class Template():
             #st is the Stream to be searched
             #phase is the phase array with 'P' or 'S' in
             #PS is 'P' or 'S'
-            #NOTE someting the phase is Pg or Ss, only get the first character here
+            #=======NOTE sometime the phase is Pg,P or S,Ss, assume they are the same and just get the first character here=======
             assert len(st)==len(phase), "different length!, check the data"
             exist_flag = False
             for i in range(len(st)):

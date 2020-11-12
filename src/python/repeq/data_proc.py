@@ -369,7 +369,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     temp_file = home+'/'+project_name+'/waveforms_template/template_'+eqid+'.ms'
     temp = obspy.read(temp_file)
 
-
+    '''
     def get_travel(phase_info,net_sta_comp,PS):
         #get travel time(sec) from phase_info file by specifing a net_sta_comp (and loc) e.g. 'HV.PHOD.HNZ.'
         #print('phaseinfo=',phase_info['net_sta_comp'])
@@ -378,7 +378,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
         #print('looking for',PS)
         idx = np.where((phase_info['net_sta_comp']==net_sta_comp) & (phase_info['phase']==PS) )[0][0]
         return phase_info['travel'][idx]
-
+    '''
     #cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
     sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
     #---loop every detection---
@@ -399,7 +399,8 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             PS = detc[eq_time]['phase'][ista]
             #get travel time(sec) for this net_sta_comp (and loc)
             #print('Travel Time for=',net_sta_comp,PS)
-            travel_time = get_travel(phase_info,net_sta_comp,PS)
+            #travel_time = get_travel(phase_info,net_sta_comp,PS)
+            travel_time = detc[eq_time]['travel'][ista]
             #print('    ',travel_time)
             elems = net_sta_comp.split('.')
             selected_D = D.select(network=elems[0],station=elems[1],channel=elems[2],location=elems[3])
@@ -422,9 +423,6 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     sum_tcs_phase['OT_template'] = OT_template   #origin time for template
     #return sav_tcs,all_sav_PS
     return sum_tcs_phase
-        #St finished
-        #UTCDateTime(eq_time)
-
 
 
 def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20]):
