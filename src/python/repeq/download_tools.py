@@ -612,17 +612,24 @@ def get_order(st_out,All_info):
             selected_tr = st_out.select(network=NET,station=STA,channel=CHN,location=LOC)
             selected_tr = selected_tr.copy()
             assert len(selected_tr)==len(tmpidx), 'number of data not consistent'
-            T_n = st_out[n].stats.starttime #find T_n, and the other T1 (P or S)
-            if selected_tr[0].stats.starttime==T_n:
-                T1 = selected_tr[1].stats.starttime
+            #find T_n, and the other T1 (P or S)
+            T1 = selected_tr[0].stats.starttime
+            T2 = selected_tr[1].stats.starttime
+            T_n = st_out[n].stats.starttime
+            if T_n==T1:
+                if T1<T2:
+                    PS_n = 'P'
+                else:
+                    PS_n = 'S'
             else:
-                T1 = selected_tr[0].stats.starttime
-            if T_n<T1:
-                PS_n = 'P'
-            else:
-                PS_n = 'S'
+                #T_n==T2
+                if T1<T2:
+                    PS_n = 'S'
+                else:
+                    PS_n = 'P'
+
             #know the phase in st[n] is PS_n
-            tmpidx = np.where( (All_info['net_sta_comp'][n]==temp_name) & (All_info['phase'][0]==PS_n) )[0]
+            tmpidx = np.where( (All_info['net_sta_comp'][n]==temp_name) & (All_info['phase'][0].capitalize()==PS_n) )[0]
             assert len(tmpidx)==1, 'find same net_sta_comp and same phase, impossible!'
             sav_order.append(tmpidx[0])
     sav_order = np.array(sav_order)
