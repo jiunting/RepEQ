@@ -660,10 +660,10 @@ def All_info_reorder(st_out,All_info):
         LOC = st_out[n].stats.location
         temp_name = '.'.join([NET,STA,CHN,LOC]) #name from st
         ST_start = st_out[n].stats.starttime #starttime
-        print('Now in',temp_name,ST_start)
+        #print('Now in',temp_name,ST_start)
         #Check #1
         tmpidx = np.where( (All_info['net_sta_comp']==temp_name) & (np.abs(info_start-ST_start)==np.min(np.abs(info_start-ST_start))) )[0]
-        print('Found',All_info['net_sta_comp'][tmpidx],info_start[tmpidx])
+        #print('Found',All_info['net_sta_comp'][tmpidx],info_start[tmpidx])
         assert len(tmpidx)==1, "find same net_sta_comp and same starttime, impossible!"
         sav_order.append(tmpidx[0]) #this should be the only one
     sav_order = np.array(sav_order)
@@ -725,6 +725,7 @@ def check_order(home,project_name):
     #this is just to check if data in template.ms and template.npy has the same order
     import glob
     files_ms = glob.glob(home+'/'+project_name+'/waveforms_template/template_*.ms')
+    files_ms.sort()
     for file_ms in files_ms:
         print('Now in:',file_ms)
         #read ms and info file
