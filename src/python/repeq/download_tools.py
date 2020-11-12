@@ -518,7 +518,8 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
         sta = elems[1]
         comp = elems[2]
         location = elems[3]
-        
+        if location=='--':
+            location = '' #sometime the location use -- instead of empty str
         Phase = phases.iloc[ii]['Phase'] #P or S wave, save this info for further relocation
         #phase = phases.iloc[ii]['Phase']
         arr = UTCDateTime(phases.iloc[ii]['Arrival Time'])
