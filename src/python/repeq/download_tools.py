@@ -639,7 +639,7 @@ def check_order(home,project_name):
             STA = tr[n].stats.station
             CHN = tr[n].stats.channel
             LOC = tr[n].stats.location
-            temp_name = '.'.join(NET,STA,CHN,LOC)
+            temp_name = '.'.join([NET,STA,CHN,LOC])
             #Check #1
             assert temp_name==pick_info['net_sta_comp'][n], 'order not the same! %s'%(file_ms)
             #Check #2 (if there are more than 1 name due to P,S in the same data)
