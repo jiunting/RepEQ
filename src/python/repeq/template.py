@@ -182,7 +182,7 @@ class Template():
                             #sav_phase.append(pick_info['phase'][i]) #P or S phase, this is wrong! because ith index in the st is not the ith index in the pick_info
                             #find PS info corresponding to NET.STA.CHN.LOC
                             PS_idx = np.where((pick_info['net_sta_comp']=='.'.join([NET,STA,CHN,LON])))[0] #typically this is just one value
-                            assert len(PS_idx)>=1, 'wrong! check the data','.'.join([NET,STA,CHN,LON])
+                            assert len(PS_idx)>=1, 'wrong! check the data '+'.'.join([NET,STA,CHN,LON])
                             if len(PS_idx)==1:
                                 PS = pick_info['phase'][PS_idx[0]]
                             elif len(PS_idx)==2:
