@@ -137,6 +137,10 @@ EQreloc.EQreloc(home,project_name,cata_name,vel_model,filter_detc,invsion_params
 #------repEQ relocation END---------
 
 
+#-----make station table-----
+from repeq import data_proc
+data_proc.make_sta_table(home,project_name,pattern='*000000')
+
 
 #-----continuous data QC-------
 from repeq import data_proc

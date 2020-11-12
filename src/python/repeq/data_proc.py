@@ -372,6 +372,10 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
 
     def get_travel(phase_info,net_sta_comp,PS):
         #get travel time(sec) from phase_info file by specifing a net_sta_comp (and loc) e.g. 'HV.PHOD.HNZ.'
+        print('phaseinfo=',phase_info['net_sta_comp'])
+        print('looking for',net_sta_comp)
+        print('PS list=',phase_info['phase'])
+        print('looking for',PS)
         idx = np.where((phase_info['net_sta_comp']==net_sta_comp) & (phase_info['phase']==PS) )[0][0]
         return phase_info['travel'][idx]
 
@@ -434,7 +438,7 @@ def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20]):
 
     #loop every detection
     for detc_file in detc_files:
-        sum_tcs_phase = cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20])
+        sum_tcs_phase = cut_dailydata(home,project_name,detc_file,filter_detc,cut_window)
         #save the results
         eqid = int(detc_file.split('/')[-1].split('.')[0].split('_')[-1])
         np.save(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_%05d.npy'%(eqid),sum_tcs_phase)
