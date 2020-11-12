@@ -179,7 +179,8 @@ class Template():
                             sav_STA.append(STA)
                             sav_CHN.append(CHN)
                             sav_LOC.append(LOC)
-                            sav_phase.append(pick_info['phase'][i]) #P or S phase
+                            #sav_phase.append(pick_info['phase'][i]) #P or S phase, why this is wrong?!!
+                            sav_phase.append(pick_info['phase'][i]) #
                             sav_travel_npts.append(travel_npts)
                             sav_CCF.append(CCF)
                             sav_continuousdata.append(continuousdata)
@@ -231,6 +232,7 @@ class Template():
                             sav_maxCCC = []; #sav_sh_sec=[]
                             for n in range(len(sav_template)):
                                 #loop in every station
+                                print('writing info:',sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]+'.'+sav_LOC[n],sav_phase[n])
                                 cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
                                 maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
                                 if np.isnan(maxCCC):
