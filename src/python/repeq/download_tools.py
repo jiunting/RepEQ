@@ -665,7 +665,7 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
             
             #write phase information
             outfile_info = home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(idf)
-            np.save(outfile_info,All_info_reordered)
+            np.save(outfile_info,All_info)
             
             #read st data out and check the sorting
             st_out = obspy.read(outfile)
