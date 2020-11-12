@@ -181,6 +181,8 @@ class Template():
                             sav_LOC.append(LOC)
                             #sav_phase.append(pick_info['phase'][i]) #P or S phase, why this is wrong?!!
                             sav_phase.append(pick_info['phase'][i]) #
+                            #debug
+                            print('appending info:',NET+'.'+STA+'.'+CHN+'.'+LOC,pick_info['phase'][i])
                             sav_travel_npts.append(travel_npts)
                             sav_CCF.append(CCF)
                             sav_continuousdata.append(continuousdata)
