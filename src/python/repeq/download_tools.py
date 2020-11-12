@@ -663,6 +663,10 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
             outfile = home+'/'+project_name+'/waveforms_template/'+'template_%05d.ms'%(idf)
             st.write(outfile,format='MSEED') #after saving, the order may be messed up
             
+            #write phase information
+            outfile_info = home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(idf)
+            np.save(outfile_info,All_info_reordered)
+            
             #read st data out and check the sorting
             st_out = obspy.read(outfile)
             All_info_reordered = get_order(st_out,All_info)
