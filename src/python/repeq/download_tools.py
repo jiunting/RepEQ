@@ -646,7 +646,7 @@ def check_order(home,project_name):
             idx = np.where(pick_info['net_sta_comp']==temp_name)[0]
             if len(idx)>1:
                 #check P and S, find another pair fron tr
-                selected_tr = tr(network=NET,station=STA,channel=CHN,location=LOC)
+                selected_tr = tr.select(network=NET,station=STA,channel=CHN,location=LOC)
                 selected_tr = selected_tr.copy()
                 assert len(selected_tr)==len(idx), 'number of data not consistent'
                 if selected_tr[0].stats.starttime==tr[n].stats.starttime:
