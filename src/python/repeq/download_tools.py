@@ -599,10 +599,9 @@ def get_order(st_out,All_info):
         LOC = st_out[n].stats.location
         temp_name = '.'.join([NET,STA,CHN,LOC]) #name from st
         #Check #1
-        tmpidx = np.where( All_info['net_sta_comp'][n]==temp_name )[0]
+        tmpidx = np.where( All_info['net_sta_comp']==temp_name )[0]
         if All_info['net_sta_comp'][n]!=temp_name:
             print('Order in .ms has been changed, change the pick_info file')
-        
         assert len(tmpidx)>0, 'cannot find any name: %s'%(temp_name)
         if len(tmpidx)==1:
             sav_order.append(tmpidx[0])
@@ -627,9 +626,8 @@ def get_order(st_out,All_info):
                     PS_n = 'S'
                 else:
                     PS_n = 'P'
-
-            #know the phase in st[n] is PS_n
-            tmpidx = np.where( (All_info['net_sta_comp'][n]==temp_name) & (All_info['phase'][0].capitalize()==PS_n) )[0]
+            #know the phase in st[n] is PS_n, now the len(tmpidx) should only be 1
+            tmpidx = np.where( (All_info['net_sta_comp']==temp_name) & (All_info['phase'][0].capitalize()==PS_n) )[0]
             assert len(tmpidx)==1, 'find same net_sta_comp and same phase, impossible!'
             sav_order.append(tmpidx[0])
     sav_order = np.array(sav_order)
