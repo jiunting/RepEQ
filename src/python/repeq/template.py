@@ -170,9 +170,9 @@ class Template():
                             CCF = correlate_template(continuousdata,template)
                             CCF = np.nan_to_num(CCF)
                             
-                            #load info data
-                            pick_info = np.load(home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(tmp_idx),allow_pickle=True)
-                            pick_info = pick_info.item()
+                            #load info data outside the loop
+                            #pick_info = np.load(home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(tmp_idx),allow_pickle=True)
+                            #pick_info = pick_info.item()
                             
                             #save for later checking
                             sav_NET.append(NET)
