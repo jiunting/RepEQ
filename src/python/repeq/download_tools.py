@@ -575,9 +575,10 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             #print('Time:',tmp_arrT)
             sav_arr.append(tmp_arrT)
             sav_travel.append(arr-OT) #travel time (relative to the origin)
-    #======================================IMPORTANT NOTE!!! the order of these array are NOT necessarily the same as st=============================
-    #======================================When there are both P and S data in the same net.sta.chn.loc, the order will be messed up=================
-    #======================================Use these info as extra caution===========================================================================
+    #=========IMPORTANT NOTE!!! the order of these array are NOT necessarily the same as st====================================================
+    #=========When there are both P and S data in the same net.sta.chn.loc, the order will be messed up when write in .ms file=================
+    #=========Use these info as extra caution==================================================================================================
+    #=========2020.11.12 Update: runing additional re-order to the All_info so the order is the same now=======================================
     All_info['net_sta_comp'] = np.array(sav_net_sta_comp)
     All_info['phase'] = np.array(sav_phase)
     All_info['arrival'] = np.array(sav_arr) #absolute arrival time
@@ -678,6 +679,44 @@ def All_info_reorder(st_out,All_info):
 
 
 
+def check_order(home,project_name):
+    #this is just to check if data in template.ms and template.npy has the same order
+    #When template download is done, run this quick check
+    import glob
+    files_ms = glob.glob(home+'/'+project_name+'/waveforms_template/template_*.ms')
+    files_ms.sort()
+    for file_ms in files_ms:
+        print('Now in:',file_ms)
+        #read ms and info file
+        tr = obspy.read(file_ms)
+        pick_info = np.load(file_ms.replace('.ms','.npy'),allow_pickle=True)
+        pick_info = pick_info.item()
+        for n in range(len(tr)):
+            NET = tr[n].stats.network
+            STA = tr[n].stats.station
+            CHN = tr[n].stats.channel
+            LOC = tr[n].stats.location
+            temp_name = '.'.join([NET,STA,CHN,LOC])
+            #Check #1
+            assert temp_name==pick_info['net_sta_comp'][n], 'order not the same! %s'%(file_ms)
+            #Check #2 (if there are more than 1 name due to P,S in the same data)
+            idx = np.where(pick_info['net_sta_comp']==temp_name)[0]
+            if len(idx)>1:
+                #check P and S, find another pair fron tr
+                selected_tr = tr.select(network=NET,station=STA,channel=CHN,location=LOC)
+                selected_tr = selected_tr.copy()
+                assert len(selected_tr)==len(idx), 'number of data not consistent'
+                if selected_tr[0].stats.starttime==tr[n].stats.starttime:
+                    selected_tr1 = selected_tr[1].stats.starttime
+                else:
+                    selected_tr1 = selected_tr[0].stats.starttime
+                #get P or S from pick_info
+                PS = pick_info['phase'][n][0] #only get the first char
+                if PS=='P':
+                    assert tr[n].stats.starttime<selected_tr1, 'P wave NOT arrives earlier'
+                else:
+                    assert tr[n].stats.starttime>selected_tr1, 'S wave NOT arrives later'
+    return True
 
 
 
@@ -718,48 +757,7 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
             OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','a')
             OUT1.write('%d %s %d %s %s  %.5f %.5f %.3f %.3f\n'%(idf,outfile,len(st),DT,EVID,dfs.iloc[idf].Lon,dfs.iloc[idf].Lat,dfs.iloc[idf].Depth,dfs.iloc[idf].Magnitude))
             OUT1.close()
-
-
-
-def check_order(home,project_name):
-    #this is just to check if data in template.ms and template.npy has the same order
-    import glob
-    files_ms = glob.glob(home+'/'+project_name+'/waveforms_template/template_*.ms')
-    files_ms.sort()
-    for file_ms in files_ms:
-        print('Now in:',file_ms)
-        #read ms and info file
-        tr = obspy.read(file_ms)
-        pick_info = np.load(file_ms.replace('.ms','.npy'),allow_pickle=True)
-        pick_info = pick_info.item()
-        for n in range(len(tr)):
-            NET = tr[n].stats.network
-            STA = tr[n].stats.station
-            CHN = tr[n].stats.channel
-            LOC = tr[n].stats.location
-            temp_name = '.'.join([NET,STA,CHN,LOC])
-            #Check #1
-            assert temp_name==pick_info['net_sta_comp'][n], 'order not the same! %s'%(file_ms)
-            #Check #2 (if there are more than 1 name due to P,S in the same data)
-            idx = np.where(pick_info['net_sta_comp']==temp_name)[0]
-            if len(idx)>1:
-                #check P and S, find another pair fron tr
-                selected_tr = tr.select(network=NET,station=STA,channel=CHN,location=LOC)
-                selected_tr = selected_tr.copy()
-                assert len(selected_tr)==len(idx), 'number of data not consistent'
-                if selected_tr[0].stats.starttime==tr[n].stats.starttime:
-                    selected_tr1 = selected_tr[1].stats.starttime
-                else:
-                    selected_tr1 = selected_tr[0].stats.starttime
-                #get P or S from pick_info
-                PS = pick_info['phase'][n][0] #only get the first char
-                if PS=='P':
-                    assert tr[n].stats.starttime<selected_tr1, 'P wave NOT arrives earlier'
-                else:
-                    assert tr[n].stats.starttime>selected_tr1, 'S wave NOT arrives later'
-    return True
-
-
+    check_order(home,project_name)
 
 
 
