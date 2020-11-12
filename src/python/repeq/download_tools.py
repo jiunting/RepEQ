@@ -600,6 +600,9 @@ def get_order(st_out,All_info):
         temp_name = '.'.join([NET,STA,CHN,LOC]) #name from st
         #Check #1
         tmpidx = np.where( All_info['net_sta_comp'][n]==temp_name )[0]
+        if All_info['net_sta_comp'][n]!=temp_name:
+            print('Order in .ms has been changed, change the pick_info file')
+        
         assert len(tmpidx)>0, 'cannot find any name: %s'%(temp_name)
         if len(tmpidx)==1:
             sav_order.append(tmpidx[0])
@@ -657,11 +660,11 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
             
             #read st data out and check the sorting
             st_out = obspy.read(outfile)
-            All_info = get_order(st_out,All_info)
+            All_info_reordered = get_order(st_out,All_info)
             
             #write phase information
             outfile_info = home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(idf)
-            np.save(outfile_info,All_info)
+            np.save(outfile_info,All_info_reordered)
             
             #write log file
             OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','a')
