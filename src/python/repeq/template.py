@@ -38,6 +38,7 @@ class Template():
         self.filt_nSTA = filt_nSTA
         self.plot_check = plot_check
         self.ms = None
+        self.overwrite = False #default do NOT overwrite the existing detection file
         #read catalog
         #cat = np.genfromtxt(catalog, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U19",float,float,float,float,"|U2","|U19")) #accuracy to sec
         cat = np.genfromtxt(catalog, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U23",float,float,float,float,"|U2","|U23")) #accuracy to ms
@@ -87,6 +88,7 @@ class Template():
         import matplotlib
         matplotlib.use('pdf') #instead using interactive backend
         import matplotlib.pyplot as plt
+        import os
         
         home = self.home
         project_name = self.project_name
@@ -110,6 +112,12 @@ class Template():
                 print('----------------------------------------------')
                 print('In template: %s'%(i_tmp))
                 tmp_idx = int(i_tmp.split('/')[-1].split('_')[-1].split('.')[0])
+                #if the detection exist, and self.overwrite is False, skip
+                if not self.overwrite:
+                    if os.path.exists(home+'/'+project_name+'/output/Template_match/Detections/Detected_tmp_%05d.npy'%(tmp_idx)) & os.path.exists(home+'/'+project_name+'/output/Template_match/Detections/Detected_tmp_%05d.txt'%(tmp_idx)):
+                        print('Both %05d.npy and %05d.txt file exist, skip'%(tmp_idx,tmp_idx))
+                        continue
+                #if self.overwrite or both .npy and .txt files are not exist
                 OUT1 = open(home+'/'+project_name+'/output/Template_match/Detections/Detected_tmp_%05d.txt'%(tmp_idx),'w') #output earthquake origin time
                 if fmt==1:
                     OUT1.write('#OriginTime meanCC stdCC nSTA templateIDX\n')
