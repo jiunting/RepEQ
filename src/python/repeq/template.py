@@ -179,8 +179,12 @@ class Template():
                             sav_STA.append(STA)
                             sav_CHN.append(CHN)
                             sav_LOC.append(LOC)
-                            #sav_phase.append(pick_info['phase'][i]) #P or S phase, this is wrong! because ith index in the st is not the ith index in the pick_info
+                            
+                            #Double check! to see if the starttime matchs the pick_info
+                            assert np.abs((UTCDateTime(pick_info['arrival'][i])-pick_info['tcs_length'][0])-st[i].stats.starttime)<0.02, 'starttime does NOT match!'
+                            sav_phase.append(pick_info['phase'][i]) #P or S phase. Causion! previous wrong because ith index in the st is not the ith index in the pick_info
                             #find PS info corresponding to NET.STA.CHN.LOC
+                            '''
                             PS_idx = np.where((pick_info['net_sta_comp']=='.'.join([NET,STA,CHN,LOC])))[0] #typically this is just one value
                             assert len(PS_idx)>=1, 'wrong! check the data '+'.'.join([NET,STA,CHN,LOC])
                             if len(PS_idx)==1:
@@ -198,6 +202,7 @@ class Template():
                                 else:
                                     PS = pick_info['phase'][PS_idx[1]]
                             sav_phase.append(PS) #
+                            '''
                             #debug
                             #print('appending info:',NET+'.'+STA+'.'+CHN+'.'+LOC,PS)
                             sav_travel_npts.append(travel_npts)
