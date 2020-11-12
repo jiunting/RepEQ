@@ -582,13 +582,16 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     All_info['arrival'] = np.array(sav_arr) #absolute arrival time
     All_info['travel'] = np.array(sav_travel) #phase travel time (sec)
     All_info['OT_template'] = OT.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-4]
+    All_info['tcs_length'] = tcs_length
+    All_info['filter'] = filter
     All_info['eqloc'] = [df['Lon'],df['Lat'],df['Depth'] ]
     All_info['eqmag'] = df['Magnitude']
     All_info['evid'] = eventid
     return st,All_info
 
-
+'''
 def get_order(st_out,All_info):
+    from obspy import UTCDateTime
     #reorder the All_info based on the st_out
     assert len(st_out)==len(All_info['net_sta_comp']), "length of Stream and pick_info are not the same"
     sav_order = [] #new order based on the .ms file
@@ -640,6 +643,39 @@ def get_order(st_out,All_info):
     new_All_info['arrival'] = All_info['arrival'][sav_order]
     new_All_info['travel'] = All_info['travel'][sav_order]
     return new_All_info
+'''
+
+
+def All_info_reorder(st_out,All_info):
+    #reorder the info file in .ms file, this is basically the same as get_order but better method
+    #reorder the All_info based on the st_out
+    assert len(st_out)==len(All_info['net_sta_comp']), "length of Stream and pick_info are not the same"
+    sav_order = [] #new order based on the .ms file
+    info_start = np.array([UTCDateTime(it)-All_info['tcs_length'][0] for it in All_info['arrival']])
+    for n in range(len(st_out)):
+        NET = st_out[n].stats.network
+        STA = st_out[n].stats.station
+        CHN = st_out[n].stats.channel
+        LOC = st_out[n].stats.location
+        temp_name = '.'.join([NET,STA,CHN,LOC]) #name from st
+        ST_start = st_out[n].stats.starttime #starttime
+        #Check #1
+        tmpidx = np.where( (All_info['net_sta_comp']==temp_name) & (np.abs(info_start-ST_start)==np.min(np.abs(info_start-ST_start))) )[0]
+        assert len(tmpidx)==1, 'find same net_sta_comp and same starttime, impossible!'
+        sav_order.append(tmpidx[0]) #this should be the only one
+    sav_order = np.array(sav_order)
+    #do final check before return info file
+    assert len(sav_order)==len(list(set(sav_order))), "Repeat index is impossible in this case!"
+    new_All_info = All_info.copy()
+    new_All_info['net_sta_comp'] = All_info['net_sta_comp'][sav_order]
+    new_All_info['phase'] = All_info['phase'][sav_order]
+    new_All_info['arrival'] = All_info['arrival'][sav_order]
+    new_All_info['travel'] = All_info['travel'][sav_order]
+    return new_All_info
+
+
+
+
 
 
 
@@ -668,11 +704,12 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
             
             #read st data out and check the sorting
             st_out = obspy.read(outfile)
-            All_info_reordered = get_order(st_out,All_info)
+            #All_info_new = get_order(st_out,All_info)
+            All_info_new = All_info_reorder(st_out,All_info)
             
             #write phase information
             outfile_info = home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(idf)
-            np.save(outfile_info,All_info_reordered)
+            np.save(outfile_info,All_info_new)
             
             #write log file
             OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','a')
