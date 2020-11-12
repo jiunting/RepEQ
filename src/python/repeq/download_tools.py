@@ -560,9 +560,9 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
                 tr.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
             tr.interpolate(sampling_rate=sampling_rate, starttime=t1)
             tr.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
-            #write PS into the location, separated by . e.g. 'location': '.P' or 'location': '00.S'
-            tr.stats.location = tr.stats.location+'.'+Phase
             assert len(tr)==1, 'Unexpecting error when query:%s %s %s %s %s %s'%(net, sta, location, comp, t1-2, t2+2)
+            #write PS into the location, separated by . e.g. 'location': '.P' or 'location': '00.S'
+            tr[0].stats.location = tr.stats.location+'.'+Phase
             st += tr
             #save name, time and "phase" info for later relocation
             #.ms only gives starttime (know arrival time) but not P or S wave
