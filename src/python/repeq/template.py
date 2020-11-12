@@ -179,10 +179,27 @@ class Template():
                             sav_STA.append(STA)
                             sav_CHN.append(CHN)
                             sav_LOC.append(LOC)
-                            #sav_phase.append(pick_info['phase'][i]) #P or S phase, why this is wrong?!!
-                            sav_phase.append(pick_info['phase'][i]) #
+                            #sav_phase.append(pick_info['phase'][i]) #P or S phase, this is wrong! because ith index in the st is not the ith index in the pick_info
+                            #find PS info corresponding to NET.STA.CHN.LOC
+                            PS_idx = np.where((pick_info['net_sta_comp']=='.'.join([NET,STA,CHN,LON])))[0] #typically this is just one value
+                            assert len(PS_idx)>=1, 'wrong! check the data','.'.join([NET,STA,CHN,LON])
+                            if len(PS_idx)==1:
+                                PS = pick_info['phase'][PS_idx[0]]
+                            elif len(PS_idx)==2:
+                                #both P and S in the same data
+                                startTime = st[i].stats.starttime+self.tcs_length[0]
+                                tmp_t1 = UTCDateTime(pick_info['arrival'][PS_idx[0]])
+                                tmp_t2 = UTCDateTime(pick_info['arrival'][PS_idx[1]])
+                                #find which one is closer
+                                tmp_diff_t1 = np.abs(startTime-tmp_t1)
+                                tmp_diff_t2 = np.abs(startTime-tmp_t2)
+                                if tmp_diff_t1<tmp_diff_t2:
+                                    PS = pick_info['phase'][PS_idx[0]]
+                                else:
+                                    PS = pick_info['phase'][PS_idx[1]]
+                            sav_phase.append(PS) #
                             #debug
-                            print('appending info:',NET+'.'+STA+'.'+CHN+'.'+LOC,pick_info['phase'][i])
+                            print('appending info:',NET+'.'+STA+'.'+CHN+'.'+LOC,PS)
                             sav_travel_npts.append(travel_npts)
                             sav_CCF.append(CCF)
                             sav_continuousdata.append(continuousdata)
