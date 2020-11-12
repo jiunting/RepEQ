@@ -575,8 +575,8 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             sav_arr.append(tmp_arrT)
             sav_travel.append(arr-OT) #travel time (relative to the origin)
     #======================================IMPORTANT NOTE!!! the order of these array are NOT necessarily the same as st=============================
-    #======================================When there are both P and S data in the same net.sta.chn.loc, the order will be messed up===============
-    #======================================Use these info as extra caution, will probably remove these in the next version=========================
+    #======================================When there are both P and S data in the same net.sta.chn.loc, the order will be messed up=================
+    #======================================Use these info as extra caution===========================================================================
     All_info['net_sta_comp'] = np.array(sav_net_sta_comp)
     All_info['phase'] = np.array(sav_phase)
     All_info['arrival'] = np.array(sav_arr) #absolute arrival time
@@ -586,6 +586,49 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     All_info['eqmag'] = df['Magnitude']
     All_info['evid'] = eventid
     return st,All_info
+
+
+def get_order(st_out,All_info):
+    #reorder the All_info based on the st_out
+    assert len(st_out)==len(All_info['net_sta_comp']), "length of Stream and pick_info are not the same"
+    sav_order = [] #new order based on the .ms file
+    for n in range(len(st_out)):
+        NET = st_out[n].stats.network
+        STA = st_out[n].stats.station
+        CHN = st_out[n].stats.channel
+        LOC = st_out[n].stats.location
+        temp_name = '.'.join([NET,STA,CHN,LOC]) #name from st
+        #Check #1
+        tmpidx = np.where( All_info['net_sta_comp'][n]==temp_name )[0]
+        assert len(tmpidx)>0, 'cannot find any name: %s'%(temp_name)
+        if len(tmpidx)==1:
+            sav_order.append(tmpidx[0])
+        elif len(tmpidx)==2:
+            info_PS = All_info['phase'][tmpidx] #one is P the other is S
+            #find which one, P or S, is the nth st
+            selected_tr = st_out.select(network=NET,station=STA,channel=CHN,location=LOC)
+            selected_tr = selected_tr.copy()
+            assert len(selected_tr)==len(tmpidx), 'number of data not consistent'
+            T_n = st_out[n].stats.starttime #find T_n, and the other T1 (P or S)
+            if selected_tr[0].stats.starttime==T_n:
+                T1 = selected_tr[1].stats.starttime
+            else:
+                T1 = selected_tr[0].stats.starttime
+            if T_n<T1:
+                PS_n = 'P'
+            else:
+                PS_n = 'S'
+            #know the phase in st[n] is PS_n
+            tmpidx = np.where( (All_info['net_sta_comp'][n]==temp_name) & (All_info['phase'][0]==PS_n) )[0]
+            assert len(tmpidx)==1, 'find same net_sta_comp and same phase, impossible!'
+            sav_order.append(tmpidx[0])
+    sav_order = np.array(sav_order)
+    new_All_info = All_info.copy()
+    new_All_info['net_sta_comp'] = All_info['net_sta_comp'][sav_order]
+    new_All_info['phase'] = All_info['phase'][sav_order]
+    new_All_info['arrival'] = All_info['arrival'][sav_order]
+    new_All_info['travel'] = All_info['travel'][sav_order]
+    return new_All_info
 
 
 
@@ -610,7 +653,11 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
         else:
             #template successfully downloaded
             outfile = home+'/'+project_name+'/waveforms_template/'+'template_%05d.ms'%(idf)
-            st.write(outfile,format='MSEED')
+            st.write(outfile,format='MSEED') #after saving, the order may be messed up
+            
+            #read st data out and check the sorting
+            st_out = obspy.read(outfile)
+            All_info = get_order(st_out,All_info)
             
             #write phase information
             outfile_info = home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(idf)
@@ -620,7 +667,6 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
             OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','a')
             OUT1.write('%d %s %d %s %s  %.5f %.5f %.3f %.3f\n'%(idf,outfile,len(st),DT,EVID,dfs.iloc[idf].Lon,dfs.iloc[idf].Lat,dfs.iloc[idf].Depth,dfs.iloc[idf].Magnitude))
             OUT1.close()
-
 
 
 
