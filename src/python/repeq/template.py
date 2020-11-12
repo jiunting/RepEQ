@@ -141,10 +141,10 @@ class Template():
                         NET = st[i].stats.network
                         STA = st[i].stats.station
                         CHN = st[i].stats.channel
-                        LOC = st[i].stats.location
+                        LOC = st[i].stats.location #=============================LOC is LOC.P/S ==========================!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         #in daily data... search for same station,channel,comp,sampling rate....that matches the i_th pick in particular template
-                        tmp_dayst = i_dayst.select(network=st[i].stats.network,station=STA,sampling_rate=st[i].stats.sampling_rate,
-                                                   channel=st[i].stats.channel,location=st[i].stats.location)
+                        tmp_dayst = i_dayst.select(network=NET,station=STA,sampling_rate=st[i].stats.sampling_rate,
+                                                   channel=CHN,location=LOC)
                         tmp_dayst = tmp_dayst.copy()
                         if len(tmp_dayst)!=1:
                             if len(tmp_dayst)==0:
