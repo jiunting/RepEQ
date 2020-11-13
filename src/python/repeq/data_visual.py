@@ -132,7 +132,6 @@ def bulk_plot_detc_tcs(home,project_name):
         tempID = int(daily_cut.split('_')[-1].split('.')[0])
         #find its corresponding template
         template = home+'/'+project_name+'/waveforms_template/template_%05d.npy'%(tempID)
-        plot_detc_tcs(daily_cut,template)
         outName = home+'/'+project_name+'/output/Template_match/Figs/template_%05d_'%(tempID)
         plot_detc_tcs(daily_cut,template,outName)
 
