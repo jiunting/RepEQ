@@ -378,7 +378,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
         #print('looking for',PS)
         idx = np.where((phase_info['net_sta_comp']==net_sta_comp) & (phase_info['phase']==PS) )[0]
         assert len(idx)==1, 'only one data matches the searching net_sta_comp and phase name'
-        return phase_info['travel'][idx]
+        return phase_info['travel'][idx][0]
     
     #cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
     sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
@@ -423,7 +423,10 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     sum_tcs_phase['phase'] = all_sav_PS
     sum_tcs_phase['OT_template'] = OT_template   #origin time for template
     #return sav_tcs,all_sav_PS
-    return sum_tcs_phase
+    if len(detc.keys())==0:
+        return False
+    else:
+        return sum_tcs_phase
 
 
 def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20]):
@@ -440,7 +443,8 @@ def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20]):
         sum_tcs_phase = cut_dailydata(home,project_name,detc_file,filter_detc,cut_window)
         #save the results
         eqid = int(detc_file.split('/')[-1].split('.')[0].split('_')[-1])
-        np.save(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_%05d.npy'%(eqid),sum_tcs_phase)
+        if sum_tcs_phase:
+            np.save(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_%05d.npy'%(eqid),sum_tcs_phase)
 
 
 
