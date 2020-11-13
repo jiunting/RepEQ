@@ -40,12 +40,12 @@ def plot_detc_tcs(daily_cut,template,outname):
         XLIM=[]
         #create figure based on how many traces
         print('Ntraces=',len(D))
-        if 0<len(D)<=20:
-            fig = plt.figure(figsize=(8.5,5.5))
-        elif 20<len(D)<=30:
-            fig = plt.figure(figsize=(8.5,6.5))
-        elif 30<len(D)<=40:
-            fig = plt.figure(figsize=(8.5,8.5))
+        #if 0<len(D)<=20:
+        #    fig = plt.figure(figsize=(8.5,5.5))
+        #elif 20<len(D)<=30:
+        #    fig = plt.figure(figsize=(8.5,6.5))
+        #elif 30<len(D):
+        fig = plt.figure(figsize=(8.5,8.5)) #all with the same size
         for ista in range(len(D)):
             net = D[ista].stats.network
             sta = D[ista].stats.station
@@ -114,7 +114,7 @@ def plot_detc_tcs(daily_cut,template,outname):
         #savName = template.split('_')[-1].split('.')[0] #this is the template ID
         if outname:
             print('save fig:',outname+ik+'.png')
-            plt.savefig(outname+ik+'.png',dpi=300)
+            plt.savefig(outname+ik.replace(':','')+'.png',dpi=300)
         #plt.show()
         plt.close()
 
