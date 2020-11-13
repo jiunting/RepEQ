@@ -369,16 +369,17 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     temp_file = home+'/'+project_name+'/waveforms_template/template_'+eqid+'.ms'
     temp = obspy.read(temp_file)
 
-    '''
+
     def get_travel(phase_info,net_sta_comp,PS):
         #get travel time(sec) from phase_info file by specifing a net_sta_comp (and loc) e.g. 'HV.PHOD.HNZ.'
         #print('phaseinfo=',phase_info['net_sta_comp'])
         #print('looking for',net_sta_comp)
         #print('PS list=',phase_info['phase'])
         #print('looking for',PS)
-        idx = np.where((phase_info['net_sta_comp']==net_sta_comp) & (phase_info['phase']==PS) )[0][0]
+        idx = np.where((phase_info['net_sta_comp']==net_sta_comp) & (phase_info['phase']==PS) )[0]
+        assert len(idx)==1, 'only one data matches the searching net_sta_comp and phase name'
         return phase_info['travel'][idx]
-    '''
+    
     #cut_window = [1,9] #window for daily data, sec prior arrival and after arrival
     sampling_rate = temp[0].stats.sampling_rate #all the sampling rate should be same
     #---loop every detection---
@@ -399,8 +400,8 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             PS = detc[eq_time]['phase'][ista]
             #get travel time(sec) for this net_sta_comp (and loc)
             #print('Travel Time for=',net_sta_comp,PS)
-            #travel_time = get_travel(phase_info,net_sta_comp,PS)
-            travel_time = detc[eq_time]['travel'][ista]
+            travel_time = get_travel(phase_info,net_sta_comp,PS)
+            #travel_time = detc[eq_time]['travel'][ista]
             #print('    ',travel_time)
             elems = net_sta_comp.split('.')
             selected_D = D.select(network=elems[0],station=elems[1],channel=elems[2],location=elems[3])
