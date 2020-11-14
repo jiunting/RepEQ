@@ -21,6 +21,15 @@ def cat2pd(cata_path):
     return df
 
 
+def cal_CCC(data1,data2):
+    #calculate normalize CCF, find max CC, and its lag idx
+    tmpccf=signal.correlate(data1,data2,'full')
+    auto1=signal.correlate(data1,data1,'full')
+    auto2=signal.correlate(data2,data2,'full')
+    tmpccf=tmpccf/np.sqrt(np.max(auto1)*np.max(auto2))
+    maxCCC=np.max(tmpccf)
+    lag=tmpccf.argmax()
+    return maxCCC,lag
 
 
 def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'):
@@ -445,6 +454,41 @@ def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20]):
         eqid = int(detc_file.split('/')[-1].split('.')[0].split('_')[-1])
         if sum_tcs_phase:
             np.save(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_%05d.npy'%(eqid),sum_tcs_phase)
+
+
+
+
+def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
+    #--------------------------------
+    #align the timeseries and calculate moving shift
+    #template<obspy Trace>: template waveform (single Trace)
+    #daily_cut<obspy Trace>: target waveform (single Trace) Must match the template net.sta.chan.loc and phase info
+    #Note that it can only check net.sta.chan.loc is the same, make sure matchs the right phase before using this function
+    #tcs_length_temp<list or np.array>:tcs_length_temp=[t1,t2], t1 sec before the arrival time(pick), t2 sec after the arrival time
+    #tcs_length_daily<list or np.array>:tcs_length_daily=[tt1,tt2], tt1 sec before the arrival time, tt2 sec after the arrival time
+    #phase_wind<list or array>: window for alignment (could be multiple/fine alignment)
+    #--------------------------------
+    #check net.sta.chan.loc name
+    NET_temp = template.stats.network
+    STA_temp = template.stats.station
+    CHN_temp = template.stats.channel
+    LOC_temp = template.stats.location
+    NET_daily = daily_cut.stats.network
+    STA_daily = daily_cut.stats.station
+    CHN_daily = daily_cut.stats.channel
+    LOC_daily = daily_cut.stats.location
+    assert '.'.join([NET_temp,STA_temp,CHN_temp,LOC_temp])=='.'.join([NET_daily,STA_daily,CHN_daily,LOC_daily]), "data does not match!"
+    temp_OT = template.stats.starttime
+    daily_OT = daily_cut.stats.starttime
+    #align the phase
+    phase_wind = np.array(phase_wind)
+    if phase_wind.ndim==2:
+        for i in range(len(phase_wind)):
+            phs_wind = phase_wind[i]
+            temp_t1 =
+
+    else:
+        #only align once
 
 
 
