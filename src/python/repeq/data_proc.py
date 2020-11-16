@@ -615,7 +615,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
 #    plt.plot(sav_temp[i]/np.max(sav_temp[i])+i,'r')
 #    plt.plot(sav_daily[i]/np.max(sav_daily[i])+i,'k')
 
-def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params):
     #make lag calculation from all the daily_cut data in the home/project_name/output/Template_match/Data_detection_cut
     #tcs_length_temp [t1,t2]: the same value of tcs_length used by template.Template
     #tcs_length_daily [t1,t2]: the same value of cut_window used by data_proc.bulk_cut_dailydata
