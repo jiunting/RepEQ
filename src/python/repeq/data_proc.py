@@ -395,7 +395,8 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     sum_tcs_phase = {} #info of tcs and PS phase
     sav_tcs = {}
     all_sav_PS = {} #record P or S wave info for all detections
-    for eq_time in detc.keys():
+    for i_eq_time,eq_time in enumerate(detc.keys()):
+        print('in:%d / %d'%(i_eq_time,len(detc.keys())))
         #find which daily data it is
         YMD = eq_time.split('T')[0].replace('-','')
         dir = glob.glob(home+'/'+project_name+'/waveforms/'+YMD+'*')[0]
@@ -454,6 +455,7 @@ def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20],overwrite
             if os.path.exists(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_%05d.npy'%(eqid)):
                 continue
         #start cut the data
+        print('Start cutting based on:',detc_file)
         sum_tcs_phase = cut_dailydata(home,project_name,detc_file,filter_detc,cut_window)
         #save the results
         if sum_tcs_phase:
