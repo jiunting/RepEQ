@@ -4,7 +4,7 @@ import glob
 import obspy
 import numpy as np
 from obspy import UTCDateTime
-
+from scipy import signal
 
 def cat2pd(cata_path):
     '''
@@ -469,6 +469,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
     #phase_wind<list or array>: window for alignment (could be multiple/fine alignment)
     #--------------------------------
     #check net.sta.chan.loc name
+    import matplotlib.pyplot as plt
     NET_temp = template.stats.network
     STA_temp = template.stats.station
     CHN_temp = template.stats.channel
@@ -482,13 +483,61 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
     daily_OT = daily_cut.stats.starttime
     #align the phase
     phase_wind = np.array(phase_wind)
-    if phase_wind.ndim==2:
+    delta = template.stats.delta #1/sampling rate
+    #----------dealing with phase alignment----------
+    if np.ndim(phase_wind)==2:
+        #multiple stage alignment
         for i in range(len(phase_wind)):
             phs_wind = phase_wind[i]
-            temp_t1 =
-
+            #Note that phase arrival time for template = temp_OT+tcs_length_temp[0]
+            temp_t1 = temp_OT+tcs_length_temp[0]-phs_wind[0]
+            temp_t2 = temp_OT+tcs_length_temp[0]+phs_wind[1]
+            #Note phase arrival time for daily = daily_OT+tcs_length_daily[0]
+            daily_t1 = daily_OT+tcs_length_daily[0]-phs_wind[0]
+            daily_t2 = daily_OT+tcs_length_daily[0]+phs_wind[1]
+            #cut data
+            D_temp = template.slice(starttime=temp_t1,endtime=temp_t2)
+            D_temp = D_temp.data
+            D_daily = daily_cut.slice(starttime=daily_t1,endtime=daily_t2)
+            D_daily = D_daily.data
+            plt.plot(D_daily,'k')
+            plt.plot(D_temp,'r')
+            plt.show()
+            maxCCC,lag = cal_CCC(D_temp,D_daily)
+            midd = len(D_daily)-1  #length of b, at this idx, refdata align with target data
+            shft = (lag-midd)*delta #convert to second (dt correction of P)
+            #print('In %d iter-shift:%s sec, CC=%f'%(i,shft,maxCCC))
+            #print('phase arr=',daily_OT+tcs_length_daily[0])
+            #if shft is positive, daily_cut is earlier than template. So the OT needs to be earlier,and vice versa
+            daily_OT -= shft
     else:
         #only align once
+        phs_wind = phase_wind
+        #Note that phase arrival time for template = temp_OT+tcs_length_temp[0]
+        temp_t1 = temp_OT+tcs_length_temp[0]-phs_wind[0]
+        temp_t2 = temp_OT+tcs_length_temp[0]+phs_wind[1]
+        #Note phase arrival time for daily = daily_OT+tcs_length_daily[0]
+        daily_t1 = daily_OT+tcs_length_daily[0]-phs_wind[0]
+        daily_t2 = daily_OT+tcs_length_daily[0]+phs_wind[1]
+        #cut data
+        D_temp = template.slice(starttime=temp_t1,endtime=temp_t2)
+        D_temp = D_temp.data
+        D_daily = daily_cut.slice(starttime=daily_t1,endtime=daily_t2)
+        D_daily = D_daily.data
+        maxCCC,lag = cal_CCC(D_temp,D_daily)
+        midd = len(D_daily)-1  #length of b, at this idx, refdata align with target data
+        shft = (lag-midd)*delta #convert to second (dt correction of P)
+        print('In %d iter-shift:%s sec, CC=%f'%(i,shft,maxCCC))
+        daily_OT -= shft #if shft is positive, daily_cut is earlier than template, vice versa
+    #----------dealing with phase alignment END and already got the phase arr for daily_cut----------
+    temp_arr = temp_OT+tcs_length_temp[0]
+    daily_arr = daily_OT+tcs_length_daily[0]
+    wind = [0,4]
+    mov = 1
+    t_st_temp =
+    t_ed_temp =
+    t_st_daily =
+    t_ed_daily =
 
 
 
