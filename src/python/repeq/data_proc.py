@@ -426,6 +426,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
             St += selected_D[0]
             sav_PS.append(PS)
+        D.clear()
         #return St #test the script
         sav_tcs[eq_time] = St
         all_sav_PS[eq_time] = sav_PS
