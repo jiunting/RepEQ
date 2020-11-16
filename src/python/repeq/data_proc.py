@@ -458,7 +458,7 @@ def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20]):
 
 
 
-def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
+def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measure_params):
     #--------------------------------
     #align the timeseries and calculate moving shift
     #template<obspy Trace>: template waveform (single Trace)
@@ -466,7 +466,15 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
     #Note that it can only check net.sta.chan.loc is the same, make sure matchs the right phase before using this function
     #tcs_length_temp<list or np.array>:tcs_length_temp=[t1,t2], t1 sec before the arrival time(pick), t2 sec after the arrival time
     #tcs_length_daily<list or np.array>:tcs_length_daily=[tt1,tt2], tt1 sec before the arrival time, tt2 sec after the arrival time
-    #phase_wind<list or array>: window for alignment (could be multiple/fine alignment)
+    #align_wind<list or array>: window for alignment (could be multiple/fine alignment)
+    '''
+    measure_params={
+    'wind':[1,1],
+    'mov':0.01,
+    'interp':0.01,
+    'taper':0.05,     #taper percentage
+    }
+    '''
     #--------------------------------
     #check net.sta.chan.loc name
     import matplotlib.pyplot as plt
@@ -481,14 +489,24 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
     assert '.'.join([NET_temp,STA_temp,CHN_temp,LOC_temp])=='.'.join([NET_daily,STA_daily,CHN_daily,LOC_daily]), "data does not match!"
     temp_OT = template.stats.starttime
     daily_OT = daily_cut.stats.starttime
+    #initial measure_params
+    if not 'interp' in measure_params:
+        measure_params['interp'] = False
+    if not 'taper' in measure_params:
+        measure_params['taper'] = False
+    
     #align the phase
-    phase_wind = np.array(phase_wind)
-    delta = template.stats.delta #1/sampling rate
+    align_wind = np.array(align_wind)
+    if measure_params['interp']:
+        delta = measure_params['interp'] #interpolate to this time interval value
+    else:
+        #measure_params['interp']==False
+        delta = template.stats.delta #1/sampling rate
     #----------dealing with phase alignment----------
-    if np.ndim(phase_wind)==2:
+    if np.ndim(align_wind)==2:
         #multiple stage alignment
-        for i in range(len(phase_wind)):
-            phs_wind = phase_wind[i]
+        for i in range(len(align_wind)):
+            phs_wind = align_wind[i]
             #Note that phase arrival time for template = temp_OT+tcs_length_temp[0]
             temp_t1 = temp_OT+tcs_length_temp[0]-phs_wind[0]
             temp_t2 = temp_OT+tcs_length_temp[0]+phs_wind[1]
@@ -500,9 +518,9 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
             D_temp = D_temp.data
             D_daily = daily_cut.slice(starttime=daily_t1,endtime=daily_t2)
             D_daily = D_daily.data
-            plt.plot(D_daily,'k')
-            plt.plot(D_temp,'r')
-            plt.show()
+            #plt.plot(D_daily,'k')
+            #plt.plot(D_temp,'r')
+            #plt.show()
             maxCCC,lag = cal_CCC(D_temp,D_daily)
             midd = len(D_daily)-1  #length of b, at this idx, refdata align with target data
             shft = (lag-midd)*delta #convert to second (dt correction of P)
@@ -512,7 +530,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
             daily_OT -= shft
     else:
         #only align once
-        phs_wind = phase_wind
+        phs_wind = align_wind
         #Note that phase arrival time for template = temp_OT+tcs_length_temp[0]
         temp_t1 = temp_OT+tcs_length_temp[0]-phs_wind[0]
         temp_t2 = temp_OT+tcs_length_temp[0]+phs_wind[1]
@@ -527,13 +545,13 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
         maxCCC,lag = cal_CCC(D_temp,D_daily)
         midd = len(D_daily)-1  #length of b, at this idx, refdata align with target data
         shft = (lag-midd)*delta #convert to second (dt correction of P)
-        print('In %d iter-shift:%s sec, CC=%f'%(i,shft,maxCCC))
+        #print('In %d iter-shift:%s sec, CC=%f'%(i,shft,maxCCC))
         daily_OT -= shft #if shft is positive, daily_cut is earlier than template, vice versa
     #----------dealing with phase alignment END and already got the phase arr for daily_cut----------
     temp_arr = temp_OT+tcs_length_temp[0]
     daily_arr = daily_OT+tcs_length_daily[0]
-    wind = [0,4]
-    mov = 0.01
+    wind = measure_params['wind']
+    mov = measure_params['mov']
     #starting time of measured window for template
     t_st_temp = temp_arr-wind[0]
     t_ed_temp = temp_arr+wind[1]
@@ -542,42 +560,58 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
     t_ed_daily = daily_arr+wind[1]
     sav_t = [] #relative time(sec) to arrival time
     sav_shft = []
-    sav_temp = []
-    sav_daily = []
-    print(template.stats.endtime)
-    print(daily_cut.stats.endtime)
+    sav_CCC = []
+    #sav_temp = []
+    #sav_daily = []
     while (t_ed_temp<=template.stats.endtime) and (t_ed_daily<=daily_cut.stats.endtime):
-        print('in loop')
         #cut the data
-        print(template.stats)
-        print('cut:',t_st_temp,t_ed_temp)
-        D_temp = template.slice(starttime=t_st_temp,endtime=t_ed_temp)
-        #==========can do some data processing here==========
+        #print(template.stats)
+        #print('cut template:',t_st_temp,t_ed_temp)
+        #print(daily_cut.stats)
+        #print('cut daily:',t_st_daily,t_ed_daily)
+        D_temp = template.copy()
+        D_temp.trim(starttime=t_st_temp-1,endtime=t_ed_temp+1,nearest_sample=1, pad=1, fill_value=0)
+        #interpolate data (either new sampling or original sampling)
+        D_temp.interpolate(sampling_rate=1.0/delta,starttime=t_st_temp) #force the starttime to be "exactly" st(no 0.0001 difference)
+        D_temp.trim(starttime=t_st_temp,endtime=t_ed_temp,nearest_sample=1, pad=1, fill_value=0)
+        if measure_params['taper']:
+            D_temp.taper(measure_params['taper'])
         D_temp = D_temp.data
-        D_daily = daily_cut.slice(starttime=t_st_daily,endtime=t_ed_daily)
-        #==========can do some data processing here==========
+        D_daily = daily_cut.copy()
+        D_daily.trim(starttime=t_st_daily-1,endtime=t_ed_daily+1,nearest_sample=1, pad=1, fill_value=0)
+        #interpolate data
+        D_daily.interpolate(sampling_rate=1.0/delta,starttime=t_st_daily)
+        D_daily.trim(starttime=t_st_daily,endtime=t_ed_daily,nearest_sample=1, pad=1, fill_value=0)
+        if measure_params['taper']:
+            D_daily.taper(measure_params['taper'])
+        #D_daily = daily_cut.slice(starttime=t_st_daily,endtime=t_ed_daily)
         D_daily = D_daily.data
         #measure lag
-        sav_temp.append(D_temp)
-        sav_daily.append(D_daily)
+        #sav_temp.append(D_temp)
+        #sav_daily.append(D_daily)
         maxCCC,lag = cal_CCC(D_temp,D_daily)
         midd = len(D_daily)-1  #length of b, at this idx, refdata align with target data
         shft = (lag-midd)*delta #convert to second (dt correction of P)
         windt = ((t_ed_daily-daily_arr)+(t_st_daily-daily_arr))/2 #current window time (WRS to arrival)
         sav_t.append(windt)
         sav_shft.append(shft)
+        sav_CCC.append(maxCCC)
         #add moving time to the next iter
         t_st_temp += mov
         t_ed_temp += mov
         t_st_daily += mov
         t_ed_daily += mov
-    return sav_t,sav_shft,sav_temp,sav_daily
+    return sav_t,sav_shft,sav_CCC   #,sav_temp,sav_daily
 
 
-sav_t,sav_shft,sav_temp,sav_daily=cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind)
-for i in range(len(sav_temp)):
-    plt.plot(sav_temp[i]/np.max(sav_temp[i])+i,'r')
-    plt.plot(sav_daily[i]/np.max(sav_daily[i])+i,'k')
+#sav_t,sav_shft,sav_CCC,sav_temp,sav_daily=cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+#sav_t,sav_shft,sav_CCC=cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+#plt.scatter(sav_t,sav_shft,c=sav_CCC,cmap='jet')
+#
+#
+#for i in range(len(sav_temp)):
+#    plt.plot(sav_temp[i]/np.max(sav_temp[i])+i,'r')
+#    plt.plot(sav_daily[i]/np.max(sav_daily[i])+i,'k')
 
 
 
