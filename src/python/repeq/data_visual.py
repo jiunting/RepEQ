@@ -35,7 +35,7 @@ def plot_detc_tcs(daily_cut,template,outname):
     OT_temp = UTCDateTime(daily_cut['OT_template']) #origin time for template
     for ik in daily_cut['detc_tcs'].keys():
         D = daily_cut['detc_tcs'][ik]
-        phase = daily_cut['phase'][ik]
+        phase = daily_cut['phase'][ik] # assume D and phase have the same order
         OT_D = UTCDateTime(ik) #origin time of Detection (cut from daily data)
         XLIM=[]
         #create figure based on how many traces

@@ -415,7 +415,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             elems = net_sta_comp.split('.')
             selected_D = D.select(network=elems[0],station=elems[1],channel=elems[2],location=elems[3])
             selected_D = selected_D.copy()
-            assert len(selected_D)==1, 'selected multiple data, something wrong'
+            assert len(selected_D)==1, 'selected multiple daily data, something wrong' #template might have multiple data (P/S phases) but not for daily data
             #cut data
             t1 = UTCDateTime(eq_time)+travel_time-cut_window[0]
             t2 = UTCDateTime(eq_time)+travel_time+cut_window[1]
@@ -438,20 +438,24 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
         return sum_tcs_phase
 
 
-def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20]):
+def bulk_cut_dailydata(home,project_name,filter_detc,cut_window=[5,20],overwrite=False):
     '''
         bulk cut daily data from Detection results
     '''
-    import glob
+    import glob,os
     #get all data path
     detc_files = glob.glob(home+'/'+project_name+'/output/Template_match/Detections/Detected_tmp_*.npy')
     detc_files.sort()
 
     #loop every detection
     for detc_file in detc_files:
+        eqid = int(detc_file.split('/')[-1].split('.')[0].split('_')[-1])
+        if not overwrite:
+            if os.path.exists(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_%05d.npy'%(eqid)):
+                continue
+        #start cut the data
         sum_tcs_phase = cut_dailydata(home,project_name,detc_file,filter_detc,cut_window)
         #save the results
-        eqid = int(detc_file.split('/')[-1].split('.')[0].split('_')[-1])
         if sum_tcs_phase:
             np.save(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_%05d.npy'%(eqid),sum_tcs_phase)
 
@@ -607,11 +611,91 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
 #sav_t,sav_shft,sav_CCC,sav_temp,sav_daily=cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
 #sav_t,sav_shft,sav_CCC=cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
 #plt.scatter(sav_t,sav_shft,c=sav_CCC,cmap='jet')
-#
-#
 #for i in range(len(sav_temp)):
 #    plt.plot(sav_temp[i]/np.max(sav_temp[i])+i,'r')
 #    plt.plot(sav_daily[i]/np.max(sav_daily[i])+i,'k')
+
+def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+    #make lag calculation from all the daily_cut data in the home/project_name/output/Template_match/Data_detection_cut
+    #tcs_length_temp [t1,t2]: the same value of tcs_length used by template.Template
+    #tcs_length_daily [t1,t2]: the same value of cut_window used by data_proc.bulk_cut_dailydata
+    '''
+    measure_params={
+    'wind':[1,1],
+    'mov':0.01,
+    'interp':0.01,
+    'taper':0.05,     #taper percentage
+    }
+    '''
+    import glob
+    #load all daily_cut data
+    daily_cuts = glob.glob(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_*.npy')
+    daily_cuts.sort()
+    for daily_cut in daily_cuts:
+        tempID = int(daily_cut.split('_')[-1].split('.')[0])
+        daily_cut = np.load(daily_cut,allow_pickle=True)
+        daily_cut = daily_cut.item()
+        #find the template .ms file
+        template = obspy.read(home+'/'+project_name+'/waveforms_template/template_%05d.ms'%(tempID))
+        template_info = np.load(home+'/'+project_name+'/waveforms_template/template_%05d.npy'%(tempID),allow_pickle=True)
+        template_info = template_info.item()
+        template_phases = template_info['phase']
+        for ik in daily_cut['detc_tcs']:
+            #the ith detection e.g. ik='2018-04-22T16:24:34.44'
+            daily_data = daily_cut['detc_tcs'][ik]
+            daily_phases = daily_cut['phase'][ik]
+            for i_cut in range(len(daily_data)):
+                D_daily = daily_data[i_cut]
+                PS_daily = daily_phases[i_cut].capitalize()[0]
+                #match the corresponding template data
+                NET = D_daily.stats.network
+                STA = D_daily.stats.station
+                CHN = D_daily.stats.channel
+                LOC = D_daily.stats.location
+                daily_net_sta_comp = '.'.join([NET,STA,CHN,LOC])
+                #template selection
+                #Method #1
+                selected_idx = np.where((template_info['net_sta_comp']==daily_net_sta_comp) & (template_info['phase']==PS_daily))[0][0]
+                #Method #2
+                selected_temp = template.select(network=NET,station=STA,channel=CHN,location=LOC)
+                selected_temp = selected_temp.copy()
+                #most of the case should return only 1 data, but if there's P and S in 1 station...
+                if len(selected_temp)!=1:
+                    daily_phase = daily_phases[i_cut]
+                    t1 = selected_temp[0].stats.starttime
+                    t2 = selected_temp[1].stats.starttime
+                    if t2-t1>0:
+                        if PS_daily=='P':
+                            selected_temp = obspy.Stream(selected_temp[0])
+                            print('return first one')
+                        elif PS_daily=='S':
+                            selected_temp = obspy.Stream(selected_temp[1])
+                            print('return second one')
+                    else:
+                        if PS_daily=='P':
+                            selected_temp = obspy.Stream(selected_temp[1])
+                        elif PS_daily=='S':
+                            selected_temp = obspy.Stream(selected_temp[0])
+                assert template[selected_idx].stats.starttime==selected_temp.stats.starttime, 'Selection inconsistent! check the Method1'
+                #if the assert always work, delect the Method2 and only use the method1
+                sav_t,sav_shft,sav_CCC = cal_lag(selected_temp,D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
