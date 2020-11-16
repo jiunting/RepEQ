@@ -533,15 +533,51 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind):
     temp_arr = temp_OT+tcs_length_temp[0]
     daily_arr = daily_OT+tcs_length_daily[0]
     wind = [0,4]
-    mov = 1
-    t_st_temp =
-    t_ed_temp =
-    t_st_daily =
-    t_ed_daily =
+    mov = 0.01
+    #starting time of measured window for template
+    t_st_temp = temp_arr-wind[0]
+    t_ed_temp = temp_arr+wind[1]
+    #for dailydata
+    t_st_daily = daily_arr-wind[0]
+    t_ed_daily = daily_arr+wind[1]
+    sav_t = [] #relative time(sec) to arrival time
+    sav_shft = []
+    sav_temp = []
+    sav_daily = []
+    print(template.stats.endtime)
+    print(daily_cut.stats.endtime)
+    while (t_ed_temp<=template.stats.endtime) and (t_ed_daily<=daily_cut.stats.endtime):
+        print('in loop')
+        #cut the data
+        print(template.stats)
+        print('cut:',t_st_temp,t_ed_temp)
+        D_temp = template.slice(starttime=t_st_temp,endtime=t_ed_temp)
+        #==========can do some data processing here==========
+        D_temp = D_temp.data
+        D_daily = daily_cut.slice(starttime=t_st_daily,endtime=t_ed_daily)
+        #==========can do some data processing here==========
+        D_daily = D_daily.data
+        #measure lag
+        sav_temp.append(D_temp)
+        sav_daily.append(D_daily)
+        maxCCC,lag = cal_CCC(D_temp,D_daily)
+        midd = len(D_daily)-1  #length of b, at this idx, refdata align with target data
+        shft = (lag-midd)*delta #convert to second (dt correction of P)
+        windt = ((t_ed_daily-daily_arr)+(t_st_daily-daily_arr))/2 #current window time (WRS to arrival)
+        sav_t.append(windt)
+        sav_shft.append(shft)
+        #add moving time to the next iter
+        t_st_temp += mov
+        t_ed_temp += mov
+        t_st_daily += mov
+        t_ed_daily += mov
+    return sav_t,sav_shft,sav_temp,sav_daily
 
 
-
-
+sav_t,sav_shft,sav_temp,sav_daily=cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,phase_wind)
+for i in range(len(sav_temp)):
+    plt.plot(sav_temp[i]/np.max(sav_temp[i])+i,'r')
+    plt.plot(sav_daily[i]/np.max(sav_daily[i])+i,'k')
 
 
 
