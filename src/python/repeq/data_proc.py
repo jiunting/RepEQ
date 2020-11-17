@@ -395,13 +395,19 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     sum_tcs_phase = {} #info of tcs and PS phase
     sav_tcs = {}
     all_sav_PS = {} #record P or S wave info for all detections
+    prev_dir = '' #dir that read on
     for i_eq_time,eq_time in enumerate(detc.keys()):
         print('in:%d / %d'%(i_eq_time,len(detc.keys())))
         #find which daily data it is
         YMD = eq_time.split('T')[0].replace('-','')
         dir = glob.glob(home+'/'+project_name+'/waveforms/'+YMD+'*')[0]
-        #read merged daily data
-        D = obspy.read(dir+'/waveforms/merged.ms')
+        #an optimal way to recycle the D so that it won't read D over and over again
+        if dir!=prev_dir:
+            #read merged daily data
+            if prev_dir!='':
+                D.clear() #clear the previous D to prevent memory blows up
+            D = obspy.read(dir+'/waveforms/merged.ms')
+        prev_dir = dir
         #select net_sta_comp
         St = obspy.Stream()
         sav_PS = [] #record P or S wave info
@@ -426,7 +432,6 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
             St += selected_D[0]
             sav_PS.append(PS)
-        D.clear()
         #return St #test the script
         sav_tcs[eq_time] = St
         all_sav_PS[eq_time] = sav_PS
@@ -480,6 +485,13 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
     'mov':0.01,
     'interp':0.01,
     'taper':0.05,     #taper percentage
+    }
+    
+    measure_params={
+    'wind':[1,9],
+    'mov':0.01,
+    'interp':False,
+    'taper':False,     #taper percentage
     }
     '''
     #--------------------------------

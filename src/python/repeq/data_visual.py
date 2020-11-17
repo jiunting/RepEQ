@@ -27,8 +27,10 @@ def plot_detc_tcs(daily_cut,template,outname):
     matplotlib.use('pdf') #instead using interactive backend
     import matplotlib.pyplot as plt
     from obspy import UTCDateTime
-    
-    temp = obspy.read(template)
+    if type(template)==str:
+        temp = obspy.read(template)
+    else:
+        temp = template
     if type(daily_cut)==str:
         daily_cut = np.load(daily_cut,allow_pickle=True)
         daily_cut = daily_cut.item()
