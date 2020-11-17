@@ -94,7 +94,7 @@ filter_params={
 data_proc.read_detections(home,project_name,filter_params) #this doesn't work for the newest format, read the data manually
 
 
-#write detection timeseries
+#write detection timeseries (cut from continuous data based on the detected time)
 from repeq import data_proc
 filter_params={
 'diff_t':60,
@@ -103,6 +103,15 @@ filter_params={
 }
 cut_window=[5,20] #cut_window[t1,t2] means t1 sec "before" the pick time and t2 sec "after" the pick time
 data_proc.bulk_cut_dailydata(home,project_name,filter_detc,cut_window) #the results will be saved in home+project_name/output/Template_match/Data_detection_cut
+
+
+#make figure from the above (cut) timeseries
+from repeq import data_visual
+data_visual.bulk_plot_detc_tcs(home,project_name) #read the files in home+project_name/output/Template_match/Data_detection_cut and find template file
+
+
+
+
 
 
 

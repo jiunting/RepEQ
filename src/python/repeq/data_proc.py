@@ -395,7 +395,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     sum_tcs_phase = {} #info of tcs and PS phase
     sav_tcs = {}
     all_sav_PS = {} #record P or S wave info for all detections
-    prev_dir = '' #dir that read on
+    prev_dir = '' #record dir that previous read on. An optimal way to prevent reading D over and over again
     for i_eq_time,eq_time in enumerate(detc.keys()):
         print('in:%d / %d'%(i_eq_time,len(detc.keys())))
         #find which daily data it is

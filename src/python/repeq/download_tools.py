@@ -575,10 +575,11 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             #print('Time:',tmp_arrT)
             sav_arr.append(tmp_arrT)
             sav_travel.append(arr-OT) #travel time (relative to the origin)
-    #=========IMPORTANT NOTE!!! the order of these array are NOT necessarily the same as st====================================================
-    #=========When there are both P and S data in the same net.sta.chn.loc, the order will be messed up when write in .ms file=================
-    #=========Use these info as extra caution==================================================================================================
-    #=========2020.11.12 Update: runing additional re-order to the All_info so the order is the same now=======================================
+    #=========IMPORTANT NOTE!!! the order of these array are NOT necessarily the same as st=====================================================
+    #=========When there are both P and S data in the same net.sta.chn.loc, the order will be messed up when write in .ms file==================
+    #=========Use these info as extra caution===================================================================================================
+    #=========2020.11.12 Update: When calling bulk_make_template will will be runing additional re-order(All_info_reorder) to all the All_info==
+    #=========================so the data generated from download_tools.bulk_make_template will be ready to use (the right order as .ms file)===
     All_info['net_sta_comp'] = np.array(sav_net_sta_comp)
     All_info['phase'] = np.array(sav_phase)
     All_info['arrival'] = np.array(sav_arr) #absolute arrival time
