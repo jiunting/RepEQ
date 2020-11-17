@@ -664,6 +664,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
         template_phases = template_info['phase']
         #add key in lag_measure
         lag_measure[tempID] = {'template_OT':template_info['OT_template'],'detc_OT':{}} #initial keys in lag_measure[tempID]
+        lag_measure_sub = {'template_OT':template_info['OT_template'],'detc_OT':{}} #initial keys in lag_measure_sub
         for ik in daily_cut['detc_tcs']:
             print('  det=',ik)
             #the ith detection e.g. ik='2018-04-22T16:24:34.44'
@@ -680,6 +681,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 LOC = D_daily.stats.location
                 daily_net_sta_comp = '.'.join([NET,STA,CHN,LOC])
                 lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily] = {} #to save measurements
+                lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily] = {}
                 #template selection
                 #Method #1, assume order of daily cut_data, net_sta_comp, and phase is the same
                 #print('    searching:',daily_net_sta_comp,PS_daily)
@@ -711,7 +713,11 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
                 lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
                 lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
-    np.save(home+'/'+project_name+'/output/Template_match/measure_lag.npy',lag_measure)
+                lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
+                lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
+                lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
+        np.save(home+'/'+project_name+'/output/Template_match/measure_lag_temp%05d.npy'%(tempID),lag_measure_sub)
+    np.save(home+'/'+project_name+'/output/Template_match/measure_lag_all.npy',lag_measure)
 
 
 
