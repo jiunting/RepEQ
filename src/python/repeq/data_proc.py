@@ -597,8 +597,10 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
             D_temp.taper(measure_params['taper'])
         D_temp = D_temp.data
         D_daily = daily_cut.copy()
+        print('Trim st=',t_st_daily-1)
         D_daily.trim(starttime=t_st_daily-1,endtime=t_ed_daily+1,nearest_sample=1, pad=1, fill_value=0)
         #interpolate data
+        print('interp from st=',t_st_daily)
         D_daily.interpolate(sampling_rate=1.0/delta,starttime=t_st_daily)
         D_daily.trim(starttime=t_st_daily,endtime=t_ed_daily,nearest_sample=1, pad=1, fill_value=0)
         if measure_params['taper']:
