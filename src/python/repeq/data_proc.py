@@ -566,6 +566,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         shft = (lag-midd)*delta #convert to second (dt correction of P)
         #print('In %d iter-shift:%s sec, CC=%f'%(i,shft,maxCCC))
         daily_OT -= shft #if shft is positive, daily_cut is earlier than template, vice versa
+        print('shift=',shft)
     #----------dealing with phase alignment END and already got the phase arr for daily_cut----------
     temp_arr = temp_OT+tcs_length_temp[0]
     daily_arr = daily_OT+tcs_length_daily[0]
@@ -597,12 +598,15 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
             D_temp.taper(measure_params['taper'])
         D_temp = D_temp.data
         D_daily = daily_cut.copy()
-        #print('Trim st=',t_st_daily-1)
+        print('daily data from:',D_daily.starttime,D_daily.endtime)
+        print('Trim st=',t_st_daily-1)
         D_daily.trim(starttime=t_st_daily-2,endtime=t_ed_daily+2,nearest_sample=1, pad=1, fill_value=0)
+        print('After trim, daily data from:',D_daily.starttime,D_daily.endtime)
         #interpolate data
-        #print('interp from st=',t_st_daily)
+        print('interp from st=',t_st_daily)
+        print(D_daily)
         D_daily.interpolate(sampling_rate=1.0/delta,starttime=t_st_daily)
-        #print('interp success!')
+        print('interp success!')
         D_daily.trim(starttime=t_st_daily,endtime=t_ed_daily,nearest_sample=1, pad=1, fill_value=0)
         if measure_params['taper']:
             D_daily.taper(measure_params['taper'])
