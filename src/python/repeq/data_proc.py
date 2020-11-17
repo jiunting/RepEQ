@@ -664,7 +664,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
             for i_cut in range(len(daily_data)):
                 print('  det=',ik)
                 D_daily = daily_data[i_cut]
-                PS_daily = daily_phases[i_cut].capitalize()[0]
+                PS_daily = daily_phases[i_cut] #.capitalize()[0]. Both PS_daily and template_info['phase'] can be Pg,Sg... no problem
                 #match the corresponding template data
                 NET = D_daily.stats.network
                 STA = D_daily.stats.station
@@ -684,16 +684,16 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                     t1 = selected_temp[0].stats.starttime
                     t2 = selected_temp[1].stats.starttime
                     if t2-t1>0:
-                        if PS_daily=='P':
+                        if PS_daily.capitalize()[0]=='P':
                             selected_temp = obspy.Stream(selected_temp[0])
                             print('return first one')
-                        elif PS_daily=='S':
+                        elif PS_daily.capitalize()[0]=='S':
                             selected_temp = obspy.Stream(selected_temp[1])
                             print('return second one')
                     else:
-                        if PS_daily=='P':
+                        if PS_daily.capitalize()[0]=='P':
                             selected_temp = obspy.Stream(selected_temp[1])
-                        elif PS_daily=='S':
+                        elif PS_daily.capitalize()[0]=='S':
                             selected_temp = obspy.Stream(selected_temp[0])
                 assert template[selected_idx].stats.starttime==selected_temp[0].stats.starttime, 'Selection inconsistent! check the Method1&2'
                 #if the assert always work, delect the Method2 and only use the method1
