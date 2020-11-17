@@ -669,7 +669,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 LOC = D_daily.stats.location
                 daily_net_sta_comp = '.'.join([NET,STA,CHN,LOC])
                 #template selection
-                #Method #1
+                #Method #1, assume order of daily cut_data, net_sta_comp, and phase is the same
                 selected_idx = np.where((template_info['net_sta_comp']==daily_net_sta_comp) & (template_info['phase']==PS_daily))[0][0]
                 #Method #2
                 selected_temp = template.select(network=NET,station=STA,channel=CHN,location=LOC)
@@ -691,9 +691,11 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                             selected_temp = obspy.Stream(selected_temp[1])
                         elif PS_daily=='S':
                             selected_temp = obspy.Stream(selected_temp[0])
-                assert template[selected_idx].stats.starttime==selected_temp.stats.starttime, 'Selection inconsistent! check the Method1'
+                assert template[selected_idx].stats.starttime==selected_temp.stats.starttime, 'Selection inconsistent! check the Method1&2'
                 #if the assert always work, delect the Method2 and only use the method1
-                sav_t,sav_shft,sav_CCC = cal_lag(selected_temp,D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+                #sav_t,sav_shft,sav_CCC = cal_lag(selected_temp,D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+
+
 
 
 
