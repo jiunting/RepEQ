@@ -17,6 +17,7 @@ def create_dirs(home,project_name,overwrite=False):
         os.makedirs(home+'/'+project_name+'/'+'output')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Figs')
+        os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Measure_lag')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Detections')
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'Data_detection_cut') #data cut from daily waveforms
         os.makedirs(home+'/'+project_name+'/'+'output'+'/'+'Template_match'+'/'+'CCF_records')

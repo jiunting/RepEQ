@@ -620,6 +620,9 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         t_ed_temp += mov
         t_st_daily += mov
         t_ed_daily += mov
+    sav_t = np.array(sav_t)
+    sav_shft = np.array(sav_shft)
+    sav_CCC = np.array(sav_CCC)
     return sav_t,sav_shft,sav_CCC   #,sav_temp,sav_daily
 
 
@@ -646,6 +649,8 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
     #load all daily_cut data
     daily_cuts = glob.glob(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_*.npy')
     daily_cuts.sort()
+    #initial dictionary that save all info
+    lag_measure = {} #with templateID as key
     for daily_cut in daily_cuts:
         print('-------------------------------------')
         print('Now in',daily_cut)
@@ -657,11 +662,14 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
         template_info = np.load(home+'/'+project_name+'/waveforms_template/template_%05d.npy'%(tempID),allow_pickle=True)
         template_info = template_info.item()
         template_phases = template_info['phase']
+        #add key in lag_measure
+        lag_measure[tempID] = {'template_OT':template_info['OT_template'],'detc_OT':{}} #initial keys in lag_measure[tempID]
         for ik in daily_cut['detc_tcs']:
             print('  det=',ik)
             #the ith detection e.g. ik='2018-04-22T16:24:34.44'
             daily_data = daily_cut['detc_tcs'][ik]
             daily_phases = daily_cut['phase'][ik]
+            lag_measure[tempID]['detc_OT'][ik] = {}   # initial (net_sta_comp.phase) key in lag_measure[tempID]['detc_OT'][ik]
             for i_cut in range(len(daily_data)):
                 D_daily = daily_data[i_cut]
                 PS_daily = daily_phases[i_cut] #.capitalize()[0]. Both PS_daily and template_info['phase'] can be Pg,Sg... no problem
@@ -671,6 +679,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 CHN = D_daily.stats.channel
                 LOC = D_daily.stats.location
                 daily_net_sta_comp = '.'.join([NET,STA,CHN,LOC])
+                lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily] = {} #to save measurements
                 #template selection
                 #Method #1, assume order of daily cut_data, net_sta_comp, and phase is the same
                 #print('    searching:',daily_net_sta_comp,PS_daily)
@@ -695,14 +704,14 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                             selected_temp = obspy.Stream(selected_temp[1])
                         elif PS_daily.capitalize()[0]=='S':
                             selected_temp = obspy.Stream(selected_temp[0])
-                print('starttime:',template[selected_idx].stats.starttime,selected_temp[0].stats.starttime)
+                #print('starttime:',template[selected_idx].stats.starttime,selected_temp[0].stats.starttime)
                 assert template[selected_idx].stats.starttime==selected_temp[0].stats.starttime, 'Selection inconsistent! check the Method1&2'
                 #if the assert always work, delect the Method2 and only use the method1
-                #sav_t,sav_shft,sav_CCC = cal_lag(selected_temp,D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
-
-
-
-
+                sav_t,sav_shft,sav_CCC = cal_lag(selected_temp,D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+                lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
+                lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
+                lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
+    np.save(home+'/'+project_name+'/output/Template_match/measure_lag.npy',lag_measure)
 
 
 
