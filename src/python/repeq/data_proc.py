@@ -671,6 +671,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
             daily_data = daily_cut['detc_tcs'][ik]
             daily_phases = daily_cut['phase'][ik]
             lag_measure[tempID]['detc_OT'][ik] = {}   # initial (net_sta_comp.phase) key in lag_measure[tempID]['detc_OT'][ik]
+            lag_measure_sub['detc_OT'][ik] = {}
             for i_cut in range(len(daily_data)):
                 D_daily = daily_data[i_cut]
                 PS_daily = daily_phases[i_cut] #.capitalize()[0]. Both PS_daily and template_info['phase'] can be Pg,Sg... no problem
@@ -716,8 +717,8 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
-        np.save(home+'/'+project_name+'/output/Template_match/measure_lag_temp%05d.npy'%(tempID),lag_measure_sub)
-    np.save(home+'/'+project_name+'/output/Template_match/measure_lag_all.npy',lag_measure)
+        np.save(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID),lag_measure_sub)
+    np.save(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_all.npy',lag_measure)
 
 
 
