@@ -658,11 +658,11 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
         template_info = template_info.item()
         template_phases = template_info['phase']
         for ik in daily_cut['detc_tcs']:
+            print('  det=',ik)
             #the ith detection e.g. ik='2018-04-22T16:24:34.44'
             daily_data = daily_cut['detc_tcs'][ik]
             daily_phases = daily_cut['phase'][ik]
             for i_cut in range(len(daily_data)):
-                print('  det=',ik)
                 D_daily = daily_data[i_cut]
                 PS_daily = daily_phases[i_cut] #.capitalize()[0]. Both PS_daily and template_info['phase'] can be Pg,Sg... no problem
                 #match the corresponding template data
@@ -673,7 +673,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 daily_net_sta_comp = '.'.join([NET,STA,CHN,LOC])
                 #template selection
                 #Method #1, assume order of daily cut_data, net_sta_comp, and phase is the same
-                print('    searching:',daily_net_sta_comp,PS_daily)
+                #print('    searching:',daily_net_sta_comp,PS_daily)
                 selected_idx = np.where((template_info['net_sta_comp']==daily_net_sta_comp) & (template_info['phase']==PS_daily))[0][0]
                 #Method #2
                 selected_temp = template.select(network=NET,station=STA,channel=CHN,location=LOC)
@@ -695,6 +695,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                             selected_temp = obspy.Stream(selected_temp[1])
                         elif PS_daily.capitalize()[0]=='S':
                             selected_temp = obspy.Stream(selected_temp[0])
+                print('starttime:',template[selected_idx].stats.starttime,selected_temp[0].stats.starttime)
                 assert template[selected_idx].stats.starttime==selected_temp[0].stats.starttime, 'Selection inconsistent! check the Method1&2'
                 #if the assert always work, delect the Method2 and only use the method1
                 #sav_t,sav_shft,sav_CCC = cal_lag(selected_temp,D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
