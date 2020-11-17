@@ -691,7 +691,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                             selected_temp = obspy.Stream(selected_temp[1])
                         elif PS_daily=='S':
                             selected_temp = obspy.Stream(selected_temp[0])
-                assert template[selected_idx].stats.starttime==selected_temp.stats.starttime, 'Selection inconsistent! check the Method1&2'
+                assert template[selected_idx].stats.starttime==selected_temp[0].stats.starttime, 'Selection inconsistent! check the Method1&2'
                 #if the assert always work, delect the Method2 and only use the method1
                 #sav_t,sav_shft,sav_CCC = cal_lag(selected_temp,D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
 
