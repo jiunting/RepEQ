@@ -599,7 +599,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         D_temp = D_temp.data
         D_daily = daily_cut.copy()
         print('daily data from:',D_daily.stats.starttime,D_daily.stats.endtime)
-        print('Trim st=',t_st_daily-1)
+        print('Trim st=',t_st_daily-2)
         D_daily.trim(starttime=t_st_daily-2,endtime=t_ed_daily+2,nearest_sample=1, pad=1, fill_value=0)
         print('After trim, daily data from:',D_daily.stats.starttime,D_daily.stats.endtime)
         #interpolate data
