@@ -589,7 +589,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         #print(daily_cut.stats)
         #print('cut daily:',t_st_daily,t_ed_daily)
         D_temp = template.copy()
-        D_temp.trim(starttime=t_st_temp-1,endtime=t_ed_temp+1,nearest_sample=1, pad=1, fill_value=0)
+        D_temp.trim(starttime=t_st_temp-2,endtime=t_ed_temp+2,nearest_sample=1, pad=1, fill_value=0)
         #interpolate data (either new sampling or original sampling)
         D_temp.interpolate(sampling_rate=1.0/delta,starttime=t_st_temp) #force the starttime to be "exactly" st(no 0.0001 difference)
         D_temp.trim(starttime=t_st_temp,endtime=t_ed_temp,nearest_sample=1, pad=1, fill_value=0)
@@ -598,7 +598,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         D_temp = D_temp.data
         D_daily = daily_cut.copy()
         print('Trim st=',t_st_daily-1)
-        D_daily.trim(starttime=t_st_daily-1,endtime=t_ed_daily+1,nearest_sample=1, pad=1, fill_value=0)
+        D_daily.trim(starttime=t_st_daily-2,endtime=t_ed_daily+2,nearest_sample=1, pad=1, fill_value=0)
         #interpolate data
         print('interp from st=',t_st_daily)
         D_daily.interpolate(sampling_rate=1.0/delta,starttime=t_st_daily)
