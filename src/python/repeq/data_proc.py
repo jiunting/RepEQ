@@ -707,7 +707,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 #print('starttime:',template[selected_idx].stats.starttime,selected_temp[0].stats.starttime)
                 assert template[selected_idx].stats.starttime==selected_temp[0].stats.starttime, 'Selection inconsistent! check the Method1&2'
                 #if the assert always work, delect the Method2 and only use the method1
-                sav_t,sav_shft,sav_CCC = cal_lag(selected_temp,D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+                sav_t,sav_shft,sav_CCC = cal_lag(selected_temp[0],D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
                 lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
                 lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
                 lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
