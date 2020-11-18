@@ -612,6 +612,9 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         sav_debug['cut_data'] = D_daily
         sav_debug['interp'] = t_st_daily
         np.save('sav_debug.npy',sav_debug)
+        D_daily = np.load('sav_debug.npy',allow_pickle=True)
+        D_daily = D_daily.item()
+        D_daily = D_daily['cut_data']
         D_daily.interpolate(sampling_rate=1.0/delta,starttime=t_st_daily)
         print('interp success!',D_daily)
         D_daily.trim(starttime=t_st_daily,endtime=t_ed_daily,nearest_sample=1, pad=1, fill_value=0)
