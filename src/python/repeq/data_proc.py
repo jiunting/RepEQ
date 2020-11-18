@@ -583,7 +583,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
     sav_CCC = []
     #sav_temp = []
     #sav_daily = []
-    while (t_ed_temp<=template.stats.endtime) and (t_ed_daily<=daily_cut.stats.endtime):
+    while (t_ed_temp+wind[1]<=template.stats.endtime) and (t_ed_daily+wind[1]<=daily_cut.stats.endtime):
         #cut the data
         #print(template.stats)
         #print('cut template:',t_st_temp,t_ed_temp)
