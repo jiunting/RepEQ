@@ -604,9 +604,9 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         #D_daily = D_daily.slice(starttime=t_st_daily-2,endtime=t_ed_daily+2)
 #        print('After trim, daily data from:',D_daily.stats.starttime,D_daily.stats.endtime)
         #interpolate data
-        print('orig_data=',daily_cut)
-        print('cut_data= ',D_daily)
-        print('interp from st=',t_st_daily)
+#        print('orig_data=',daily_cut)
+#        print('cut_data= ',D_daily)
+#        print('interp from st=',t_st_daily)
 #        sav_debug = {}
 #        sav_debug['cut_data'] = D_daily
 #        sav_debug['interp'] = t_st_daily
@@ -615,7 +615,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
 #        D_daily = D_daily.item()
 #        D_daily = D_daily['cut_data']
         D_daily.interpolate(sampling_rate=(1.0/delta),starttime=t_st_daily)
-        print('interp success!',D_daily)
+#        print('interp success!',D_daily)
         D_daily.trim(starttime=t_st_daily,endtime=t_ed_daily,nearest_sample=1, pad=1, fill_value=0)
         if measure_params['taper']:
             D_daily.taper(measure_params['taper'])
