@@ -123,7 +123,7 @@ def clean_detc(detc,filter_detc):
         example:
         filter_detc = {
         'min_stan':5, #number of stations
-        'min_CC':0.2, #min CC value
+        'min_CC':0.2, #min mean(CC) value
         'diff_t':60, #time difference between events should larger than this
         }
     '''
@@ -139,13 +139,16 @@ def clean_detc(detc,filter_detc):
     for k in keys:
         #print('in k',k)
         CC = detc[k]['CC']
-        #1.filter by Nstations
+        #1.filter by Nstations overall
         if int(len(CC))<filter_detc['min_stan']:
             #print('number of stations=',len(CC))
             continue
         #2.filter by meanCC value
         if np.mean(CC)<filter_detc['min_CC']:
             #print('mean CC=',np.mean(CC))
+            continue
+        #3. filter by number of Nstations have CC larger than min CC value
+        if len(np.where(CC>filter_detc['min_CC'])[0])<filter_detc['min_stan']:
             continue
         #dealing with time
         DT = UTCDateTime(k)
