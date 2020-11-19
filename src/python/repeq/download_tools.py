@@ -420,7 +420,7 @@ def download_continuous_cent(net,sta,comp,chn,sampl,t1,t2,lon,lat,r1=0,r2=1):
         tr.filter("bandpass",freqmin=2,freqmax=7)
         #tr.filter("bandpass",freqmin=1,freqmax=8)
         tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
-        tr.interpolate(sampling_rate=sampl, starttime=t1)
+        tr.interpolate(sampling_rate=sampl, starttime=t1,method='linear')
         tr.trim(starttime=t1, endtime=t2, nearest_sample=True, pad=True, fill_value=0)
         for itr in tr:
             staInfo_post['net'].append(itr.stats.network)
@@ -559,7 +559,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
             tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
             if filter:
                 tr.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
-            tr.interpolate(sampling_rate=sampling_rate, starttime=t1)
+            tr.interpolate(sampling_rate=sampling_rate, starttime=t1,method='linear')
             tr.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
             assert len(tr)==1, 'Unexpecting error when query:%s %s %s %s %s %s'%(net, sta, location, comp, t1-2, t2+2)
             #tr[0].stats.location = tr[0].stats.location+'.'+Phase
