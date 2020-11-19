@@ -141,8 +141,8 @@ def clean_detc(detc,filter_detc):
         CC = detc[k]['CC']
         CC = np.array(CC)
         #1.filter by Nstations that are not zero CC (due to data missing)
-        #if int(len(CC))<filter_detc['min_stan']: #the old filter only consider number of stations but not considering missing data (zeros data and thus, zero CC)
-        if len(np.where(CC!=0)[0])<filter_detc['min_stan']:
+        if int(len(CC))<filter_detc['min_stan']: #the old filter only consider number of stations but not considering missing data (zeros data and thus, zero CC)
+        #if len(np.where(CC!=0)[0])<filter_detc['min_stan']:
             #print('number of stations=',len(CC))
             continue
         #2.filter by meanCC value
