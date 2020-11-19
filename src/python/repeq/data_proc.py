@@ -139,16 +139,15 @@ def clean_detc(detc,filter_detc):
     for k in keys:
         #print('in k',k)
         CC = detc[k]['CC']
-        #1.filter by Nstations overall
-        if int(len(CC))<filter_detc['min_stan']:
+        CC = np.array(CC)
+        #1.filter by Nstations that are not zero CC (due to data missing)
+        #if int(len(CC))<filter_detc['min_stan']: #the old filter only consider number of stations but not considering missing data (zeros data and thus, zero CC)
+        if len(np.where(CC!=0)[0])<filter_detc['min_stan']:
             #print('number of stations=',len(CC))
             continue
         #2.filter by meanCC value
         if np.mean(CC)<filter_detc['min_CC']:
             #print('mean CC=',np.mean(CC))
-            continue
-        #3. filter by number of Nstations have CC larger than min CC value
-        if len(np.where(CC>filter_detc['min_CC'])[0])<filter_detc['min_stan']:
             continue
         #dealing with time
         DT = UTCDateTime(k)
