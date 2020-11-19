@@ -122,7 +122,7 @@ def clean_detc(detc,filter_detc):
         clean detailed repeating EQs detections by filter_detc
         example:
         filter_detc = {
-        'min_stan':5, #number of stations
+        'min_stan':5, #number of non-zero CC measurements
         'min_CC':0.2, #min mean(CC) value
         'diff_t':60, #time difference between events should larger than this
         }
@@ -141,8 +141,8 @@ def clean_detc(detc,filter_detc):
         CC = detc[k]['CC']
         CC = np.array(CC)
         #1.filter by Nstations that are not zero CC (due to data missing)
-        if int(len(CC))<filter_detc['min_stan']: #the old filter only consider number of stations but not considering missing data (zeros data and thus, zero CC)
-        #if len(np.where(CC!=0)[0])<filter_detc['min_stan']:
+        #if int(len(CC))<filter_detc['min_stan']: #the old filter only consider number of stations but not considering missing data (zeros data and thus, zero CC)
+        if len(np.where(CC!=0)[0])<filter_detc['min_stan']:
             #print('number of stations=',len(CC))
             continue
         #2.filter by meanCC value
