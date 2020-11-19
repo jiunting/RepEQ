@@ -89,19 +89,10 @@ class Template():
         matplotlib.use('pdf') #instead using interactive backend
         import matplotlib.pyplot as plt
         import os
+        from repeq.data_proc import cal_CCC
         
         home = self.home
         project_name = self.project_name
-        
-        def cal_CCF(data1,data2):
-            #calculate normalize CCF, find max CCC, and lag idx
-            tmpccf=signal.correlate(data1,data2,'full')
-            auto1=signal.correlate(data1,data1,'full')
-            auto2=signal.correlate(data2,data2,'full')
-            tmpccf=tmpccf/np.sqrt(np.max(auto1)*np.max(auto2))
-            maxCCC=np.max(tmpccf)
-            lag=tmpccf.argmax()
-            return(maxCCC,lag)
         
         if self.ms == None:
             print('Run .template_load() first')
@@ -202,7 +193,7 @@ class Template():
                     if len(sav_CCF)<self.filt_nSTA:
                         print('   Number of CCF: %d, not enough for threshold'%(len(sav_CCF)))
                         continue #not enough data available, continue to next daily data
-
+                    
                     #----------dealing with shifting of each CCF----------
                     travel_npts = np.array(travel_npts)
                     sh_sav_CCF = np.array(sav_CCF) #copy the original CCF
@@ -247,7 +238,7 @@ class Template():
                                 #loop in every station
                                 #print('writing info:',sav_NET[n]+'.'+sav_STA[n]+'.'+sav_CHN[n]+'.'+sav_LOC[n],sav_phase[n])
                                 cut_daily = sav_continuousdata[n][neqid+sav_travel_npts[n]:neqid+sav_travel_npts[n]+len(sav_template[n])]
-                                maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
+                                maxCCC,lag = cal_CCC(sav_template[n],cut_daily)
                                 if np.isnan(maxCCC):
                                     maxCCC = 0 #this is probably due to cross-correlate on a zero array
                                 midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
@@ -291,7 +282,7 @@ class Template():
                                 plt.text(tmp_T[-1],n,sav_STA[n]+'.'+sav_CHN[n])
                                 #---add individual CC value and max_CCC value---
                                 if fmt==1:
-                                    #maxCCC,lag = cal_CCF(sav_template[n],cut_daily)
+                                    #maxCCC,lag = cal_CCC(sav_template[n],cut_daily)
                                     #midd = (len(cut_daily))-1  #length of b?? at this idx, refdata align with target data
                                     #sh_sec = (lag-midd)*(1.0/self.sampling_rate) #convert to second (dt correction of P)
                                     plt.text(tmp_T[-1]*0.05,n,'CC=%.2f'%(sh_sav_CCF[n][neqid]))
@@ -340,19 +331,11 @@ class Template():
         import glob
         from scipy import signal
         from obspy.signal.cross_correlation import correlate_template
+        from repeq.data_proc import cal_CCC
         #calculate xcorr between templates, return CC matrix
         home = self.home
         project_name = self.project_name
         
-        def cal_CCF(data1,data2):
-            #calculate normalize CCF, find max CCC, and lag idx
-            tmpccf=signal.correlate(data1,data2,'full')
-            auto1=signal.correlate(data1,data1,'full')
-            auto2=signal.correlate(data2,data2,'full')
-            tmpccf=tmpccf/np.sqrt(np.max(auto1)*np.max(auto2))
-            maxCCC=np.max(tmpccf)
-            lag=tmpccf.argmax()
-            return(maxCCC,lag)
         
         def data_select(st,phase,net,sta,channel,location,PS):
             #st is the Stream to be searched
@@ -416,7 +399,7 @@ class Template():
                             #get the data and calculate CC
                             data_j_ksta = st_j[selected_idx].data
                             data_i_ksta = st_i[k].data
-                            CCC,lag = cal_CCF(data_i_ksta,data_j_ksta)
+                            CCC,lag = cal_CCC(data_i_ksta,data_j_ksta)
                             sav_CC.append(CCC)
                         else:
                             #data not found
