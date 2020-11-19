@@ -55,7 +55,7 @@ def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'
         if filter:
             st.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
         st.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
-        st.interpolate(sampling_rate=sampling_rate, starttime=t1)
+        st.interpolate(sampling_rate=sampling_rate, starttime=t1,method='linear')
         st.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
         st.write(D+'/waveforms/merged.ms',format="MSEED")
 
@@ -428,7 +428,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             t2 = UTCDateTime(eq_time)+travel_time+cut_window[1]
             #print('    cut from ',t1.isoformat(),t2.isoformat())
             selected_D.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
-            selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1)
+            selected_D.interpolate(sampling_rate=sampling_rate, starttime=t1,method='linear')
             selected_D.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
             St += selected_D[0]
             sav_PS.append(PS)
@@ -592,7 +592,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         D_temp = template.copy()
         D_temp.trim(starttime=t_st_temp-wind[0],endtime=t_ed_temp+wind[1],nearest_sample=1, pad=1, fill_value=0)
         #interpolate data (either new sampling or original sampling)
-        D_temp.interpolate(sampling_rate=(1.0/delta),starttime=t_st_temp) #force the starttime to be "exactly" st(no 0.0001 difference)
+        D_temp.interpolate(sampling_rate=(1.0/delta),starttime=t_st_temp,method='linear') #force the starttime to be "exactly" st(no 0.0001 difference)
         D_temp.trim(starttime=t_st_temp,endtime=t_ed_temp,nearest_sample=1, pad=1, fill_value=0)
         if measure_params['taper']:
             D_temp.taper(measure_params['taper'])
@@ -614,7 +614,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
 #        D_daily = np.load('sav_debug.npy',allow_pickle=True)
 #        D_daily = D_daily.item()
 #        D_daily = D_daily['cut_data']
-        D_daily.interpolate(sampling_rate=(1.0/delta),starttime=t_st_daily)
+        D_daily.interpolate(sampling_rate=(1.0/delta),starttime=t_st_daily,method='linear')
 #        print('interp success!',D_daily)
         D_daily.trim(starttime=t_st_daily,endtime=t_ed_daily,nearest_sample=1, pad=1, fill_value=0)
         if measure_params['taper']:
@@ -738,8 +738,23 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
 
 
 
+def GMD_solve(G,D):
+    #calculate inversion here
+    GT=np.transpose(G)
+    try:
+        M=np.dot(np.dot(np.linalg.inv(np.dot(GT,G)),np.transpose(G)),D)
+    except:
+        M=np.dot(np.dot(np.linalg.pinv(np.dot(GT,G)),np.transpose(G)),D) #pseudo inv
+    return M
 
-
+def cal_slope(t,y):
+    #input time and lag measurement
+    #output slope
+    assert len(t)==len(y),'len of time and measurement should be the same'
+    G = np.ones([len(t),1])
+    G = np.hstack([G,t.reshape(-1,1)])
+    M = GMD_solve(G,y)
+    return M
 
 
 
