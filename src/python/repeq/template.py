@@ -21,8 +21,8 @@ class Template():
             sampling_rate: sampling rate of data <int>
             filter: bandpass filter frequency range [min_freq,max_freq] <list with length=2>
             tcs_length: download data length center at the arrival time [t1,t2] i.e. from T-t1 to T+t2 <list with length=2>
-            filt_CC: individual CC value larger than this threshold <float>
-            filt_nSTA: N station larger than this threshold <int>
+            filt_CC: yield detection if mean CC value (i.e. mean(CCF)) larger than this threshold <float>
+            filt_nSTA: at least N station larger than this threshold <int>. Note that this including station with zeros data.
             plot_check: plot detailed figure for checking <boolean>
         '''
         self.home = home
