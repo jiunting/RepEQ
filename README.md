@@ -1,6 +1,6 @@
 # RepEQ
 ####
-Event based repeating earthquake searching and analysis tool
+Event based or template-matching repeating earthquake searching and analyzing tool
 
 
 ****
