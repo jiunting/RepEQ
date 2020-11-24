@@ -94,6 +94,15 @@ filter_params={
 data_proc.read_detections(home,project_name,filter_params) #this doesn't work for the newest format, read the data manually
 
 
+#filter the dictionary by clean_detc
+filter_detc = {
+        'min_stan':5, #number of non-zero CC measurements
+        'min_CC':0.2, #min mean(CC) value
+        'diff_t':60, #time difference between events should larger than this
+        }
+data_proc.clean_detc(detc,filter_detc)
+
+
 #write detection timeseries (cut from continuous data based on the detected time)
 from repeq import data_proc
 filter_params={
