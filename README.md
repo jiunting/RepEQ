@@ -46,6 +46,12 @@ download_tools.catalog_USGS(cata_times,cata_area,cata_magnitude,cata_out)
 
 #### 2-2 The RepEQ can also generate fake catalog for downloading continuous data later
 > Copy example file control_cont.py and modify the parameters. 
+```python
+#in control file
+download_tools.make_catalog(times=[cata_times[0],cata_times[1]],dt=dt,lon_lat=lon_lat,outname=cata_out)
+```
+> The function is similar to example 2-1 except the dt, which controls the sampling interval of the generated time.  
+> For daily data, set dt=86400.
 
 ## 3. Download waveforms
 #### The RepEQ calls obspy's MassDownloader to download event-based or continuous data based on the given catalog
