@@ -28,8 +28,30 @@ vi ~/.bash_profile
 export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/RepEQ/src/python
 ```
 
-## 2. Download catalog
-#### The RepEQ calls obspy's MassDownloader to download event-based or continuous data 
+## 2. Download catalog  
+#### The RepEQ uses USGS's API independently from the libcomcat to download events  
+> Simply copy example file control.py and modify the parameters for event based catalog.  
+```python
+#in control file
+download_tools.catalog_USGS(cata_times,cata_area,cata_magnitude,cata_out)
+```
+>The function takes 4 inputs  
+
+|Variable Name  |Meaning |
+| :---------- | :-----------|
+| cata_times   |<array or list; len=2; dtype=str or datetime> i.e. [t1,t2] the begining and ending of catalog. |
+| cata_area   |<array or list; len=4; dtype=float> area defined by 4-points [lon_min, lon_max, lat_min, lat_max]   |
+| cata_magnitude   |<array or list; len=2; dtype=float> magnitude range [mag_min, mag_max]   |
+| cata_name   |<str> output name   |
+
+
+
+## 3. Download waveforms
+#### The RepEQ calls obspy's MassDownloader to download event-based or continuous data based on the given catalog
 > Simply copy example file control.py for event based waveform downloader or control_cont.py continuous data downloader
+
+
+
+
 
 [libcomcat]:https://github.com/usgs/libcomcat "libcomcat is a project designed to provide a Python equivalent to the ANSS ComCat search API"
