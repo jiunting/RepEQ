@@ -2,6 +2,19 @@
 ### Event based or template-matching repeating earthquake searching and analyzing tool
 
 ****
+What it can/cannot do
+```
+-[x] Download USGS catalog 
+-[x] Download event-based data or continuous data
+-[x] Event based repeating earthquake searching (with unknown arrival picks)
+    i.e. RepEQ predict travel time arrival by a user defined velocity model.
+-[x] Continuous data based repeating earthquake searching with the ANSS(USGS) picks
+-[x] Coda waves interferometry
+-[-] Earthquake relocation (In Prep)
+```
+****
+
+****
 ## 1. Installation
 > RepEQ uses phase picks from the ANSS(USGS) catalog, so make sure install [libcomcat][] first 
 
