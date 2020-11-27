@@ -42,7 +42,7 @@ export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/RepEQ/src/python
 ```
 
 ## 2. Download catalog  
-#### 2-1 RepEQ uses USGS's API independently from the libcomcat to download events  
+#### 2-1 RepEQ uses USGS's API to download events (libcomcat not required)  
 > Simply copy example file control.py and modify the parameters for event based catalog.  
 ```python
 #in control file
@@ -73,7 +73,7 @@ download_tools.make_catalog(times=[cata_times[0],cata_times[1]],dt=dt,lon_lat=lo
 #in control file
 download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_rad,channel,provider,waveforms_outdir)
 ```
-
+> Default output directory is home/project_name/waveforms 
 
 
 [libcomcat]:https://github.com/usgs/libcomcat "libcomcat is a project designed to provide a Python equivalent to the ANSS ComCat search API"
