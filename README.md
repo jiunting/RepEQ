@@ -87,4 +87,7 @@ download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_ra
 [rep_wave1]:./fig/Figure_1.png "example repeating earthquakes"
 [rep_wave2]:./fig/Figure_2.png "zoom in view of figure1"
 
+## 4. Repeating earthquake searching
+#### 4-1 Event-based searching
 
+#### 4-2 Continuous data template matching
