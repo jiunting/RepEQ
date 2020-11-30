@@ -74,18 +74,32 @@ download_tools.make_catalog(times=[cata_times[0],cata_times[1]],dt=dt,lon_lat=lo
 > For daily data, set dt=86400.
 
 ## 3. Download waveforms
-#### RepEQ download waveforms based on the catalog generated from the above
-> Copy example file control.py or control.py then set the time (i.e. how long the timeseries to be downloaded) and filter (i.e. which event should be downloaded)
+#### 3-1 RepEQ download waveforms based on the catalog generated from the above. Waveforms can be either chunks of data (event-based) or continuous data (everything)
+> Copy example file control.py or control_cont.py then set the time (i.e. how long the timeseries to be downloaded) and filter (i.e. which event should be downloaded)
 ```python
 #in control file
 download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_rad,channel,provider,waveforms_outdir)
 ```
 > Default output directory is home/project_name/waveforms 
 
-
 [libcomcat]:https://github.com/usgs/libcomcat "libcomcat is a project designed to provide a Python equivalent to the ANSS ComCat search API"
 [rep_wave1]:./fig/Figure_1.png "example repeating earthquakes"
 [rep_wave2]:./fig/Figure_2.png "zoom in view of figure1"
+
+#### 3-2 Download templates for continuous data searching
+> Copy example fole control_cont.py, use the repeq.template module
+```python
+from repeq import template
+T = template.Template(home,project_name,cata_name2,True,sampling_rate,filter=filter,tcs_length=[1,9],filt_CC=0.3,filt_nSTA=6,plot_check=True)
+#set T.download = True
+T.template_load()
+> The template will be in the home/project_name/waveform_template
+```
+|Attribute Name  |Meaning |
+| :---------- | :-----------|
+| catalog| <str>; catalog name |
+| download|<boolean>; download the data or loading them from waveform_template |
+| tcs_length|<array or list len=2; dtype=float>;time series length before and after arrival |
 
 ## 4. Repeating earthquake searching
 #### 4-1 Event-based searching
