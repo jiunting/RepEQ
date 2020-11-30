@@ -97,9 +97,9 @@ T.template_load()
 ```
 |Attribute Name  |Meaning |
 | :---------- | :-----------|
-| catalog| <str>; catalog name |
-| download|<boolean>; download the data or loading them from waveform_template |
-| tcs_length|<array or list len=2; dtype=float>;time series length before and after arrival |
+| catalog| <str> catalog name |
+| download|<boolean> download the data or loading them from waveform_template |
+| tcs_length|<array or list len=2 dtype=float>;time series length before and after arrival |
 
 ## 4. Repeating earthquake searching
 #### 4-1 Event-based searching
