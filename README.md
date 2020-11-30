@@ -12,7 +12,14 @@ What it can/cannot do
 -[x] Coda waves interferometry
 -[-] Earthquake relocation (In Prep)
 ```
-****
+
+> Example of template-matching method for repeating earthquake detections in the Hawaiian Big Island 
+<p float="left">
+  <img src="./fig/Figure_1.png" width="40%" />
+  <img src="./fig/Figure_2.png" width="58%" /> 
+</p>
+
+(left) Example waveforms at the station JOKA; (right) Zoom-in view of the waveforms
 
 ****
 ## 1. Installation
@@ -77,3 +84,7 @@ download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_ra
 
 
 [libcomcat]:https://github.com/usgs/libcomcat "libcomcat is a project designed to provide a Python equivalent to the ANSS ComCat search API"
+[rep_wave1]:./fig/Figure_1.png "example repeating earthquakes"
+[rep_wave2]:./fig/Figure_2.png "zoom in view of figure1"
+
+
