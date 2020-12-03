@@ -10,7 +10,7 @@ What it can/cannot do
     i.e. RepEQ predict travel time arrival by a user defined velocity model.
 -[x] Continuous data based repeating earthquake searching with the ANSS(USGS) picks
 -[x] Coda waves interferometry
--[-] Earthquake relocation (In Prep)
+-[-] Earthquake relocation (Beta)
 ```
 
 > Example of template-matching method for repeating earthquake detections in the Hawaiian Big Island 
