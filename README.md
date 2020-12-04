@@ -103,6 +103,10 @@ T.template_load()
 | tcs_length   |<array or list; len=2; dtype=float> time series length before and after arrival |
 
 ## 4. Repeating earthquake searching
+> Copy example fole control.py  
+
 #### 4-1 Event-based searching
+> Copy example fole control_cont.py, use the repeq.template module  
+
 
 #### 4-2 Continuous data template matching
