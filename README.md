@@ -87,7 +87,7 @@ download_tools.download_waves_catalog(cata_out,cata_filters,sec_bef_aft,range_ra
 [rep_wave2]:./fig/Figure_2.png "zoom in view of figure1"
 
 #### 3-2 Download templates for continuous data searching
-> Copy example fole control_cont.py, use the repeq.template module
+> Copy example file control_cont.py, use the repeq.template module
 ```python
 from repeq import template
 T = template.Template(home,project_name,cata_name2,True,sampling_rate,filter=filter,tcs_length=[1,9],filt_CC=0.3,filt_nSTA=6,plot_check=True)
@@ -103,10 +103,10 @@ T.template_load()
 | tcs_length   |<array or list; len=2; dtype=float> time series length before and after arrival |
 
 ## 4. Repeating earthquake searching
-> Copy example fole control.py  
+> Copy example file control.py  
 
 #### 4-1 Event-based searching
-> Copy example fole control_cont.py, use the repeq.template module  
+> Copy example file control_cont.py, use the repeq.template module  
 
 
 #### 4-2 Continuous data template matching
