@@ -103,7 +103,11 @@ T.template_load()
 | tcs_length   |<array or list; len=2; dtype=float> time series length before and after arrival |
 
 ## 4. Repeating earthquake searching
-> Copy example file control.py  
+> Copy example file control.py, make search=True then run. It has 4 steps.
+> analysis.searchRepEQ: use velocity model predicted arrival time to calculate if the two events are repeating EQ.
+> analysis.read_logs: merge all the .log files into summary file
+> analysis.sequence: make sequence file
+> analysis.measure_lag: If A and B are repeating EQ, align P waves and measure their lags.
 
 #### 4-1 Event-based searching
 > Copy example file control_cont.py, use the repeq.template module  
