@@ -32,11 +32,12 @@ def cal_CCC(data1,data2):
     return maxCCC,lag
 
 
-def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'):
+def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000',fmt='MS'):
     '''
     merge daily/continuous data after running download_tools.download_waves_catalog
     the script loops into the directory in home/project_name/waveforms/{pattern}
-    exp:
+    fmt= 'MS' or 'npy'
+    example:
      from repeq import pre_proc
      pre_proc.merge_daily(home,project_name,sampling_rate,filter=filter,pattern='20180211*')
     Output:
@@ -45,19 +46,34 @@ def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'
     Ds = glob.glob(home+'/'+project_name+'/waveforms/'+pattern)
     Ds.sort()
     print('Number of dirs=%d'%(len(Ds)))
-    for D in Ds:
-        print('In dir:',D)
-        t1 = UTCDateTime(D.split('/')[-1])
-        t2 = t1 + 86400 #this is daily so exactly +86400 sec
-        st = obspy.read(D+'/waveforms/*.mseed')
-        st.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
-        st.detrend()
-        if filter:
-            st.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
-        st.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
-        st.interpolate(sampling_rate=sampling_rate, starttime=t1,method='linear')
-        st.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
-        st.write(D+'/waveforms/merged.ms',format="MSEED")
+    if fmt.upper()=='MS':
+        for D in Ds:
+            print('In dir:',D)
+            t1 = UTCDateTime(D.split('/')[-1])
+            t2 = t1 + 86400 #this is daily so exactly +86400 sec
+            st = obspy.read(D+'/waveforms/*.mseed')
+            st.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
+            st.detrend()
+            if filter:
+                st.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
+            st.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
+            st.interpolate(sampling_rate=sampling_rate, starttime=t1,method='linear')
+            st.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
+            st.write(D+'/waveforms/merged.ms',format="MSEED")
+    elif fmt.upper()=='NPY':
+        for D in Ds:
+            print('In dir:',D)
+            t1 = UTCDateTime(D.split('/')[-1])
+            t2 = t1 + 86400 #this is daily so exactly +86400 sec
+            st = obspy.read(D+'/waveforms/*.mseed')
+            st.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
+            st.detrend()
+            if filter:
+                st.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
+            st.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
+            st.interpolate(sampling_rate=sampling_rate, starttime=t1,method='linear')
+            st.trim(starttime=t1, endtime=t2, nearest_sample=1, pad=1, fill_value=0)
+            np.save(D+'/waveforms/merged.npy',st)
 
 
 def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'min_CC':0.3},fmt=1):
