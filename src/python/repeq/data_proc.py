@@ -77,6 +77,7 @@ def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'
 
 
 def read_obspy(filename):
+    #obspy.read cannot read mseed larger than 2GB, use this function instead
     import io
     reclen = 512
     chunksize = 100000 * reclen # Around 50 MB
@@ -334,7 +335,10 @@ def cal_moving_all(home,project_name,pattern='20*',typ='std',window_pts=45000,mo
     sav_all_movstd = {}
     avail_date = []
     for daily_dir in daily_dirs:
-        D = obspy.read(daily_dir+'/waveforms/merged.ms')
+        try:
+            D = obspy.read(daily_dir+'/waveforms/merged.ms')
+        except:
+            D = read_obspy(daily_dir+'/waveforms/merged.ms')
         T0 = D[0].stats.starttime.strftime('%Y-%m-%d')
         avail_date.append(T0)
         for ist in range(len(D)):
@@ -448,7 +452,11 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             #read merged daily data
             if prev_dir!='':
                 D.clear() #clear the previous D to prevent memory blows up
-            D = obspy.read(dir+'/waveforms/merged.ms')
+            #start loading new daily data
+            try:
+                D = obspy.read(dir+'/waveforms/merged.ms')
+            except:
+                D = read_obspy(dir+'/waveforms/merged.ms')
         prev_dir = dir
         #select net_sta_comp
         St = obspy.Stream()
