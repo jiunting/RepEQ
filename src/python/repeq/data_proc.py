@@ -80,7 +80,7 @@ def read_obspy(filename):
     import io
     reclen = 512
     chunksize = 100000 * reclen # Around 50 MB
-    with io.open("merged.ms", "rb") as fh:
+    with io.open(filename, "rb") as fh:
         while True:
             with io.BytesIO() as buf:
                 c = fh.read(chunksize)
