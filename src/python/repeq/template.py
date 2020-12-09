@@ -9,7 +9,7 @@ Created on Fri Jul 10 00:09:04 2020
 
 import numpy as np
 import pandas as pd
-
+from repeq import data_proc
 
 class Template():
     def __init__(self,home,project_name,catalog,download,sampling_rate,filter,tcs_length=[1,9],filt_CC=0.2,filt_nSTA=5,plot_check=False):
@@ -133,7 +133,11 @@ class Template():
                     sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_LOC=[]; sav_phase=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
                     YMD = dayst_path.split('/')[-1][:8]
                     print(' --Reading daily data: %s'%(dayst_path))
-                    i_dayst = read(dayst_path+'/waveforms/merged.ms') #load daily data
+                    try:
+                        i_dayst = read(dayst_path+'/waveforms/merged.ms') #load daily data
+                    except:
+                        i_dayst = data_proc.read_obspy(dayst_path+'/waveforms/merged.ms') #filesize larger than 2GB
+                    
                     #print(i_dayst.__str__(extended=True))
                     for i in range(len(st)):
                         #-----loop individual pick/station/comp of template-----

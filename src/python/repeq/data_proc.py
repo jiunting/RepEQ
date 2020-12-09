@@ -76,6 +76,30 @@ def merge_daily(home,project_name,sampling_rate,filter=[0.2,8],pattern='*000000'
             np.save(D+'/waveforms/merged.npy',st)
 
 
+def read_obspy(filename):
+    import io
+    reclen = 512
+    chunksize = 100000 * reclen # Around 50 MB
+    with io.open("merged.ms", "rb") as fh:
+        while True:
+            with io.BytesIO() as buf:
+                c = fh.read(chunksize)
+                if not c:
+                    break
+                buf.write(c)
+                buf.seek(0, 0)
+                st = obspy.read(buf)
+                try:
+                    allst += st
+                except:
+                    allst = st.copy()
+    allst.merge()
+    return allst
+
+
+
+
+
 def read_detections(home,project_name,filter_params={'diff_t':60,'min_sta':5,'min_CC':0.3},fmt=1):
     '''
     fmt = 1, format in:
