@@ -332,15 +332,15 @@ class Template():
 
 
     def xcorr_temp(self):
+        #calculate xcorr between templates, return CC matrix
         from obspy import UTCDateTime,read,Stream,Trace
         import glob
         from scipy import signal
         from obspy.signal.cross_correlation import correlate_template
         from repeq.data_proc import cal_CCC
-        #calculate xcorr between templates, return CC matrix
+        
         home = self.home
         project_name = self.project_name
-        
         
         def data_select(st,phase,net,sta,channel,location,PS):
             #st is the Stream to be searched
@@ -416,6 +416,37 @@ class Template():
             return CC_template
 
 
+
+def T_partition(T,n_part=4,save_CCF=False,fmt=2):
+    import numpy as np
+    from copy import copy
+    #partitioning template data for multi-processing
+    '''
+    #input: T=Template()
+    #output: Ti after partitioning
+    '''
+    #get total template .ms
+    total_length = len(T.ms)
+    sub_length = total_length//n_part
+    all_ms = np.array(T.ms[:]) #copy the original(all) ms files
+    
+    #create index for partitioning
+    sav_TT = [] #save all the TT for later parallel
+    for i_par in range(n_part):
+        tmpidx = np.arange(total_length)
+        #for ith_part, only get rem=i_par
+        tmpidx = np.where(tmpidx%n_part==i_par)[0]
+        TT = copy(T) #copy the original T
+        TT.ms = list(all_ms[tmpidx])
+        sav_TT.append(TT.ms)
+
+    #create a function to be parallel
+    #normally to run code: sav_TT[i].xcorr_cont(save_CCF=False,fmt=1), loop the i
+    def run_loop(i):
+        sav_TT[i].xcorr_cont(save_CCF=False,fmt=fmt)
+
+    results = Parallel(n_jobs=n_part,verbose=10,backend='multiprocessing')(delayed(run_loop)(i) for i in range(n_part)  )
+    print(results)
 
 
 
