@@ -228,6 +228,10 @@ class Template():
                     time = i_dayst[0].times()
                     eq_idx = np.where(mean_sh_CCF>=self.filt_CC)[0]
                     
+                    #The mean_sh_CCF has length= len(dailydata)-len(template)+1
+                    #remove the index that close to the right edge
+                    
+                    
                     sav_eq_sta = {} #save the detailed result(lag info, CCC value) for use later
                     for neqid in eq_idx:
                         #new_dayst[0].stats.starttime+time[np.argmax(mean_sh_CCF)] #find itself
