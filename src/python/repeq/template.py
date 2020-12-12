@@ -228,9 +228,10 @@ class Template():
                     time = i_dayst[0].times()
                     eq_idx = np.where(mean_sh_CCF>=self.filt_CC)[0]
                     
-                    #The mean_sh_CCF has length= len(dailydata)-len(template)+1
-                    #remove the index that close to the right edge
-                    
+                    #The mean_sh_CCF has length = len(dailydata)-len(template)+1
+                    #remove the index that too close to the right edge
+                    _idx = np.where(eq_idx<len(dailydata)-len(template)+1-1-np.max(sav_travel_npts) )[0] #-1 make length to index; max(shift) make sure all the templates wont touch the right bound
+                    eq_idx = eq_idx[_idx]
                     
                     sav_eq_sta = {} #save the detailed result(lag info, CCC value) for use later
                     for neqid in eq_idx:
