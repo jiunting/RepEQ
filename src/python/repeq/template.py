@@ -422,6 +422,11 @@ class Template():
 
 
 
+def sleepy(n):
+    print('I am sleepy... please wait')
+    time.sleep(n)
+
+
 def T_partition(T,n_part=4,save_CCF=False,fmt=2):
     import numpy as np
     from copy import copy
@@ -446,10 +451,6 @@ def T_partition(T,n_part=4,save_CCF=False,fmt=2):
         TT = copy(T) #copy the original T
         TT.ms = list(all_ms[tmpidx])
         sav_TT.append(TT.ms)
-
-    def sleepy(n):
-        print('I am sleepy... please wait')
-        time.sleep(n)
         
     #create a function to be parallel
     #normally to run code: sav_TT[i].xcorr_cont(save_CCF=False,fmt=1), loop the i
