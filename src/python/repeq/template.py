@@ -423,6 +423,7 @@ class Template():
 
 
 def sleepy(n):
+    import time
     print('I am sleepy... please wait')
     time.sleep(n)
 
