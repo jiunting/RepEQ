@@ -454,7 +454,7 @@ def T_partition(T,n_part=4,save_CCF=False,fmt=2):
         tmpidx = np.where(tmpidx%n_part==i_par)[0]
         TT = copy(T) #copy the original T
         TT.ms = list(all_ms[tmpidx])
-        sav_TT.append(TT.ms)
+        sav_TT.append(TT)
     return sav_TT
 
 #create a function to be parallelized and is global
