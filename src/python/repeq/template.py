@@ -462,7 +462,7 @@ def run_loop(sav_TT,i,save_CCF=False,fmt=2):
     sav_TT[i].xcorr_cont(save_CCF=False,fmt=2)
 
 
-def T_parallel(sav_TT,save_CCF=False,fmt=2):
+def T_parallel(sav_TT,n_part,save_CCF=False,fmt=2):
     from joblib import Parallel, delayed
     results = Parallel(n_jobs=n_part,verbose=10,backend='multiprocessing')(delayed(run_loop)(sav_TT,i,save_CCF,fmt) for i in range(n_part)  )
     print(results)
