@@ -230,7 +230,7 @@ class Template():
                     
                     #The mean_sh_CCF has length = len(dailydata)-len(template)+1
                     #remove the index that too close to the right edge
-                    _idx = np.where(eq_idx<len(dailydata)-len(template)+1-1-np.max(sav_travel_npts) )[0] #-1 make length to index; max(shift) make sure all the templates wont touch the right bound
+                    _idx = np.where(eq_idx<len(mean_sh_CCF)-1-np.max(sav_travel_npts) )[0] #-1 make length to index; max(shift) make sure all the templates wont touch the right bound
                     eq_idx = eq_idx[_idx]
                     
                     sav_eq_sta = {} #save the detailed result(lag info, CCC value) for use later
