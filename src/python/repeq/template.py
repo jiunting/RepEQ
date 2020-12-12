@@ -425,6 +425,7 @@ class Template():
 def T_partition(T,n_part=4,save_CCF=False,fmt=2):
     import numpy as np
     from copy import copy
+    from joblib import Parallel, delayed
     #partitioning template data for multi-processing
     '''
     #input: T=Template()
