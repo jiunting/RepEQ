@@ -131,7 +131,7 @@ class Template():
                 sav_alldays_eq_sta = {} #detailed info for CC,CCC,shifts for every station for all searched days by the same template
                 #loop the daily data
                 for dayst_path in dayst_paths:
-                    sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_LOC=[]; sav_phase=[]; sav_CCF=[]; sav_travel_npts=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
+                    sav_NET=[]; sav_STA=[]; sav_CHN=[]; sav_LOC=[]; sav_phase=[]; sav_CCF=[]; sav_travel_npts=[]; sav_travel_time=[]; sav_continuousdata=[]; sav_template=[] #initial for saving
                     YMD = dayst_path.split('/')[-1][:8]
                     print(' --Reading daily data: %s'%(dayst_path))
                     try:
@@ -163,7 +163,7 @@ class Template():
                             #find the station travel time
                             #if len(phases[phases.Channel.str.startswith(regional.upper()+'.'+STA+'.'+CHN)])==0:
                             #    continue #cannot find station shift
-                            travel_time = st[i].stats.starttime + self.tcs_length[0] - origintime
+                            travel_time = st[i].stats.starttime + self.tcs_length[0] - origintime #get travel time implied from template header[sec] (assume data request always correct)
                             travel_npts = int(np.round(travel_time*self.sampling_rate)) #travel time in npts
                                         
                             #get data value for template and continuous(daily) data
@@ -190,6 +190,7 @@ class Template():
                             sav_phase.append(pick_info['phase'][i]) #P or S phase. Causion! previous wrong because ith index in the st is not the ith index in the pick_info
                             #debug
                             #print('appending info:',NET+'.'+STA+'.'+CHN+'.'+LOC,PS)
+                            sav_travel_time.append(travel_time)
                             sav_travel_npts.append(travel_npts)
                             sav_CCF.append(CCF)
                             sav_continuousdata.append(continuousdata)
@@ -200,7 +201,9 @@ class Template():
                         continue #not enough data available, continue to next daily data
                     
                     #----------dealing with shifting of each CCF----------
-                    travel_npts = np.array(travel_npts)
+                    #travel_npts = np.array(travel_npts)
+                    sav_travel_npts = np.array(sav_travel_npts) #fix typo 2020.12.14
+                    sav_travel_time = np.array(sav_travel_time)
                     sh_sav_CCF = np.array(sav_CCF) #copy the original CCF
                     #shifted CCF based on the template arrival
                     for ii in range(len(sh_sav_CCF)):
@@ -211,7 +214,28 @@ class Template():
                     std_sh_CCF = np.std(sh_sav_CCF,axis=0) #also calculate std
                     
                     #save the individual CCF in Stream (for only debug purpose)
+                    #Update 2020.12.14. save all the info in .npy instead of obspy Stream (to also save shift info)
                     if save_CCF:
+                        #raw CCF (unshifted)
+                        ST = Stream()
+                        for ii,iCCF in enumerate(sav_CCF):
+                            tmpCCF = Trace(iCCF)
+                            tmpCCF.stats.sampling_rate = i_dayst[0].stats.sampling_rate
+                            tmpCCF.stats.starttime = i_dayst[0].stats.starttime
+                            tmpCCF.stats.network = sav_NET[ii]
+                            tmpCCF.stats.station = sav_STA[ii]
+                            tmpCCF.stats.channel = sav_CHN[ii]
+                            tmpCCF.stats.location = sav_LOC[ii]
+                            ST += tmpCCF
+                        #create dict to save info
+                        sav_CCF_info = {}
+                        sav_CCF_info['CCF_raw'] = ST
+                        sav_CCF_info['shift_npts'] = sav_travel_npts
+                        sav_CCF_info['shift_time'] = sav_travel_time
+                        sav_CCF_info['OT_template'] = origintime
+                        np.save(home+'/'+project_name+'/output/Template_match/CCF_records/'+'CCF_template_%05d_daily_%s.npy'%(tmp_idx,YMD),sav_CCF_info)
+                        '''
+                        #
                         ST = Stream()
                         for ii,iCCF in enumerate(sh_sav_CCF):
                             tmpCCF = Trace(iCCF)
@@ -223,13 +247,14 @@ class Template():
                             tmpCCF.stats.location = sav_LOC[ii]
                             ST += tmpCCF
                         ST.write(home+'/'+project_name+'/output/Template_match/CCF_records/'+'shftCCF_template_%05d_daily_%s.ms'%(tmp_idx,YMD),format="MSEED")
+                        '''
                     
                     #----------Find earthquakes by the mean CCF----------
                     time = i_dayst[0].times()
-                    eq_idx = np.where(mean_sh_CCF>=self.filt_CC)[0]
+                    eq_idx = np.where(mean_sh_CCF>=self.filt_CC)[0] #filter #1
                     
                     #The mean_sh_CCF has length = len(dailydata)-len(template)+1
-                    #remove the index that too close to the right edge
+                    #remove the index that too close to the right edge. #filter #2
                     _idx = np.where(eq_idx<len(mean_sh_CCF)-1-np.max(sav_travel_npts) )[0] #-1 make length to index; max(shift) make sure all the templates wont touch the right bound
                     eq_idx = eq_idx[_idx]
                     
@@ -422,15 +447,6 @@ class Template():
 
 
 
-#def sleepy(n):
-#    import time
-#    print('I am sleepy... please wait')
-#    time.sleep(n)
-#
-#
-#def run_loop(i):
-#    sleepy(2)
-
 
 def T_partition(T,n_part=4,save_CCF=False,fmt=2):
     import numpy as np
@@ -457,19 +473,20 @@ def T_partition(T,n_part=4,save_CCF=False,fmt=2):
         sav_TT.append(TT)
     return sav_TT
 
-#create a function to be parallelized and is global
+
+
+#create a global function to be parallelized
 def run_loop(sav_TT,i,save_CCF=False,fmt=2):
     sav_TT[i].xcorr_cont(save_CCF=False,fmt=2)
+
 
 
 def T_parallel(sav_TT,n_part,save_CCF=False,fmt=2):
     from joblib import Parallel, delayed
     results = Parallel(n_jobs=n_part,verbose=10,backend='multiprocessing')(delayed(run_loop)(sav_TT,i,save_CCF,fmt) for i in range(n_part)  )
     print(results)
-
     #normally to run code: sav_TT[i].xcorr_cont(save_CCF=False,fmt=1), loop the i
     #def run_loop(i):
-    #    sleepy(2)
         #sav_TT[i].xcorr_cont(save_CCF=False,fmt=2)
 
 
