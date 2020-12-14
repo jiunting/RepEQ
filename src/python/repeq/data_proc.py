@@ -290,7 +290,7 @@ def make_sta_table(home,project_name,pattern='*000000'):
 
 
 def cal_moving(time,data,typ,window_pts,mov_pts):
-    #calculate moving std,avg,downsamp of a daily data
+    #calculate moving [std,avg,downsamp] of a daily data
     #typ = 'avg', 'std', or samp
     sav_time = []
     sav_data = []
