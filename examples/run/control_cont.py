@@ -85,7 +85,7 @@ T.xcorr_cont(save_CCF=False,fmt=2) #fmt=2 output detailed calculation
 #Or run xcorr calculation by multiprocessing
 #Adjust the n-part to smaller if out-of-memory
 n_part = 8
-T_part = template.T_partition(T,n_part=n_part,save_CCF=False,fmt=2) #partitioning the T
+T_part = template.T_partition(T,n_part=n_part) #partitioning the T
 template.T_parallel(T_part,n_part=n_part,save_CCF=False,fmt=2) #parallel for all T_part
 
 

@@ -448,11 +448,11 @@ class Template():
 
 
 
-def T_partition(T,n_part=4,save_CCF=False,fmt=2):
+def T_partition(T,n_part=4):
     import numpy as np
     from copy import copy
     import time
-    #partitioning template data for multi-processing
+    #partitioning template data for multi-processing later
     '''
     #input: T=Template()
     #output: Ti after partitioning
