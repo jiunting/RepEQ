@@ -477,7 +477,7 @@ def T_partition(T,n_part=4,save_CCF=False,fmt=2):
 
 #create a global function to be parallelized
 def run_loop(sav_TT,i,save_CCF=False,fmt=2):
-    sav_TT[i].xcorr_cont(save_CCF=False,fmt=2)
+    sav_TT[i].xcorr_cont(save_CCF=save_CCF,fmt=fmt)
 
 
 
