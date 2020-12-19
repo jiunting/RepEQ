@@ -711,7 +711,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
     'taper':0.05,     #taper percentage
     }
     '''
-    import glob
+    import glob,os
     #load all daily_cut data
     daily_cuts = glob.glob(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_*.npy')
     daily_cuts.sort()
@@ -721,6 +721,10 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
         print('-------------------------------------')
         print('Now in',daily_cut)
         tempID = int(daily_cut.split('_')[-1].split('.')[0])
+        #if data already exist, skip
+        if os.path.exists(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID)):
+            print('--The data %s already exist, skip it.'%(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID)))
+            continue
         daily_cut = np.load(daily_cut,allow_pickle=True)
         daily_cut = daily_cut.item()
         #find the template .ms file
