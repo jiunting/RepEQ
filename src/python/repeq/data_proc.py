@@ -716,7 +716,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
     daily_cuts = glob.glob(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_*.npy')
     daily_cuts.sort()
     #initial dictionary that save all info
-    lag_measure = {} #with templateID as key
+    #lag_measure = {} #with templateID as key
     for daily_cut in daily_cuts:
         print('-------------------------------------')
         print('Now in',daily_cut)
@@ -733,14 +733,14 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
         template_info = template_info.item()
         template_phases = template_info['phase']
         #add key in lag_measure
-        lag_measure[tempID] = {'template_OT':template_info['OT_template'],'detc_OT':{}} #initial keys in lag_measure[tempID]
+        #lag_measure[tempID] = {'template_OT':template_info['OT_template'],'detc_OT':{}} #initial keys in lag_measure[tempID]
         lag_measure_sub = {'template_OT':template_info['OT_template'],'detc_OT':{}} #initial keys in lag_measure_sub
         for ik in daily_cut['detc_tcs']:
             print('  det=',ik)
             #the ith detection e.g. ik='2018-04-22T16:24:34.44'
             daily_data = daily_cut['detc_tcs'][ik]
             daily_phases = daily_cut['phase'][ik]
-            lag_measure[tempID]['detc_OT'][ik] = {}   # initial (net_sta_comp.phase) key in lag_measure[tempID]['detc_OT'][ik]
+            #lag_measure[tempID]['detc_OT'][ik] = {}   # initial (net_sta_comp.phase) key in lag_measure[tempID]['detc_OT'][ik]
             lag_measure_sub['detc_OT'][ik] = {}
             for i_cut in range(len(daily_data)):
                 D_daily = daily_data[i_cut]
@@ -751,7 +751,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 CHN = D_daily.stats.channel
                 LOC = D_daily.stats.location
                 daily_net_sta_comp = '.'.join([NET,STA,CHN,LOC])
-                lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily] = {} #to save measurements
+                #lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily] = {} #to save measurements
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily] = {}
                 #template selection
                 #Method #1, assume order of daily cut_data, net_sta_comp, and phase is the same
@@ -781,13 +781,23 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 assert template[selected_idx].stats.starttime==selected_temp[0].stats.starttime, 'Selection inconsistent! check the Method1&2'
                 #if the assert always work, delect the Method2 and only use the method1
                 sav_t,sav_shft,sav_CCC = cal_lag(selected_temp[0],D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
-                lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
-                lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
-                lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
+                #lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
+                #lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
+                #lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
         np.save(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID),lag_measure_sub)
+    #merge all the measure_lag files into a large file
+    all_files = glob.glob(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_*.npy')
+    all_files.sort()
+    lag_measure = {} #with templateID as key
+    for lag_file in all_files:
+        #get the template ID
+        tmpID = lag_file.split('/')[-1].split('_')[-1].split('.')[0]
+        lag_measure_sub = np.load(lag_file,allow_pickle=True)
+        lag_measure_sub = lag_measure_sub.item()
+        lag_measure[tmpID] = lag_measure_sub
     np.save(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_all.npy',lag_measure)
 
 
