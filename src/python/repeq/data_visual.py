@@ -85,7 +85,9 @@ def plot_detc_tcs(daily_cut,template,outname):
             T_temp = T_temp+dt_temp
             #normalize data
             data_D = D[ista].data/np.max(D[ista].data)
+            #data_D = D[ista].data/np.max(selected_temp[0].data) #normalize the data based on template amplitude, not daily data amplitude
             data_temp = selected_temp[0].data/np.max(selected_temp[0].data)
+            #data_temp = selected_temp[0].data/np.max(D[ista].data)
             #plot both tcs
             plt.plot(T_D,data_D+ista*1.5,'k')
             if PS=='P':
