@@ -101,8 +101,9 @@ from repeq import template
 T = template.Template(home,project_name,cata_name2,True,sampling_rate,filter=filter,tcs_length=[1,9],filt_CC=0.3,filt_nSTA=6,plot_check=True)
 #set T.download = True
 T.template_load()
-> The template will be in the home/project_name/waveform_template
 ```
+> The template will be in the home/project_name/waveform_template  
+
 
 |Attribute Name  |Meaning |
 | :---------- | :-----------|
