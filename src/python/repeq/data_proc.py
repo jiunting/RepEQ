@@ -238,7 +238,7 @@ def clean_data_cut(D,filter_detc):
     #2. dealing with Nsta
     sav_ot2 = []
     for k in sav_ot:
-        if D['phase'][k] >= filter_detc['min_stan']
+        if D['phase'][k] >= filter_detc['min_stan']:
             sav_ot2.append(k)
 
     new_detc_tcs = {} #new D['detc_tcs']
