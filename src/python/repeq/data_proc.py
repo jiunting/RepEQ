@@ -440,6 +440,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     #---loop every detection---
     sum_tcs_phase = {} #info of tcs and PS phase
     sav_tcs = {}
+    sav_CC = {}
     all_sav_PS = {} #record P or S wave info for all detections
     prev_dir = '' #record dir that previous read on. An optimal way to prevent reading D over and over again
     for i_eq_time,eq_time in enumerate(detc.keys()):
@@ -458,6 +459,9 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
             except:
                 D = read_obspy(dir+'/waveforms/merged.ms')
         prev_dir = dir
+        #get the CC value
+        meanCC = np.mean(detc[eq_time]['CC'])
+        sav_CC[eq_time] = meanCC
         #select net_sta_comp
         St = obspy.Stream()
         sav_PS = [] #record P or S wave info
@@ -488,6 +492,7 @@ def cut_dailydata(home,project_name,detc_file,filter_detc,cut_window=[5,20]):
     sum_tcs_phase['detc_tcs'] = sav_tcs
     sum_tcs_phase['phase'] = all_sav_PS
     sum_tcs_phase['OT_template'] = OT_template   #origin time for template
+    sum_tcs_phase['meanCC'] = sav_CC
     #return sav_tcs,all_sav_PS
     if len(detc.keys())==0:
         return False
