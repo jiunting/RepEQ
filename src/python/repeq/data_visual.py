@@ -15,10 +15,11 @@ import numpy as np
 #    df = df.append({'ID': pnsn_cat[ii][6][2:],'Time': pnsn_cat[ii][0][11:], 'Magnitude': pnsn_cat[ii][4], 'Date': pnsn_cat[ii][0][:10],'Lat': pnsn_cat[ii][1], 'Lon': pnsn_cat[ii][2], 'Depth': pnsn_cat[ii][3], 'Regional': pnsn_cat[ii][5]}, ignore_index=True)
 
 
-def plot_detc_tcs(daily_cut,template,outname):
+def plot_detc_tcs(daily_cut,template,filter_detc,outname):
     '''
         daily_cut: cutted daily data from the data_proc.cut_dailydata
         template: template .ms data in waveforms_template
+        filter_detc: filter dictionary before plot
         outname: output name
     '''
     import obspy
@@ -27,6 +28,7 @@ def plot_detc_tcs(daily_cut,template,outname):
     matplotlib.use('pdf') #instead using interactive backend
     import matplotlib.pyplot as plt
     from obspy import UTCDateTime
+    from repeq import data_proc
     if type(template)==str:
         temp = obspy.read(template)
     else:
@@ -34,6 +36,10 @@ def plot_detc_tcs(daily_cut,template,outname):
     if type(daily_cut)==str:
         daily_cut = np.load(daily_cut,allow_pickle=True)
         daily_cut = daily_cut.item()
+    #apply filter
+    daily_cut = data_proc.clean_data_cut(daily_cut,filter_detc)
+    if len(daily_cut['detc_tcs'].keys())==0:
+        return 1 #nothing left, just return
     OT_temp = UTCDateTime(daily_cut['OT_template']) #origin time for template
     for ik in daily_cut['detc_tcs'].keys():
         D = daily_cut['detc_tcs'][ik]
@@ -111,6 +117,8 @@ def plot_detc_tcs(daily_cut,template,outname):
         plt.xlabel('Origin time (s)',fontsize=15,labelpad=0)
         plt.xticks(fontsize=12)
         plt.yticks([],[])
+        #add title
+        plt.title('CC=%.2f'%(daily_cut['meanCC'][ik]))
         ax1 = plt.gca()
         ax1.tick_params(pad=1) #make axis closer
         plt.xlim(XLIM)
@@ -125,7 +133,7 @@ def plot_detc_tcs(daily_cut,template,outname):
 
 
 
-def bulk_plot_detc_tcs(home,project_name):
+def bulk_plot_detc_tcs(home,project_name,filter_detc):
     #make figure and save in home/project_name/output/Template_match/Fig
     import glob
     daily_cuts = glob.glob(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_*.npy')
@@ -137,7 +145,7 @@ def bulk_plot_detc_tcs(home,project_name):
         #find its corresponding template
         template = home+'/'+project_name+'/waveforms_template/template_%05d.ms'%(tempID)
         outName = home+'/'+project_name+'/output/Template_match/Figs/template_%05d_'%(tempID)
-        plot_detc_tcs(daily_cut,template,outName)
+        plot_detc_tcs(daily_cut,template,filter_detc,outName)
 
 
 
