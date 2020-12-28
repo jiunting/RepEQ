@@ -209,11 +209,74 @@ def clean_detc(detc,filter_detc):
                 sav_k[Ngps] = k #replace the previous k
             #sav_gps[Ngps]['DT'] = DT #new replace the old
             #sav_gps[Ngps]['CC'] = np.mean(CC)
-            tmp_DT = DT
-            tmp_CC = np.mean(CC)
+            ####removed--2020.12.28 check if these are correct####
+            #tmp_DT = DT
+            #tmp_CC = np.mean(CC)
+            ################
     for i_gp in range(len(sav_k)):
         new_detc[sav_k[i_gp]] = sav_gps[i_gp]
     return new_detc
+
+
+
+def clean_data_cut(D,filter_detc):
+    '''
+    clean data_cut from the EQs detections
+    example:
+    filter_detc = {
+    'min_stan':5, #number of non-zero CC measurements
+    'min_CC':0.2, #min mean(CC) value
+    'diff_t':60, #time difference between events should larger than this
+    }
+    '''
+    #1. get all detection tcs has CC>min_CC
+    sav_ot = [] #all the key that pass the CC threshold
+    for k in D['meanCC'].keys():
+        if np.mean(D['meanCC'][k]) >= filter_detc['min_CC']:
+            sav_ot.append(k)
+
+    #2. dealing with Nsta
+    sav_ot2 = []
+    for k in sav_ot:
+        if D['phase'][k] >= filter_detc['min_stan']
+            sav_ot2.append(k)
+
+    new_detc_tcs = {} #new D['detc_tcs']
+    new_phase = {}
+    new_meanCC = {}
+    for k in sav_ot2:
+        new_detc_tcs[k] = D['detc_tcs'][k]
+        new_phase[k] = D['phase'][k]
+        new_meanCC[k] = D['meanCC'][k]
+
+    new_D = {}
+    new_D['detc_tcs'] = new_detc_tcs
+    new_D['phase'] = new_phase
+    new_D['meanCC'] = new_meanCC
+    new_D['OT_template'] = D['OT_template']
+    return new_D
+
+
+
+
+
+    #3. do not deal with diff time since it has been dealt before
+    '''
+    tmp_DT = UTCDateTime("1900-01-01")
+    flag_prev_exist = 0 #previous data within dt threshold, comparison is necessarily
+    tmp_CC = 0
+    for k in sav_ot2:
+        if np.abs(UTCDateTime(k)-tmp_DT)>=filter_detc['diff_t']:
+            #find new group
+            tmp_DT = UTCDateTime(k)
+            tmp_CC = D['meanCC'][k]
+            #check if previous data in the same group
+        else:
+            #start compare
+            if D['meanCC'][k]>tmp_CC:
+                #new replace old
+                tmp_CC = D['meanCC'][k]
+    '''
 
 
 
