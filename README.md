@@ -12,8 +12,16 @@ What it can/cannot do
 -[x] Coda waves interferometry
 -[-] Earthquake relocation (Beta)
 ```
+#### Important Updates
+> (2020.12.14) Parallel processing cross-correlation template matching  
+> (2020.12.09) Add chunk reading for ms > 2GB (automatically applied)  
+> (2020.11.17) Add coda wave interferometry  
+> (2020.11.13) Data visualization of waveforms  
+> (2020.11.01) Add repeating earthquake relocation (iterative inversion method)  
+> (2020.10.17) Add template download tool  
+> (2020.10.06) Modify Mass_downloader  
 
-> Example of template-matching method for repeating earthquake detections in the Hawaiian Big Island 
+#### Example of template-matching method for repeating earthquake detections in the Hawaiian Big Island 
 <p float="left">
   <img src="./fig/Figure_1.png" width="40%" />
   <img src="./fig/Figure_2.png" width="58%" /> 
