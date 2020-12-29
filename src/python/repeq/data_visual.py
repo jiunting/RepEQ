@@ -236,10 +236,10 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
     file_lag = home+'/'+project_name+'/'+'output/Template_match/Measure_lag/measure_lag_temp_'+tempID+'.npy'
     flag_plotall = True
     #to see if the file exist
-    if not(os.path.exist(tcs_cut)):
+    if not(os.path.exists(tcs_cut)):
         print('File:%s do not exist! break'%(tcs_cut))
         return
-    if not(os.path.exist(file_lag)):
+    if not(os.path.exists(file_lag)):
         print(' Lag measurement file:%s do not exist, only show time series'%(file_lag))
         flag_plotall = False #only one subplot
 
@@ -248,7 +248,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
     D = D.item()
 
     #load lag measurement if file exist
-    if os.path.exist(file_lag):
+    if os.path.exists(file_lag):
         MeasLag = np.load(file_lag,allow_pickle=True)
         MeasLag = MeasLag.item()
 
@@ -263,7 +263,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
     fig = plt.figure(constrained_layout=True)
     props = dict(boxstyle='round', facecolor='white', alpha=0.8)
     gs = fig.add_gridspec(3,1)
-    if os.path.exist(file_lag):
+    if os.path.exists(file_lag):
         f3_ax1 = fig.add_subplot(gs[:2, 0]) #merge the first two row
     else:
         f3_ax1 = fig.add_subplot(gs[:, 0]) #merge all the three row
@@ -295,7 +295,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
     f3_ax1.text(x_pos,y_pos,staChn,fontsize=12,bbox=props)
     f3_ax1.set_xlim([cut_window[0]*-1,cut_window[1]])
     f3_ax1.set_ylabel('Day relative to mainshock',fontsize=14)
-    if (os.path.exist(file_lag)):
+    if (os.path.exists(file_lag)):
         #two subplots
         f3_ax1.set_xticklabels([]) #remove xlabel in the first subplot
     else:
@@ -306,7 +306,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
         return
 
     #two subplots case
-    if os.path.exist(file_lag):
+    if os.path.exists(file_lag):
         f3_ax2 = fig.add_subplot(gs[-1, 0])
         f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
         f3_ax2.set_xlabel('Origin time (s)',fontsize=14)
