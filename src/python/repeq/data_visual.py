@@ -150,12 +150,20 @@ def bulk_plot_detc_tcs(home,project_name,filter_detc):
 
 
 
-def plot_accNumber(home,project_name,cata_name,filter_detc,time1,time2):
+def plot_accNumber(home,project_name,cata_name,filter_detc,min_inter,time1,time2):
     #plot accumulated number of EQ in catalog v.s. detections
+    '''
+        min_inter: minimum inter event time (s)
+        time1,time2: plot data between the range
+    '''
     import glob
     from repeq import data_proc
     from obspy import UTCDateTime
     import datetime
+    from repeq import data_proc
+    import matplotlib
+    matplotlib.use('pdf') #instead using interactive backend
+    import matplotlib.pyplot as plt
     '''
     filter_detc = {
         'min_stan':9, #number of non-zero CC measurements
@@ -170,7 +178,6 @@ def plot_accNumber(home,project_name,cata_name,filter_detc,time1,time2):
 
     #load detections and get their time
     detcs = glob.glob(home+'/'+project_name+'/'+'output/Template_match/Detections/'+'Detected_tmp_*.npy')
-    detcs = glob.glob('/Users/timlin/Documents/Project/Hawaii_cont/Detections/Detected_tmp_*.npy')
     detcs.sort()
     detc_time = []
     for detc_path in detcs:
@@ -178,6 +185,34 @@ def plot_accNumber(home,project_name,cata_name,filter_detc,time1,time2):
         detc = detc.item()
         detc = data_proc.clean_detc(detc,filter_detc)
         detc_time += detc.keys()
+
+    detc_time.sort()
+    detc_time = np.array(detc_time)
+    detc_time = [UTCDateTime(i) for i in detc_time]
+
+    #set min-interevent time to remove redundant data
+    clean_template_time = data_proc.clean_events_time(template_time,min_time=min_inter)
+    clean_detc_time = data_proc.clean_events_time(detc_time,min_time=min_inter)
+
+    t_temp, accnum_temp = data_proc.cal_accum(clean_template_time,time1,time2,dt=3600)
+    t_detc, accnum_detc = data_proc.cal_accum(clean_detc_time,time1,time2,dt=3600)
+
+    main_OT = UTCDateTime("2018-05-04T22:32:54.650Z").datetime #mainshock OT
+    #convert UTCDateTime to datetime for plotting
+    t_temp = [i.datetime for i in t_temp]
+    t_detc = [i.datetime for i in t_detc]
+    plt.figure(figsize=(10,4.5))
+    plt.plot(t_temp,accnum_temp,'k')
+    plt.plot(t_detc,accnum_detc,'r')
+    print('manually add something in plot function:',data_proc.__file__)
+    plt.plot([main_OT,main_OT],[0,np.max(accnum_detc)],'r--')
+    plt.ylim([0,np.max(accnum_detc)])
+    plt.xlim([UTCDateTime(time1).datetime,UTCDateTime(time2).datetime])
+    plt.xlabel('Date',fontsize=14)
+    plt.ylabel('Accumulated number',fontsize=14)
+    plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Detections/'+'detections.png')
+    plt.close()
+    #plt.show()
 
 
 
