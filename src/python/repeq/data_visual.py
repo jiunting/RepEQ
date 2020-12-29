@@ -204,7 +204,7 @@ def plot_accNumber(home,project_name,cata_name,filter_detc,min_inter,time1,time2
     plt.figure(figsize=(10,4.5))
     plt.plot(t_temp,accnum_temp,'k')
     plt.plot(t_detc,accnum_detc,'r')
-    print('manually add something in plot function:',data_proc.__file__)
+    print('***manually add something in plot function***')
     plt.plot([main_OT,main_OT],[0,np.max(accnum_detc)],'r--')
     plt.ylim([0,np.max(accnum_detc)])
     plt.xlim([UTCDateTime(time1).datetime,UTCDateTime(time2).datetime])
