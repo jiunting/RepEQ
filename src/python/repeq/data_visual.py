@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+from obspy import UTCDateTime
 
 #def plot_map(home,project_name,cata_file,create_plot=True,show=False):
 #    if create_plot:
@@ -213,6 +213,112 @@ def plot_accNumber(home,project_name,cata_name,filter_detc,min_inter,time1,time2
     plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Detections/'+'detections.png')
     plt.close()
     #plt.show()
+
+
+
+def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-04T22:32:54.650"):
+    '''
+        #plot detected tcs by template ID
+        tempID:template ID(e.g. '00836')
+        staChn: station_name.channel (e.g. JOKA.HHZ)
+        phs: phase name in case both P/S in same staChn
+        cut_window: window same as when using data_proc.cut_dailydata or data_proc.bulk_cut_dailydata
+        ref_OT: set y at ref_OT=0
+    '''
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from obspy import UTCDateTime
+    import os
+    ref_OT = UTCDateTime(ref_OT)
+    #find the file to be plotted
+    tcs_cut = home+'/'+project_name+'/'+'output/Template_match/Data_detection_cut/Detected_data_'+tempID+'.npy'
+    file_lag = home+'/'+project_name+'/'+'output/Template_match/Measure_lag/measure_lag_temp_'+tempID+'.npy'
+    flag_plotall = True
+    #to see if the file exist
+    if not(os.path.exist(tcs_cut)):
+        print('File:%s do not exist! break'%(tcs_cut))
+        return
+    if not(os.path.exist(file_lag)):
+        print(' Lag measurement file:%s do not exist, only show time series'%(file_lag))
+        flag_plotall = False #only one subplot
+
+    #load tcs_cut file
+    D = np.load(tcs_cut,allow_pickle=True)
+    D = D.item()
+
+    #load lag measurement if file exist
+    if os.path.exist(file_lag):
+        MeasLag = np.load(file_lag,allow_pickle=True)
+        MeasLag = MeasLag.item()
+
+    #some plot setting(normalize, get range of y etc.)
+    y_range = [i for i in D['detc_tcs'].keys()]
+    y_range.sort()
+    num_y = len(y_range)
+    y_range = [UTCDateTime(y_range[0]),UTCDateTime(y_range[-1])] #the data spanning from y_range[0] to y_range[1]
+    dy_range = (y_range[1]-y_range[0])/86400.0
+    data_mul = dy_range/num_y #tcs with this amplitude should be good
+
+    fig = plt.figure(constrained_layout=True)
+    props = dict(boxstyle='round', facecolor='white', alpha=0.8)
+    gs = fig.add_gridspec(3,1)
+    if os.path.exist(file_lag):
+        f3_ax1 = fig.add_subplot(gs[:2, 0]) #merge the first two row
+    else:
+        f3_ax1 = fig.add_subplot(gs[:, 0]) #merge all the three row
+
+    #####start plotting#####
+    for ik in D['detc_tcs'].keys():
+        DD = D['detc_tcs'][ik].select(station=staChn.split('.')[0],channel=staChn.split('.')[1])
+        if len(DD)!=1:
+            #selected two phases, add phs condition and select data again
+            phases = D['phase'][ik]
+            #***make sure the order if D and phases are the same
+            for i in range(len(DD)):
+                if D[i].stats.station==staChn.split('.')[0] & D[i].stats.channel==staChn.split('.')[1]:
+                    if phases[i]==phs:
+                        #also check the phase
+                        DD = D[i].copy()
+                        break
+        #selected the data, start plotting data
+        time = DD[0].times()
+        data = DD[0].data
+        data_norm = data/np.max(data)*data_mul
+        shft_plt = (UTCDateTime(ik)-ref_OT)/86400.0 # reference time in days
+        f3_ax1.plot(time-cut_window[0],data_norm+shft_plt,'k',linewidth=1.0)
+        f3_ax1.fill_between(time-cut_window[0],np.zeros_like(time)+shft_plt,data_norm+shft_plt,where=np.zeros_like(time)+shft_plt>data_norm+shft_plt,color=[0,0,0],interpolate=True)
+    #after plotting tcs, add text and adjust axis, plot label
+    x_pos = ((cut_window[1]-cut_window[0]*-1))*0.06 + +cut_window[0]*-1
+    y_pos = f3_ax1.get_ylim()
+    y_pos = (y_pos[1]-y_pos[0])*0.9+y_pos[0]
+    f3_ax1.text(x_pos,y_pos,staChn,fontsize=12,bbox=props)
+    f3_ax1.set_xlim([cut_window[0]*-1,cut_window[1]])
+    f3_ax1.set_ylabel('Day relative to mainshock',fontsize=14)
+    if (os.path.exist(file_lag)):
+        #two subplots
+        f3_ax1.set_xticklabels([]) #remove xlabel in the first subplot
+    else:
+        #if only one subplot
+        f3_ax1.set_xlabel('Origin time (s)',fontsize=14)
+        plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/template_'+tempID+'_'+staChn+'.'+phs+'.png')
+        plt.close()
+        return
+
+    #two subplots case
+    if os.path.exist(file_lag):
+        f3_ax2 = fig.add_subplot(gs[-1, 0])
+        f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
+        f3_ax2.set_xlabel('Origin time (s)',fontsize=14)
+
+    plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/template_'+tempID+'_'+staChn+'.'+phs+'.png')
+
+
+
+
+
+
+
 
 
 
