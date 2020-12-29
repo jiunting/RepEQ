@@ -256,10 +256,6 @@ def clean_data_cut(D,filter_detc):
     new_D['OT_template'] = D['OT_template']
     return new_D
 
-
-
-
-
     #3. do not deal with diff time since it has been dealt before
     '''
     tmp_DT = UTCDateTime("1900-01-01")
@@ -277,6 +273,28 @@ def clean_data_cut(D,filter_detc):
                 #new replace old
                 tmp_CC = D['meanCC'][k]
     '''
+
+
+
+def clean_events_time(time,min_time=5):
+    #filter event by assuming a minimum interevent time
+    #time: array of UTCDateTime
+    #min_time: any two events should > min_time(sec)
+    sav_time = [] #new time array
+    tmp_t = UTCDateTime('19000101')
+    n_drop = 0
+    for t in time:
+        if np.abs(t-tmp_t)>min_time:
+            #new event found
+            sav_time.append(t)
+            tmp_t = t
+        else:
+            n_drop += 1
+            print('T1,T2 within the min_time, considering the same:',tmp_t,t)
+            continue
+    print('Number of event dropped:',n_drop)
+    sav_time = np.array(sav_time)
+    return sav_time
 
 
 
@@ -891,7 +909,22 @@ def cal_slope(t,y):
 
 
 
-
+#calculate accumulated num within a time range
+def cal_accum(template_time,time1,time2,dt=3600):
+    time1 = UTCDateTime(time1)
+    time2 = UTCDateTime(time2)
+    #get the data within time range
+    idx = np.where((template_time>=time1) & (template_time<=time2) )[0]
+    template_time = template_time[idx]
+    #moving window calculate accumulated num
+    tmp1 = time1
+    sav_num = []
+    sav_t = []
+    while tmp1+dt<time2:
+        sav_num.append(len(np.where(template_time<=tmp1)[0]))
+        sav_t.append(tmp1)
+        tmp1 += dt
+    return sav_t,sav_num
 
 
 

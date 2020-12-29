@@ -150,10 +150,34 @@ def bulk_plot_detc_tcs(home,project_name,filter_detc):
 
 
 
+def plot_accNumber(home,project_name,cata_name,filter_detc,time1,time2):
+    #plot accumulated number of EQ in catalog v.s. detections
+    import glob
+    from repeq import data_proc
+    from obspy import UTCDateTime
+    import datetime
+    '''
+    filter_detc = {
+        'min_stan':9, #number of non-zero CC measurements
+        'min_CC':0.5, #min mean(CC) value
+        'diff_t':60, #time difference between events should larger than this
+    }
+    '''
+    #load catalog and get their time
+    df = data_proc.cat2pd(home+'/'+project_name+'/catalog/'+cata_name)
+    template_time = [UTCDateTime(df.Date[i]+'T'+df.Time[i]) for i in range(len(df))]
+    template_time = np.array(template_time)
 
-
-
-
+    #load detections and get their time
+    detcs = glob.glob(home+'/'+project_name+'/'+'output/Template_match/Detections/'+'Detected_tmp_*.npy')
+    detcs = glob.glob('/Users/timlin/Documents/Project/Hawaii_cont/Detections/Detected_tmp_*.npy')
+    detcs.sort()
+    detc_time = []
+    for detc_path in detcs:
+        detc = np.load(detc_path,allow_pickle=True)
+        detc = detc.item()
+        detc = data_proc.clean_detc(detc,filter_detc)
+        detc_time += detc.keys()
 
 
 
