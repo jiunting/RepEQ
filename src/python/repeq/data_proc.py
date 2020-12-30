@@ -944,13 +944,14 @@ def get_cut_info(home,project_name,tempID):
     #loop all the ik and save station if not exist
     for ik in D['detc_tcs'].keys():
         for i in range(len(D['detc_tcs'][ik])):
-            StaChnPhs = '.'.join([D['detc_tcs'][ik][i].stats.station,D['detc_tcs'][ik][i].stats.channel,D['phase'][ik][i]])
+            StaChnPhs = '.'.join([D['detc_tcs'][ik][i].stats.station,D['detc_tcs'][ik][i].stats.channel])
+            StaChnPhs = StaChnPhs+'_'+D['phase'][ik][i]
             if not StaChnPhs in all_StaChnPhs:
                 all_StaChnPhs.append(StaChnPhs)
 
     #split the all_StaChnPhs into array
-    A = np.array([i.split('.') for i in all_StaChnPhs])
-    return A[:,0],A[:,1],A[:,2]
+    A = np.array([i.split('_') for i in all_StaChnPhs])
+    return A[:,0],A[:,1]
 
 
 
