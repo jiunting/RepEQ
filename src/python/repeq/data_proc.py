@@ -806,7 +806,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
     daily_cuts = glob.glob(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_*.npy')
     daily_cuts.sort()
     #start data partition
-    all_idx = range(len(daily_cuts))
+    all_idx = np.arange(len(daily_cuts))
     partition_idx = np.where(all_idx%n_jobs==i_par)[0]
     daily_cuts = daily_cuts[partition_idx] #new daily_cuts based on the partitioning
     
