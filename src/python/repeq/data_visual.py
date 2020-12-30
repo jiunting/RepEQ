@@ -230,7 +230,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     matplotlib.use('pdf')
     import matplotlib.pyplot as plt
     import numpy as np
-    from obspy import UTCDateTime
+    from obspy import UTCDateTime,Stream
     import os
     
     ref_OT = UTCDateTime(ref_OT)
@@ -286,8 +286,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
                 if (DD[i].stats.network==NetStaChnLoc.split('.')[0]) & (DD[i].stats.station==NetStaChnLoc.split('.')[1]) & (DD[i].stats.channel==NetStaChnLoc.split('.')[2]) & (DD[i].stats.location==NetStaChnLoc.split('.')[3]):
                     if phases[i]==phs:
                         #also check the phase
-                        DD = DD[i].copy()
-                        print(DD)
+                        DD = Stream(DD[i].copy())
                         break
         #selected the data, start plotting data
         print('DD is',DD)
