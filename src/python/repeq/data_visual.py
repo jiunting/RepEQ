@@ -318,12 +318,28 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
     f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
 
+    #get range of day relative to reftime (for different color)
+    iks = [for ik in MeasLag['detc_OT'].keys()]
+    iks.sort()
+    iks_ref = np.array([(UTCDateTime(ik)-ref_OT)/86400.0 for ik in iks])
+    print('iks_ref=',iks_ref)
+    cmap_ref = plt.cm.jet(plt.Normalize(iks_ref[0],iks_ref[-1])(iks_ref))
+    ik_color = {} #make color table
+    for i in range(len(iks_ref)):
+        ik_color[iks[i]] = cmap_ref[i]
+
+    print('color table is done',ik_color)
     #loop all the available measurements
     for ik in MeasLag['detc_OT'].keys():
         if fullName in MeasLag['detc_OT'][ik]:
-            MeasLag['detc_OT'][ik][fullName]
+            lag_time = MeasLag['detc_OT'][ik][fullName]['time']
+            lag_shift = MeasLag['detc_OT'][ik][fullName]['shift']
+            lag_CCC = MeasLag['detc_OT'][ik][fullName]['CCC']
+            plt.plot(lag_time,kag_shift,color=ik_color[ik],linewidth=0.5)
 
 
+
+    plt.colorbar()
     plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
     print('figure-2subplots saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
 
