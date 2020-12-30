@@ -258,7 +258,10 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
     y_range = [i for i in D['detc_tcs'].keys()]
     y_range.sort()
     num_y = len(y_range)
-    y_range = [UTCDateTime(y_range[0]),UTCDateTime(y_range[-1])] #the data spanning from y_range[0] to y_range[1]
+    if len(y_range)==1:
+        y_range = [UTCDateTime(y_range[0])-86400,UTCDateTime(y_range[0])+86400]
+    else:
+        y_range = [UTCDateTime(y_range[0]),UTCDateTime(y_range[-1])] #the data spanning from y_range[0] to y_range[1]
     dy_range = (y_range[1]-y_range[0])/86400.0
     data_mul = dy_range/num_y #tcs with this amplitude should be good
 
