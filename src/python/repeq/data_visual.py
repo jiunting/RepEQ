@@ -339,13 +339,16 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
             plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.5)
 
     #add colormap
-    norm = matplotlib.colors.Normalize(vmin=iks_ref[0], vmax=iks_ref[-1])
+    #norm = matplotlib.colors.Normalize(vmin=iks_ref[0], vmax=iks_ref[-1])
+    print('***Fix the vmin,vmax to -10,10***')
+    norm = matplotlib.colors.Normalize(vmin=-10, vmax=10)
     cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='seismic')
     cmap.set_array([])
 
     #These two lines mean put the bar inside the plot
-    cbaxes = fig.add_axes([0.8, 0.3, 0.12, 0.022])
+    cbaxes = fig.add_axes([0.7, 0.3, 0.12, 0.022])
     clb=plt.colorbar(cmap,cax=cbaxes, orientation='horizontal',label='day')
+    clb.set_label('Day', rotation=0,labelpad=0)
 
     plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
     print('figure-2subplots saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
