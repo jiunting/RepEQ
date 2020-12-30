@@ -216,12 +216,12 @@ def plot_accNumber(home,project_name,cata_name,filter_detc,min_inter,time1,time2
 
 
 
-def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-04T22:32:54.650"):
+def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="2018-05-04T22:32:54.650"):
     '''
         #plot detected tcs by template ID
         tempID:template ID(e.g. '00836')
-        staChn: station_name.channel (e.g. JOKA.HHZ)
-        phs: phase name in case both P/S in same staChn
+        NetStaChnLoc: net.station_name.channel.loc (e.g. HV.JOKA.HHZ. )
+        phs: phase name in case both P/S in same NetStaChnLoc
         cut_window: window same as when using data_proc.cut_dailydata or data_proc.bulk_cut_dailydata
         ref_OT: set y at ref_OT=0
     '''
@@ -275,13 +275,13 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
 
     #####start plotting#####
     for ik in D['detc_tcs'].keys():
-        DD = D['detc_tcs'][ik].select(station=staChn.split('.')[0],channel=staChn.split('.')[1])
+        DD = D['detc_tcs'][ik].select(network=NetStaChnLoc.split('.')[0],station=NetStaChnLoc.split('.')[1],channel=NetStaChnLoc.split('.')[2],location=NetStaChnLoc.split('.')[3])
         if len(DD)!=1:
             #selected two phases, add phs condition and select data again
             phases = D['phase'][ik]
             #***make sure the order if D and phases are the same
             for i in range(len(DD)):
-                if D[i].stats.station==staChn.split('.')[0] & D[i].stats.channel==staChn.split('.')[1]:
+                if D[i].stats.network==NetStaChnLoc.split('.')[0] & D[i].stats.station==NetStaChnLoc.split('.')[1] & D[i].stats.channel==NetStaChnLoc.split('.')[2] & D[i].stats.location==NetStaChnLoc.split('.')[3]:
                     if phases[i]==phs:
                         #also check the phase
                         DD = D[i].copy()
@@ -297,7 +297,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
     x_pos = ((cut_window[1]-cut_window[0]*-1))*0.03 + +cut_window[0]*-1
     y_pos = f3_ax1.get_ylim()
     y_pos = (y_pos[1]-y_pos[0])*0.9+y_pos[0]
-    f3_ax1.text(x_pos,y_pos,staChn+'.'+phs,fontsize=12,bbox=props)
+    f3_ax1.text(x_pos,y_pos,NetStaChnLoc+'.'+phs,fontsize=12,bbox=props)
     f3_ax1.set_xlim([cut_window[0]*-1,cut_window[1]])
     f3_ax1.set_ylabel('Day relative to mainshock',fontsize=14)
     if (os.path.exists(file_lag)):
@@ -310,11 +310,15 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
         plt.close()
         return
 
-    #two subplots case
-    if os.path.exists(file_lag):
-        f3_ax2 = fig.add_subplot(gs[-1, 0])
-        f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
-        f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
+    #if not returned, continue to two subplots case
+    f3_ax2 = fig.add_subplot(gs[-1, 0])
+    f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
+    f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
+
+    #loop all the available measurements
+    for ik in MeasLag['detc_OT'].keys():
+
+
 
     plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+staChn+'.'+phs+'.png')
 

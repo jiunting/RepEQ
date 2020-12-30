@@ -931,7 +931,7 @@ def get_cut_info(home,project_name,tempID):
     import os
     '''
         input tempID (e.g. '00010' stands for file Detected_data_00836.npy in home/project_name/output/Template_match/Data_detection_cut/)
-        output all the available station name, and phase
+        output all the available station full name (net.station.channel.loc), and phase
     '''
     tcs_cut = home+'/'+project_name+'/'+'output/Template_match/Data_detection_cut/Detected_data_'+tempID+'.npy'
     if not(os.path.exists(tcs_cut)):
@@ -944,7 +944,7 @@ def get_cut_info(home,project_name,tempID):
     #loop all the ik and save station if not exist
     for ik in D['detc_tcs'].keys():
         for i in range(len(D['detc_tcs'][ik])):
-            StaChnPhs = '.'.join([D['detc_tcs'][ik][i].stats.station,D['detc_tcs'][ik][i].stats.channel])
+            StaChnPhs = '.'.join([D['detc_tcs'][ik][i].stats.network,D['detc_tcs'][ik][i].stats.station,D['detc_tcs'][ik][i].stats.channel,D['detc_tcs'][ik][i].stats.location])
             StaChnPhs = StaChnPhs+'_'+D['phase'][ik][i]
             if not StaChnPhs in all_StaChnPhs:
                 all_StaChnPhs.append(StaChnPhs)
