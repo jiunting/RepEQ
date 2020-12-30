@@ -785,7 +785,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
 #    plt.plot(sav_temp[i]/np.max(sav_temp[i])+i,'r')
 #    plt.plot(sav_daily[i]/np.max(sav_daily[i])+i,'k')
 
-def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False):
+def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False,n_jobs=1,i_par=0):
     #make lag calculation from all the daily_cut data in the home/project_name/output/Template_match/Data_detection_cut
     #tcs_length_temp [t1,t2]: the same value of tcs_length used by template.Template
     #tcs_length_daily [t1,t2]: the same value of cut_window used by data_proc.bulk_cut_dailydata
@@ -797,10 +797,19 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
     'taper':0.05,     #taper percentage
     }
     '''
+    #overwrite=False
+    #n_jobs <int>: number of multiprocessing
+    #i_par <int>: the i-th partitioning. e.g. from 0 to n_jobs-1. If n_jobs=8, i_par can be 0~7 (i.e. range(8))
+    
     import glob,os
     #load all daily_cut data
     daily_cuts = glob.glob(home+'/'+project_name+'/output/Template_match/Data_detection_cut/Detected_data_*.npy')
     daily_cuts.sort()
+    #start data partition
+    all_idx = range(len(daily_cuts))
+    partition_idx = np.where(all_idx%n_jobs==i_par)[0]
+    daily_cuts = daily_cuts[partition_idx] #new daily_cuts based on the partitioning
+    
     #initial dictionary that save all info
     #lag_measure = {} #with templateID as key
     for daily_cut in daily_cuts:
@@ -887,6 +896,22 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
         lag_measure_sub = lag_measure_sub.item()
         lag_measure[tmpID] = lag_measure_sub
     np.save(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_all.npy',lag_measure)
+
+
+def bulk_cal_lag_parallel(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False,n_jobs=4):
+    #parallelized version of data_proc.bulk_cal_lag
+    #***always use this function then data_proc.bulk_cal_lag when n_job != 1
+    from joblib import Parallel, delayed
+    results = Parallel(n_jobs=n_part,verbose=10,backend='multiprocessing')(delayed(bulk_cal_lag_parallel)(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False,n_jobs=n_jobs,i_par=i_par) for i_par in range(n_jobs)  )
+    print(results)
+    '''
+    #normal way to do the job without multiprocessing
+    for i_par in range(n_job):
+        bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False,n_jobs=n_job,i_par=i_par)
+    '''
+
+
+
 
 
 
