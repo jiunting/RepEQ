@@ -291,10 +291,10 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
         f3_ax1.plot(time-cut_window[0],data_norm+shft_plt,'k',linewidth=1.0)
         f3_ax1.fill_between(time-cut_window[0],np.zeros_like(time)+shft_plt,data_norm+shft_plt,where=np.zeros_like(time)+shft_plt>data_norm+shft_plt,color=[0,0,0],interpolate=True)
     #after plotting tcs, add text and adjust axis, plot label
-    x_pos = ((cut_window[1]-cut_window[0]*-1))*0.06 + +cut_window[0]*-1
+    x_pos = ((cut_window[1]-cut_window[0]*-1))*0.03 + +cut_window[0]*-1
     y_pos = f3_ax1.get_ylim()
     y_pos = (y_pos[1]-y_pos[0])*0.9+y_pos[0]
-    f3_ax1.text(x_pos,y_pos,staChn,fontsize=12,bbox=props)
+    f3_ax1.text(x_pos,y_pos,staChn+'.'+phs,fontsize=12,bbox=props)
     f3_ax1.set_xlim([cut_window[0]*-1,cut_window[1]])
     f3_ax1.set_ylabel('Day relative to mainshock',fontsize=14)
     if (os.path.exists(file_lag)):
