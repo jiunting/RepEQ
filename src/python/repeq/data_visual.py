@@ -302,7 +302,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
         f3_ax1.set_xticklabels([]) #remove xlabel in the first subplot
     else:
         #if only one subplot
-        f3_ax1.set_xlabel('Origin time (s)',fontsize=14)
+        f3_ax1.set_xlabel('Arrival time (s)',fontsize=14)
         plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+staChn+'.'+phs+'.png')
         plt.close()
         return
@@ -311,7 +311,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
     if os.path.exists(file_lag):
         f3_ax2 = fig.add_subplot(gs[-1, 0])
         f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
-        f3_ax2.set_xlabel('Origin time (s)',fontsize=14)
+        f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
 
     plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+staChn+'.'+phs+'.png')
 
