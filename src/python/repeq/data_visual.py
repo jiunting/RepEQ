@@ -232,7 +232,9 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     import numpy as np
     from obspy import UTCDateTime
     import os
+    
     ref_OT = UTCDateTime(ref_OT)
+    fullName = NetStaChnLoc+'.'+phs
     #find the file to be plotted
     tcs_cut = home+'/'+project_name+'/'+'output/Template_match/Data_detection_cut/Detected_data_'+tempID+'.npy'
     file_lag = home+'/'+project_name+'/'+'output/Template_match/Measure_lag/measure_lag_temp_'+tempID+'.npy'
@@ -281,7 +283,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
             phases = D['phase'][ik]
             #***make sure the order if D and phases are the same
             for i in range(len(DD)):
-                if D[i].stats.network==NetStaChnLoc.split('.')[0] & D[i].stats.station==NetStaChnLoc.split('.')[1] & D[i].stats.channel==NetStaChnLoc.split('.')[2] & D[i].stats.location==NetStaChnLoc.split('.')[3]:
+                if (D[i].stats.network==NetStaChnLoc.split('.')[0]) & (D[i].stats.station==NetStaChnLoc.split('.')[1]) & (D[i].stats.channel==NetStaChnLoc.split('.')[2]) & (D[i].stats.location==NetStaChnLoc.split('.')[3]):
                     if phases[i]==phs:
                         #also check the phase
                         DD = D[i].copy()
@@ -297,7 +299,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     x_pos = ((cut_window[1]-cut_window[0]*-1))*0.03 + +cut_window[0]*-1
     y_pos = f3_ax1.get_ylim()
     y_pos = (y_pos[1]-y_pos[0])*0.9+y_pos[0]
-    f3_ax1.text(x_pos,y_pos,NetStaChnLoc+'.'+phs,fontsize=12,bbox=props)
+    f3_ax1.text(x_pos,y_pos,fullName,fontsize=12,bbox=props)
     f3_ax1.set_xlim([cut_window[0]*-1,cut_window[1]])
     f3_ax1.set_ylabel('Day relative to mainshock',fontsize=14)
     if (os.path.exists(file_lag)):
@@ -306,8 +308,8 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     else:
         #if only one subplot
         f3_ax1.set_xlabel('Arrival time (s)',fontsize=14)
-        plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
-        print('figure saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
+        plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
+        print('figure saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
         plt.close()
         return
 
@@ -315,16 +317,16 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     f3_ax2 = fig.add_subplot(gs[-1, 0])
     f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
     f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
-    plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
-    print('figure-2subplots saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
-    '''
+
     #loop all the available measurements
     for ik in MeasLag['detc_OT'].keys():
+        if fullName in MeasLag['detc_OT'][ik]:
+            MeasLag['detc_OT'][ik][fullName]
 
 
+    plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
+    print('figure-2subplots saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
 
-    plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
-    '''
 
 
 
