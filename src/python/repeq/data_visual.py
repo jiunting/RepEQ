@@ -287,6 +287,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
                     if phases[i]==phs:
                         #also check the phase
                         DD = DD[i].copy()
+                        print(DD)
                         break
         #selected the data, start plotting data
         time = DD[0].times()
