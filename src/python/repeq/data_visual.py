@@ -291,6 +291,8 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
                         break
         #selected the data, start plotting data
         print('DD is',DD)
+        print('type DD is',type(DD))
+        print('len DD is ',len(DD))
         print('DD[0] is',DD[0])
         time = DD[0].times()
         data = DD[0].data
