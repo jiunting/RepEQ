@@ -319,7 +319,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
 
     #get range of day relative to reftime (for different color)
-    iks = [for ik in MeasLag['detc_OT'].keys()]
+    iks = [ik for ik in MeasLag['detc_OT'].keys()]
     iks.sort()
     iks_ref = np.array([(UTCDateTime(ik)-ref_OT)/86400.0 for ik in iks])
     print('iks_ref=',iks_ref)
