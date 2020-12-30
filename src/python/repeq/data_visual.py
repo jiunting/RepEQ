@@ -316,7 +316,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     #if not returned, continue to two subplots case
     f3_ax2 = fig.add_subplot(gs[-1, 0])
     f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
-    f3_ax2.set_xlim([-0.5,0.5])
+    f3_ax2.set_ylim([-0.5,0.5])
     f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
     f3_ax2.set_ylabel(r'$\tau$ (s)',fontsize=14)
 
