@@ -907,10 +907,8 @@ def cal_slope(t,y):
     return M
 
 
-
-
-#calculate accumulated num within a time range
 def cal_accum(template_time,time1,time2,dt=3600):
+    #calculate accumulated num within a time range. Called by data_visual.plot_accNumber
     time1 = UTCDateTime(time1)
     time2 = UTCDateTime(time2)
     #get the data within time range
@@ -925,6 +923,43 @@ def cal_accum(template_time,time1,time2,dt=3600):
         sav_t.append(tmp1)
         tmp1 += dt
     return sav_t,sav_num
+
+
+#get staChn,phs from data_cut (inputs for data_visual.plot_reptcs(home,project_name,tempID,staChn,phs,cut_window))
+def get_cut_info(home,project_name,tempID):
+    import numpy as np
+    import os
+    '''
+        input tempID (e.g. '00010' stands for file Detected_data_00836.npy in home/project_name/output/Template_match/Data_detection_cut/)
+        output all the available station name, and phase
+    '''
+    tcs_cut = home+'/'+project_name+'/'+'output/Template_match/Data_detection_cut/Detected_data_'+tempID+'.npy'
+    if not(os.path.exists(tcs_cut)):
+        print('file:%s do not exist!'%(tcs_cut))
+        return
+
+    D = np.load(tcs_cut,allow_pickle=True)
+    D = D.item()
+    all_StaChnPhs = []
+    #loop all the ik and save station if not exist
+    for ik in D['detc_tcs'].keys():
+        for i in range(len(D['detc_tcs'][ik])):
+            StaChnPhs = '.'.join([D['detc_tcs'][ik][i].stats.station,D['detc_tcs'][ik][i].stats.channel,D['phase'][ik][i]])
+            if not StaChnPhs in all_StaChnPhs:
+                all_StaChnPhs.append(StaChnPhs)
+
+    #split the all_StaChnPhs into array
+    A = np.array([i.split('.') for i in all_StaChnPhs])
+    return A[:,0],A[:,1],A[:,2]
+
+
+
+
+
+
+
+
+
 
 
 
