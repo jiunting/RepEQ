@@ -316,7 +316,9 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     #if not returned, continue to two subplots case
     f3_ax2 = fig.add_subplot(gs[-1, 0])
     f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
+    f3_ax2.set_xlim([-0.5,0.5])
     f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
+    f3_ax2.set_ylabel(r'$\tau$ (s)',fontsize=14)
 
     #get range of day relative to reftime (for different color)
     iks = [ik for ik in MeasLag['detc_OT'].keys()]
@@ -351,7 +353,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
 
     #These two lines mean put the bar inside the plot
     cbaxes = fig.add_axes([0.73, 0.3, 0.12, 0.022])
-    clb=plt.colorbar(cmap,cax=cbaxes, orientation='horizontal',label='day')
+    clb=plt.colorbar(cmap,cax=cbaxes, orientation='horizontal',label='Day')
     clb.set_label('Day', rotation=0,labelpad=0)
 
     plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
