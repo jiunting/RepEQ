@@ -307,6 +307,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
         #if only one subplot
         f3_ax1.set_xlabel('Arrival time (s)',fontsize=14)
         plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
+        print('figure saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
         plt.close()
         return
 
@@ -314,7 +315,8 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     f3_ax2 = fig.add_subplot(gs[-1, 0])
     f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
     f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
-
+    plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
+    print('figure-2subplots saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+NetStaChnLoc+'.'+phs+'.png')
     '''
     #loop all the available measurements
     for ik in MeasLag['detc_OT'].keys():
