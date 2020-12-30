@@ -808,6 +808,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
     #start data partition
     all_idx = np.arange(len(daily_cuts))
     partition_idx = np.where(all_idx%n_jobs==i_par)[0]
+    daily_cuts = np.array(daily_cuts)
     daily_cuts = daily_cuts[partition_idx] #new daily_cuts based on the partitioning
     
     #initial dictionary that save all info
