@@ -330,12 +330,16 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     for i in range(len(iks_ref)):
         ik_color[iks[i]] = cmap_ref[i]
 
+
+    plt.plot([cut_window[0]*-1,cut_window[1]],[0,0],'k--',linewidth=0.3) #plot horizontal line
     #loop all the available measurements
     for ik in MeasLag['detc_OT'].keys():
         if fullName in MeasLag['detc_OT'][ik]:
             lag_time = MeasLag['detc_OT'][ik][fullName]['time']
             lag_shift = MeasLag['detc_OT'][ik][fullName]['shift']
             lag_CCC = MeasLag['detc_OT'][ik][fullName]['CCC']
+            if np.mean(lag_CCC)<0.5:
+                continue
             plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.5)
 
     #add colormap
@@ -346,7 +350,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     cmap.set_array([])
 
     #These two lines mean put the bar inside the plot
-    cbaxes = fig.add_axes([0.7, 0.3, 0.12, 0.022])
+    cbaxes = fig.add_axes([0.73, 0.3, 0.12, 0.022])
     clb=plt.colorbar(cmap,cax=cbaxes, orientation='horizontal',label='day')
     clb.set_label('Day', rotation=0,labelpad=0)
 
