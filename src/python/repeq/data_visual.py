@@ -340,8 +340,8 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
             lag_time = MeasLag['detc_OT'][ik][fullName]['time']
             lag_shift = MeasLag['detc_OT'][ik][fullName]['shift']
             lag_CCC = MeasLag['detc_OT'][ik][fullName]['CCC']
-            if np.mean(lag_CCC)<0.5:
-                continue
+            #if np.mean(lag_CCC)<0.5:
+            #    continue
             plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.5)
 
     #add colormap

@@ -785,7 +785,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
 #    plt.plot(sav_temp[i]/np.max(sav_temp[i])+i,'r')
 #    plt.plot(sav_daily[i]/np.max(sav_daily[i])+i,'k')
 
-def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params):
+def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False):
     #make lag calculation from all the daily_cut data in the home/project_name/output/Template_match/Data_detection_cut
     #tcs_length_temp [t1,t2]: the same value of tcs_length used by template.Template
     #tcs_length_daily [t1,t2]: the same value of cut_window used by data_proc.bulk_cut_dailydata
@@ -810,7 +810,8 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
         #if data already exist, skip
         if os.path.exists(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID)):
             print('--The data %s already exist, skip it.'%(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID)))
-            continue
+            if not(overwrite):
+                continue #pass calculation if not overwritting data
         daily_cut = np.load(daily_cut,allow_pickle=True)
         daily_cut = daily_cut.item()
         #find the template .ms file
@@ -841,9 +842,8 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily] = {}
                 #template selection
                 #Method #1, assume order of daily cut_data, net_sta_comp, and phase is the same
-                #print('    searching:',daily_net_sta_comp,PS_daily)
                 selected_idx = np.where((template_info['net_sta_comp']==daily_net_sta_comp) & (template_info['phase']==PS_daily))[0][0]
-                #Method #2
+                #Method #2, If there're two data selected, assume they are one P and one S, and P is always faster.....
                 selected_temp = template.select(network=NET,station=STA,channel=CHN,location=LOC)
                 selected_temp = selected_temp.copy()
                 #most of the case should return only 1 data, but if there's P and S in 1 station...
@@ -863,10 +863,12 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                             selected_temp = obspy.Stream(selected_temp[1])
                         elif PS_daily.capitalize()[0]=='S':
                             selected_temp = obspy.Stream(selected_temp[0])
+                #---End of Method#2 selection---
                 #print('starttime:',template[selected_idx].stats.starttime,selected_temp[0].stats.starttime)
-                assert template[selected_idx].stats.starttime==selected_temp[0].stats.starttime, 'Selection inconsistent! check the Method1&2'
-                #if the assert always work, delect the Method2 and only use the method1
-                sav_t,sav_shft,sav_CCC = cal_lag(selected_temp[0],D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params)
+                assert template[selected_idx].stats.starttime==selected_temp[0].stats.starttime, 'Selection inconsistent! check the Method #1 & #2'
+                #if the assert always work, delete the Method2 and only use the method1
+                sav_t,sav_shft,sav_CCC = cal_lag(template[selected_idx],D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params) #select data based on Method#1
+                #sav_t,sav_shft,sav_CCC = cal_lag(selected_temp[0],D_daily,tcs_length_temp,tcs_length_daily,align_wind,measure_params) #based on Method#2
                 #lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['time'] = sav_t
                 #lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
                 #lag_measure[tempID]['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
