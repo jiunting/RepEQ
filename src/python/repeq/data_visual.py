@@ -226,6 +226,8 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
         ref_OT: set y at ref_OT=0
     '''
     import numpy as np
+    import matplotlib
+    matplotlib.use('pdf')
     import matplotlib.pyplot as plt
     import numpy as np
     from obspy import UTCDateTime
@@ -301,7 +303,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
     else:
         #if only one subplot
         f3_ax1.set_xlabel('Origin time (s)',fontsize=14)
-        plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/template_'+tempID+'_'+staChn+'.'+phs+'.png')
+        plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+staChn+'.'+phs+'.png')
         plt.close()
         return
 
@@ -311,7 +313,7 @@ def plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-0
         f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
         f3_ax2.set_xlabel('Origin time (s)',fontsize=14)
 
-    plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/template_'+tempID+'_'+staChn+'.'+phs+'.png')
+    plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+staChn+'.'+phs+'.png')
 
 
 
