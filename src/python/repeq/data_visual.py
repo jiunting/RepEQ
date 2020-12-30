@@ -283,10 +283,10 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
             phases = D['phase'][ik]
             #***make sure the order if D and phases are the same
             for i in range(len(DD)):
-                if (D[i].stats.network==NetStaChnLoc.split('.')[0]) & (D[i].stats.station==NetStaChnLoc.split('.')[1]) & (D[i].stats.channel==NetStaChnLoc.split('.')[2]) & (D[i].stats.location==NetStaChnLoc.split('.')[3]):
+                if (DD[i].stats.network==NetStaChnLoc.split('.')[0]) & (DD[i].stats.station==NetStaChnLoc.split('.')[1]) & (DD[i].stats.channel==NetStaChnLoc.split('.')[2]) & (DD[i].stats.location==NetStaChnLoc.split('.')[3]):
                     if phases[i]==phs:
                         #also check the phase
-                        DD = D[i].copy()
+                        DD = DD[i].copy()
                         break
         #selected the data, start plotting data
         time = DD[0].times()
