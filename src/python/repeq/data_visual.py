@@ -338,8 +338,15 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
             plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.5)
 
 
+    #add colormap
+    norm = matplotlib.colors.Normalize(vmin=iks_ref[0], vmax=iks_ref[-1])
+    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='jet')
+    cmap.set_array([])
 
-    plt.colorbar()
+    #These two lines mean put the bar inside the plot
+    cbaxes = fig.add_axes([0.6, 0.12, 0.1, 0.02])
+    clb=plt.colorbar(cmap,cax=cbaxes, orientation='horizontal')
+
     plt.savefig(home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
     print('figure-2subplots saved:',home+'/'+project_name+'/'+'output/Template_match/Figs/reptcs_'+tempID+'_'+fullName+'.png')
 
