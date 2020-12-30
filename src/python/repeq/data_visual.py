@@ -335,7 +335,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
             lag_time = MeasLag['detc_OT'][ik][fullName]['time']
             lag_shift = MeasLag['detc_OT'][ik][fullName]['shift']
             lag_CCC = MeasLag['detc_OT'][ik][fullName]['CCC']
-            plt.plot(lag_time,kag_shift,color=ik_color[ik],linewidth=0.5)
+            plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.5)
 
 
 
