@@ -902,7 +902,7 @@ def bulk_cal_lag_parallel(home,project_name,tcs_length_temp,tcs_length_daily,ali
     #parallelized version of data_proc.bulk_cal_lag
     #***always use this function then data_proc.bulk_cal_lag when n_job != 1
     from joblib import Parallel, delayed
-    results = Parallel(n_jobs=n_jobs,verbose=10,backend='multiprocessing')(delayed(bulk_cal_lag_parallel)(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False,n_jobs=n_jobs,i_par=i_par) for i_par in range(n_jobs)  )
+    results = Parallel(n_jobs=n_jobs,verbose=10,backend='multiprocessing')(delayed(bulk_cal_lag)(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False,n_jobs=n_jobs,i_par=i_par) for i_par in range(n_jobs)  )
     print(results)
     '''
     #normal way to do the job without multiprocessing
