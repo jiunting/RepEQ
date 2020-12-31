@@ -726,12 +726,16 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         #print(daily_cut.stats)
         #print('cut daily:',t_st_daily,t_ed_daily)
         D_temp = template.copy()
+        print('---------------------------------')
+        print('--Original D_temp=',D_temp)
         D_temp.trim(starttime=t_st_temp-wind[0],endtime=t_ed_temp+wind[1],nearest_sample=1, pad=1, fill_value=0)
         #interpolate data (either new sampling or original sampling)
-        print('starttime=',t_st_temp)
-        print('D_temp=',D_temp)
+        print('--D_temp=',D_temp)
+        print('----set st-ed=',t_st_temp-wind[0],t_ed_temp+wind[1])
+        
         D_temp.interpolate(sampling_rate=(1.0/delta),starttime=t_st_temp,method='linear') #force the starttime to be "exactly" st(no 0.0001 difference)
         D_temp.trim(starttime=t_st_temp,endtime=t_ed_temp,nearest_sample=1, pad=1, fill_value=0)
+        print('--D_temp After=',D_temp)
         if measure_params['taper']:
             D_temp.taper(measure_params['taper'])
         D_temp = D_temp.data
