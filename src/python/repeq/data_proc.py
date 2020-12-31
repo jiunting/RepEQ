@@ -728,6 +728,8 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         D_temp = template.copy()
         D_temp.trim(starttime=t_st_temp-wind[0],endtime=t_ed_temp+wind[1],nearest_sample=1, pad=1, fill_value=0)
         #interpolate data (either new sampling or original sampling)
+        print('starttime=',t_st_temp)
+        print('D_temp=',D_temp)
         D_temp.interpolate(sampling_rate=(1.0/delta),starttime=t_st_temp,method='linear') #force the starttime to be "exactly" st(no 0.0001 difference)
         D_temp.trim(starttime=t_st_temp,endtime=t_ed_temp,nearest_sample=1, pad=1, fill_value=0)
         if measure_params['taper']:
@@ -819,7 +821,7 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
         tempID = int(daily_cut.split('_')[-1].split('.')[0])
         #if data already exist, skip
         if os.path.exists(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID)):
-            print('--The data %s already exist, skip it.'%(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID)))
+            print('--The data %s already exist, set overwrite to skip/overwrite it.'%(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID)))
             if not(overwrite):
                 continue #pass calculation if not overwritting data
         daily_cut = np.load(daily_cut,allow_pickle=True)
