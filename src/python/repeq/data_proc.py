@@ -705,12 +705,16 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         print('shift=',shft)
     #----------dealing with phase alignment END and already got the phase arr for daily_cut----------
     temp_arr = temp_OT+tcs_length_temp[0]
+    print('#################################')
+    print('template OT-arr=',temp_OT,temp_arr)
     daily_arr = daily_OT+tcs_length_daily[0]
     wind = measure_params['wind']
     mov = measure_params['mov']
     #starting time of measured window for template
     t_st_temp = temp_arr-wind[0]
     t_ed_temp = temp_arr+wind[1]
+    print('template st-ed=',t_st_temp,t_ed_temp)
+    print('#################################')
     #for dailydata
     t_st_daily = daily_arr-wind[0]
     t_ed_daily = daily_arr+wind[1]
