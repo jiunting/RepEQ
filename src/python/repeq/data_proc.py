@@ -723,7 +723,8 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
     sav_CCC = []
     #sav_temp = []
     #sav_daily = []
-    while (t_ed_temp+wind[1]<=template.stats.endtime) and (t_ed_daily+wind[1]<=daily_cut.stats.endtime):
+    #while (t_ed_temp+wind[1]<=template.stats.endtime) and (t_ed_daily+wind[1]<=daily_cut.stats.endtime):
+    while (t_ed_temp+mov<=template.stats.endtime) and (t_ed_daily+mov<=daily_cut.stats.endtime):
         #cut the data
         #print(template.stats)
         #print('cut template:',t_st_temp,t_ed_temp)
@@ -734,8 +735,9 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         print('orig D_temp=',D_temp)
         D_temp.interpolate(sampling_rate=(1.0/delta),method='linear')
         print('--interp D_temp=',D_temp)
-        D_temp.trim(starttime=t_st_temp-wind[0]-1,endtime=t_ed_temp+wind[1]+1,nearest_sample=1, pad=1, fill_value=0)
-        print('----set st-ed=',t_st_temp-wind[0]-1,t_ed_temp+wind[1]+1)
+        #D_temp.trim(starttime=t_st_temp-wind[0]-1,endtime=t_ed_temp+wind[1]+1,nearest_sample=1, pad=1, fill_value=0)
+        D_temp.trim(starttime=t_st_temp-1,endtime=t_ed_temp+1,nearest_sample=1, pad=1, fill_value=0)
+        print('----set st-ed=',t_st_temp-1,t_ed_temp+1)
         print('----After trim D_temp=',D_temp)
         print('--------Attemp to interp st=',t_st_temp)
         #interpolate data (either new sampling or original sampling)
@@ -743,11 +745,16 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         D_temp.trim(starttime=t_st_temp,endtime=t_ed_temp,nearest_sample=1, pad=1, fill_value=0)
         if measure_params['taper']:
             D_temp.taper(measure_params['taper'])
+    
         D_temp = D_temp.data
+        
+        #--dealing with daily cut---
         D_daily = daily_cut.copy()
+        D_daily.interpolate(sampling_rate=(1.0/delta),method='linear')
 #        print('daily data from:',D_daily.stats.starttime,D_daily.stats.endtime)
 #        print('Trim st=',t_st_daily-2)
-        D_daily.trim(starttime=t_st_daily-wind[0],endtime=t_ed_daily+wind[1],nearest_sample=1, pad=1, fill_value=0)
+        D_daily.trim(starttime=t_st_daily-1,endtime=t_ed_daily+1,nearest_sample=1, pad=1, fill_value=0)
+        #D_daily.trim(starttime=t_st_daily-wind[0],endtime=t_ed_daily+wind[1],nearest_sample=1, pad=1, fill_value=0)
         #D_daily = D_daily.slice(starttime=t_st_daily-2,endtime=t_ed_daily+2)
 #        print('After trim, daily data from:',D_daily.stats.starttime,D_daily.stats.endtime)
         #interpolate data
@@ -768,6 +775,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
             D_daily.taper(measure_params['taper'])
         #D_daily = daily_cut.slice(starttime=t_st_daily,endtime=t_ed_daily)
         D_daily = D_daily.data
+        
         #measure lag
         #sav_temp.append(D_temp)
         #sav_daily.append(D_daily)
