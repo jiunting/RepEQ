@@ -724,6 +724,7 @@ def check_order(home,project_name):
 
 def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
     from obspy import UTCDateTime
+    import os
     #looping through all df, download templates, and output .txt file for checking
     OUT1 = open(home+'/'+project_name+'/waveforms_template/'+'template_summary.txt','w') #clean the previous summary file(if exist)
     OUT1.write('%s %s %s %s %s %s %s %s %s\n'%('#idx','Template_path','Nphases','Date','EVID','Lon','Lat','Dep','Mag')) #write header
@@ -731,6 +732,10 @@ def bulk_make_template(home,project_name,dfs,sampling_rate,filter=[0.2,8],tcs_le
     OUT2 = open(home+'/'+project_name+'/waveforms_template/'+'template_fail.txt','w')
     OUT2.close()
     for idf in range(len(dfs)):
+        if os.path.exists(home+'/'+project_name+'/waveforms_template/'+'template_%05d.ms'%(idf)) & os.path.exists(home+'/'+project_name+'/waveforms_template/'+'template_%05d.npy'%(idf)):
+            print('File %s exist, skip it'%(home+'/'+project_name+'/waveforms_template/'+'template_%05d.ms and .npy'%(idf)))
+            continue
+        
         DT = dfs.iloc[idf].Date+'T'+dfs.iloc[idf].Time #DateTime
         EVID = dfs.iloc[idf].Regional+dfs.iloc[idf].ID #eventID
         st,All_info = make_template(dfs.iloc[idf],sampling_rate,filter,tcs_length) #assume this always work!
