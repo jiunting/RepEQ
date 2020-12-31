@@ -99,7 +99,6 @@ filter_params={
 }
 data_proc.read_detections(home,project_name,filter_params) #this doesn't work for the newest format, read the data manually
 
-
 #filter the dictionary by clean_detc
 filter_detc = {
         'min_stan':5, #number of non-zero CC measurements
@@ -109,6 +108,23 @@ filter_detc = {
 data_proc.clean_detc(detc,filter_detc)
 
 
+
+'''
+#plot number of new detections v.s. original catalog 
+from repeq import data_visual
+filter_detc = {
+        'min_stan':9, #number of stations/phases
+        'min_CC':0.5, #min CC value
+        'diff_t':60, #time difference between events should larger than this
+        }
+min_inter = 2.0 #sec
+plot_time1 = "20180501"
+plot_time2 = "20180515"
+data_visual.plot_accNumber(home,project_name,cata_name,filter_detc,min_inter,plot_time1,plot_time2)
+'''
+
+
+#---write/cut the detection timeseries from daily data
 #write detection timeseries (cut from continuous data based on the detected time)
 from repeq import data_proc
 filter_params={
@@ -119,11 +135,52 @@ filter_params={
 cut_window=[5,20] #cut_window[t1,t2] means t1 sec "before" the pick time and t2 sec "after" the pick time
 data_proc.bulk_cut_dailydata(home,project_name,filter_detc,cut_window) #the results will be saved in home+project_name/output/Template_match/Data_detection_cut
 
-
+'''
 #make figure from the above (cut) timeseries, result will be saved in home+project_name/output/Template_match/Figs
+#detected tcs at all the stations
 from repeq import data_visual
 data_visual.bulk_plot_detc_tcs(home,project_name,filter_detc) #read the files in home+project_name/output/Template_match/Data_detection_cut and find template file
+'''
 
+
+'''
+#plot detected tcs at same station
+from repeq import data_visual
+tempID = '00295'
+tempID = '00628'
+tempID = '00005'
+#staChn = 'JOKA.HHZ'
+#phs = 'P'
+#or get all available staChn and phs if you dont know
+from repeq import data_proc
+staChns,phss = data_proc.get_cut_info(home,project_name,tempID)
+print('Find:',staChns,phss)
+staChn = staChns[0]
+phs = phss[0]
+cut_window = [5,20]
+data_visual.plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-04T22:32:54.650")
+#or plot all available phase
+for i,j in zip(staChns,phss):
+    data_visual.plot_reptcs(home,project_name,tempID,i,j,cut_window,ref_OT="2018-05-04T22:32:54.650")
+'''
+
+
+
+
+#calculate lag from the detection cut
+from repeq import data_proc
+measure_params={
+    'wind':[0.5,1],
+    'mov':0.05,
+    'interp':0.01,
+    'taper':0.05,     #taper percentage
+    }
+tcs_length_temp = [1,9] #same as when download template
+tcs_length_daily = [5,20] #same as when cut the data
+align_wind = [[1,9],[0.5,1.5]] #(multiple layers )alignment e.g. [[1,9],[0.5,2],[0.1,1]]
+#data_proc.bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False,n_jobs=1,i_par=0) #original function without multiprocessing
+#or use multiprocessing
+data_proc.bulk_cal_lag_parallel(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=False,n_jobs=4)
 
 
 
@@ -170,6 +227,14 @@ data_proc.make_sta_table(home,project_name,pattern='*000000')
 from repeq import data_proc
 data_proc.cal_moving_all(home,project_name,pattern='*0000',type='samp',window_pts=50000,mov_pts=25000) #the 3 files will be saved under waveforms/
 
+
+#-----get CC of template-template-----
+from repeq import template
+import numpy as np
+T = template.Template(home,project_name,cata_name,download=False,sampling_rate=sampling_rate,filter=filter,tcs_length=[1,9],filt_CC=0.2,filt_nSTA=6,plot_check=False)
+T.template_load()
+CC_temp = T.xcorr_temp()
+np.save('CC_temp.npy',CC_temp)
 
 
 
