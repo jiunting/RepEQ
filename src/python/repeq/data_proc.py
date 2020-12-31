@@ -705,16 +705,16 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         print('shift=',shft)
     #----------dealing with phase alignment END and already got the phase arr for daily_cut----------
     temp_arr = temp_OT+tcs_length_temp[0]
-    print('#################################')
-    print('template OT-arr=',temp_OT,temp_arr)
+    #print('#################################')
+    #print('template OT-arr=',temp_OT,temp_arr)
     daily_arr = daily_OT+tcs_length_daily[0]
     wind = measure_params['wind']
     mov = measure_params['mov']
     #starting time of measured window for template
     t_st_temp = temp_arr-wind[0]
     t_ed_temp = temp_arr+wind[1]
-    print('template st-ed=',t_st_temp,t_ed_temp)
-    print('#################################')
+    #print('template st-ed=',t_st_temp,t_ed_temp)
+    #print('#################################')
     #for dailydata
     t_st_daily = daily_arr-wind[0]
     t_ed_daily = daily_arr+wind[1]
@@ -731,15 +731,15 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
         #print(daily_cut.stats)
         #print('cut daily:',t_st_daily,t_ed_daily)
         D_temp = template.copy()
-        print('--------------------------------')
-        print('orig D_temp=',D_temp)
+        #print('--------------------------------')
+        #print('orig D_temp=',D_temp)
         D_temp.interpolate(sampling_rate=(1.0/delta),method='linear')
-        print('--interp D_temp=',D_temp)
+        #print('--interp D_temp=',D_temp)
         #D_temp.trim(starttime=t_st_temp-wind[0]-1,endtime=t_ed_temp+wind[1]+1,nearest_sample=1, pad=1, fill_value=0)
         D_temp.trim(starttime=t_st_temp-1,endtime=t_ed_temp+1,nearest_sample=1, pad=1, fill_value=0)
-        print('----set st-ed=',t_st_temp-1,t_ed_temp+1)
-        print('----After trim D_temp=',D_temp)
-        print('--------Attemp to interp st=',t_st_temp)
+        #print('----set st-ed=',t_st_temp-1,t_ed_temp+1)
+        #print('----After trim D_temp=',D_temp)
+        #print('--------Attemp to interp st=',t_st_temp)
         #interpolate data (either new sampling or original sampling)
         D_temp.interpolate(sampling_rate=(1.0/delta),starttime=t_st_temp,method='linear') #force the starttime to be "exactly" st(no 0.0001 difference)
         D_temp.trim(starttime=t_st_temp,endtime=t_ed_temp,nearest_sample=1, pad=1, fill_value=0)
@@ -775,7 +775,7 @@ def cal_lag(template,daily_cut,tcs_length_temp,tcs_length_daily,align_wind,measu
             D_daily.taper(measure_params['taper'])
         #D_daily = daily_cut.slice(starttime=t_st_daily,endtime=t_ed_daily)
         D_daily = D_daily.data
-        
+
         #measure lag
         #sav_temp.append(D_temp)
         #sav_daily.append(D_daily)
