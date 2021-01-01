@@ -371,7 +371,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     #cmap_ref = plt.cm.seismic(plt.Normalize(iks_ref[0],iks_ref[-1])(iks_ref)) #use the vminmax from data
     
     #cmap_ref = plt.cm.seismic(plt.Normalize(-10,10)(iks_ref)) #use the define seismic
-    my_seismic = data_visual.my_seismic()
+    my_seismic = my_seismic()
     print('use manual seismic colormap')
     cmap_ref = my_seismic(plt.Normalize(-10,10)(iks_ref))
 
