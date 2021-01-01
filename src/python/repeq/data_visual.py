@@ -367,13 +367,13 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     iks.sort()
     iks_ref = np.array([(UTCDateTime(ik)-ref_OT)/86400.0 for ik in iks])
     print('iks_ref=',iks_ref)
-    print('***Fix the vmin,vmax to -10,10***')
+    print('***Fix the vmin,vmax to -3,3***')
     #cmap_ref = plt.cm.seismic(plt.Normalize(iks_ref[0],iks_ref[-1])(iks_ref)) #use the vminmax from data
     
     #cmap_ref = plt.cm.seismic(plt.Normalize(-10,10)(iks_ref)) #use the define seismic
     my_seis = my_seismic()
     print('use manual seismic colormap')
-    cmap_ref = my_seis(plt.Normalize(-10,10)(iks_ref))
+    cmap_ref = my_seis(plt.Normalize(-3,3)(iks_ref))
 
     ik_color = {} #make color table
     for i in range(len(iks_ref)):
@@ -393,8 +393,8 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
 
     #add colormap
     #norm = matplotlib.colors.Normalize(vmin=iks_ref[0], vmax=iks_ref[-1])
-    print('***Fix the vmin,vmax to -10,10***')
-    norm = matplotlib.colors.Normalize(vmin=-10, vmax=10)
+    print('***Fix the vmin,vmax to -3,3***')
+    norm = matplotlib.colors.Normalize(vmin=-3, vmax=3)
     #cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='seismic')
     cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=my_seis)
     cmap.set_array([])
