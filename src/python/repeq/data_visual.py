@@ -224,16 +224,16 @@ def my_seismic():
     '''
     import matplotlib
     N = 1000
-    tmp_seis = plt.cm.get_cmap('seismic',N) #from blue-white-white-red
+    tmp_seis = plt.cm.get_cmap('bwr',N) #from blue-white-white-red
     #make the new seis to be white-blue-red-white
     tmpRGB = tmp_seis(range(N))
-    R1 = np.flipud(tmpRGB[:N//4,0])
-    G1 = np.flipud(tmpRGB[:N//4,1])
-    B1 = np.flipud(tmpRGB[:N//4,2])
+    R1 = np.flipud(tmpRGB[:N//2,0])
+    G1 = np.flipud(tmpRGB[:N//2,1])
+    B1 = np.flipud(tmpRGB[:N//2,2])
 
-    R2 = np.flipud(tmpRGB[N//4:,0])
-    G2 = np.flipud(tmpRGB[N//4:,1])
-    B2 = np.flipud(tmpRGB[N//4:,2])
+    R2 = np.flipud(tmpRGB[N//2:,0])
+    G2 = np.flipud(tmpRGB[N//2:,1])
+    B2 = np.flipud(tmpRGB[N//2:,2])
 
     R = np.hstack([R1,R2])
     G = np.hstack([G1,G2])
