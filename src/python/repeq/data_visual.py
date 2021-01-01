@@ -227,13 +227,13 @@ def my_seismic():
     tmp_seis = plt.cm.get_cmap('seismic',N) #from blue-white-white-red
     #make the new seis to be white-blue-red-white
     tmpRGB = tmp_seis(range(N))
-    R1 = np.flipud(tmpRGB[:N//2,0])
-    G1 = np.flipud(tmpRGB[:N//2,1])
-    B1 = np.flipud(tmpRGB[:N//2,2])
+    R1 = np.flipud(tmpRGB[:N//4,0])
+    G1 = np.flipud(tmpRGB[:N//4,1])
+    B1 = np.flipud(tmpRGB[:N//4,2])
 
-    R2 = np.flipud(tmpRGB[N//2:,0])
-    G2 = np.flipud(tmpRGB[N//2:,1])
-    B2 = np.flipud(tmpRGB[N//2:,2])
+    R2 = np.flipud(tmpRGB[N//4:,0])
+    G2 = np.flipud(tmpRGB[N//4:,1])
+    B2 = np.flipud(tmpRGB[N//4:,2])
 
     R = np.hstack([R1,R2])
     G = np.hstack([G1,G2])
@@ -358,7 +358,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     #if not returned, continue to two subplots case
     f3_ax2 = fig.add_subplot(gs[-1, 0])
     f3_ax2.set_xlim([cut_window[0]*-1,cut_window[1]])
-    f3_ax2.set_ylim([-0.5,0.5])
+    f3_ax2.set_ylim([-0.2,0.2])
     f3_ax2.set_xlabel('Arrival time (s)',fontsize=14)
     f3_ax2.set_ylabel(r'$\tau$ (s)',fontsize=14)
 
