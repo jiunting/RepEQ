@@ -216,6 +216,48 @@ def plot_accNumber(home,project_name,cata_name,filter_detc,min_inter,time1,time2
 
 
 
+def my_seismic():
+    #define my_seismic colormap
+    '''
+        regular seismic change from blue-white-white-red
+        make new seismic change from white-blue-red-white
+    '''
+    import matplotlib
+    N = 1000
+    tmp_seis = plt.cm.get_cmap('seismic',N) #from blue-white-white-red
+    #make the new seis to be white-blue-red-white
+    tmpRGB = tmp_seis(range(N))
+    R1 = np.flipud(tmpRGB[:N//2,0])
+    G1 = np.flipud(tmpRGB[:N//2,1])
+    B1 = np.flipud(tmpRGB[:N//2,2])
+
+    R2 = np.flipud(tmpRGB[N//2:,0])
+    G2 = np.flipud(tmpRGB[N//2:,1])
+    B2 = np.flipud(tmpRGB[N//2:,2])
+
+    R = np.hstack([R1,R2])
+    G = np.hstack([G1,G2])
+    B = np.hstack([B1,B2])
+
+    cdict = {'red':[],'green':[],'blue':[]}
+    #fill in the RGB value into cdict
+    pre_R = pre_G = pre_B = 0.0
+    for i in range(len(R)):
+        cdict['red'].append(((i)/len(R), pre_R, R[i]))
+        cdict['green'].append(((i)/len(G), pre_G, G[i]))
+        cdict['blue'].append(((i)/len(B), pre_B, B[i]))
+        pre_R = R[i]
+        pre_G = G[i]
+        pre_B = B[i]
+
+    cdict['red'].append((1,R[-1],R[-1]))
+    cdict['green'].append((1,G[-1],G[-1]))
+    cdict['blue'].append((1,B[-1],B[-1]))
+
+    my_colormap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,N)
+    return my_colormap
+
+
 def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="2018-05-04T22:32:54.650"):
     '''
         #plot detected tcs by template ID
@@ -327,7 +369,11 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     print('iks_ref=',iks_ref)
     print('***Fix the vmin,vmax to -10,10***')
     #cmap_ref = plt.cm.seismic(plt.Normalize(iks_ref[0],iks_ref[-1])(iks_ref)) #use the vminmax from data
-    cmap_ref = plt.cm.seismic(plt.Normalize(-10,10)(iks_ref))
+    
+    #cmap_ref = plt.cm.seismic(plt.Normalize(-10,10)(iks_ref)) #use the define seismic
+    my_seismic = data_visual.my_seismic()
+    cmap_ref = my_seismic(plt.Normalize(-10,10)(iks_ref))
+
     ik_color = {} #make color table
     for i in range(len(iks_ref)):
         ik_color[iks[i]] = cmap_ref[i]
@@ -348,7 +394,8 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     #norm = matplotlib.colors.Normalize(vmin=iks_ref[0], vmax=iks_ref[-1])
     print('***Fix the vmin,vmax to -10,10***')
     norm = matplotlib.colors.Normalize(vmin=-10, vmax=10)
-    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='seismic')
+    #cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='seismic')
+    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=my_seismic)
     cmap.set_array([])
 
     #These two lines mean put the bar inside the plot
