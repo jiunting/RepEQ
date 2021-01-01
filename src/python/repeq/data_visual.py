@@ -371,9 +371,9 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     #cmap_ref = plt.cm.seismic(plt.Normalize(iks_ref[0],iks_ref[-1])(iks_ref)) #use the vminmax from data
     
     #cmap_ref = plt.cm.seismic(plt.Normalize(-10,10)(iks_ref)) #use the define seismic
-    my_seismic = my_seismic()
+    my_seis = my_seismic()
     print('use manual seismic colormap')
-    cmap_ref = my_seismic(plt.Normalize(-10,10)(iks_ref))
+    cmap_ref = my_seis(plt.Normalize(-10,10)(iks_ref))
 
     ik_color = {} #make color table
     for i in range(len(iks_ref)):
@@ -396,7 +396,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
     print('***Fix the vmin,vmax to -10,10***')
     norm = matplotlib.colors.Normalize(vmin=-10, vmax=10)
     #cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='seismic')
-    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=my_seismic)
+    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=my_seis)
     cmap.set_array([])
 
     #These two lines mean put the bar inside the plot
