@@ -158,7 +158,8 @@ print('Find:',staChns,phss)
 staChn = staChns[0]
 phs = phss[0]
 cut_window = [5,20]
-data_visual.plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,ref_OT="2018-05-04T22:32:54.650")
+v_minmax = [-3,3]
+data_visual.plot_reptcs(home,project_name,tempID,staChn,phs,cut_window,v_minmax=v_minmax,ref_OT="2018-05-04T22:32:54.650")
 #or plot all available phase
 for i,j in zip(staChns,phss):
     data_visual.plot_reptcs(home,project_name,tempID,i,j,cut_window,ref_OT="2018-05-04T22:32:54.650")

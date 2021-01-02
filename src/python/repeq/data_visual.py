@@ -258,13 +258,15 @@ def my_seismic():
     return my_colormap
 
 
-def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="2018-05-04T22:32:54.650"):
+def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-3,3],ref_OT="2018-05-04T22:32:54.650"):
     '''
         #plot detected tcs by template ID
         tempID:template ID(e.g. '00836')
         NetStaChnLoc: net.station_name.channel.loc (e.g. HV.JOKA.HHZ. )
         phs: phase name in case both P/S in same NetStaChnLoc
         cut_window: window same as when using data_proc.cut_dailydata or data_proc.bulk_cut_dailydata
+                    Note that time information of lag measurements is provided in measure_lag_temp*.npy file
+        v_minmax: range of colormap plotting for lag measurement
         ref_OT: set y at ref_OT=0
     '''
     import numpy as np
@@ -355,7 +357,9 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,ref_OT="201
         plt.close()
         return
 
-    vmin = -10; vmax = 10
+    #use vmin and vmax from input
+    vmin = v_minmax[0]
+    vmax = v_minmax[1]
 
     #if not returned, continue to two subplots case
     f3_ax2 = fig.add_subplot(gs[-1, 0])
