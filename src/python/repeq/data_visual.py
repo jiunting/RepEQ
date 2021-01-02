@@ -233,16 +233,16 @@ def my_seismic():
 
     tmp_seis = plt.cm.get_cmap('spring',N//2) #concate whole spring
     tmpRGB = tmp_seis(range(N//2))
-    R2 = tmpRGB[N:,0]
-    G2 = tmpRGB[N:,1]
-    B2 = tmpRGB[N:,2]
+    R2 = tmpRGB[N//2:,0]
+    G2 = tmpRGB[N//2:,1]
+    B2 = tmpRGB[N//2:,2]
 #    R2 = tmpRGB[N//2:,0]
 #    G2 = tmpRGB[N//2:,1]
 #    B2 = tmpRGB[N//2:,2]
 #    R2 = np.flipud(tmpRGB[N//2:,0])
 #    G2 = np.flipud(tmpRGB[N//2:,1])
 #    B2 = np.flipud(tmpRGB[N//2:,2])
-
+    print('Length R1-R2=',len(R1),len(R2))
     R = np.hstack([R1,R2])
     G = np.hstack([G1,G2])
     B = np.hstack([B1,B2])
