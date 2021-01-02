@@ -410,7 +410,9 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-
             #if np.mean(lag_CCC)<0.5:
             #    continue
             #plt_idx = np.where(lag_CCC>=0.5)[0]
-            plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.3)
+            if (UTCDateTime(ik)-ref_OT)/86400.0 < vmin or (UTCDateTime(ik)-ref_OT)/86400.0>vmax:
+                continue
+            plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.5)
             #plt.plot(lag_time[plt_idx],lag_shift[plt_idx],'.-',color=ik_color[ik],linewidth=0.3,markersize=0.1)
 
     #add colormap
