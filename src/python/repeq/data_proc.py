@@ -905,6 +905,8 @@ def bulk_cal_lag(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,m
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['shift'] = sav_shft
                 lag_measure_sub['detc_OT'][ik][daily_net_sta_comp+'.'+PS_daily]['CCC'] = sav_CCC
         np.save(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_%05d.npy'%(tempID),lag_measure_sub)
+    if n_jobs!=1:
+        return #if using parallel
     #merge all the measure_lag files into a large file
     all_files = glob.glob(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_*.npy')
     all_files.sort()
@@ -924,6 +926,21 @@ def bulk_cal_lag_parallel(home,project_name,tcs_length_temp,tcs_length_daily,ali
     from joblib import Parallel, delayed
     results = Parallel(n_jobs=n_jobs,verbose=10,backend='multiprocessing')(delayed(bulk_cal_lag)(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=overwrite,n_jobs=n_jobs,i_par=i_par) for i_par in range(n_jobs)  )
     print(results)
+    #-----after finish all the lag calculation--------
+    if n_job==1:
+        return #merged file done in the bulk_cal_lag
+    #merge all the measure_lag files into a large file
+    all_files = glob.glob(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_*.npy')
+    all_files.sort()
+    lag_measure = {} #with templateID as key
+    for lag_file in all_files:
+        #get the template ID
+        tmpID = lag_file.split('/')[-1].split('_')[-1].split('.')[0]
+        lag_measure_sub = np.load(lag_file,allow_pickle=True)
+        lag_measure_sub = lag_measure_sub.item()
+        lag_measure[tmpID] = lag_measure_sub
+    np.save(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_all.npy',lag_measure)
+    
     '''
     #normal way to do the job without multiprocessing
     for i_par in range(n_job):
