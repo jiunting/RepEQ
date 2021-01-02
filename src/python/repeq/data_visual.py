@@ -231,11 +231,14 @@ def my_seismic():
     G1 = np.flipud(tmpRGB[:N//2,1])
     B1 = np.flipud(tmpRGB[:N//2,2])
 
-    tmp_seis = plt.cm.get_cmap('spring',N) #concate magma last half
-    tmpRGB = tmp_seis(range(N))
+    tmp_seis = plt.cm.get_cmap('spring',N//2) #concate whole spring
+    tmpRGB = tmp_seis(range(N//2))
     R2 = tmpRGB[N//2:,0]
     G2 = tmpRGB[N//2:,1]
     B2 = tmpRGB[N//2:,2]
+#    R2 = tmpRGB[N//2:,0]
+#    G2 = tmpRGB[N//2:,1]
+#    B2 = tmpRGB[N//2:,2]
 #    R2 = np.flipud(tmpRGB[N//2:,0])
 #    G2 = np.flipud(tmpRGB[N//2:,1])
 #    B2 = np.flipud(tmpRGB[N//2:,2])
