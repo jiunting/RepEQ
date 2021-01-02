@@ -231,9 +231,13 @@ def my_seismic():
     G1 = np.flipud(tmpRGB[:N//2,1])
     B1 = np.flipud(tmpRGB[:N//2,2])
 
-    R2 = np.flipud(tmpRGB[N//2:,0])
-    G2 = np.flipud(tmpRGB[N//2:,1])
-    B2 = np.flipud(tmpRGB[N//2:,2])
+    tmp_seis = plt.cm.get_cmap('bwr',N) #concate magma last half
+    R2 = tmpRGB[N//2:,0]
+    G2 = tmpRGB[N//2:,1]
+    B2 = tmpRGB[N//2:,2]
+#    R2 = np.flipud(tmpRGB[N//2:,0])
+#    G2 = np.flipud(tmpRGB[N//2:,1])
+#    B2 = np.flipud(tmpRGB[N//2:,2])
 
     R = np.hstack([R1,R2])
     G = np.hstack([G1,G2])
