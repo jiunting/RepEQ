@@ -407,11 +407,11 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-
             lag_time = MeasLag['detc_OT'][ik][fullName]['time']
             lag_shift = MeasLag['detc_OT'][ik][fullName]['shift']
             lag_CCC = MeasLag['detc_OT'][ik][fullName]['CCC']
-            if np.mean(lag_CCC)<0.5:
-                continue
-            plt_idx = np.where(lag_CCC>=0.5)[0]
-            plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.1)
-            plt.plot(lag_time[plt_idx],lag_shift[plt_idx],'.-',color=ik_color[ik],linewidth=0.3,markersize=0.1)
+            #if np.mean(lag_CCC)<0.5:
+            #    continue
+            #plt_idx = np.where(lag_CCC>=0.5)[0]
+            plt.plot(lag_time,lag_shift,color=ik_color[ik],linewidth=0.3)
+            #plt.plot(lag_time[plt_idx],lag_shift[plt_idx],'.-',color=ik_color[ik],linewidth=0.3,markersize=0.1)
 
     #add colormap
     #norm = matplotlib.colors.Normalize(vmin=iks_ref[0], vmax=iks_ref[-1])
