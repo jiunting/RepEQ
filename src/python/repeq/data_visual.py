@@ -321,10 +321,12 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-
 
     #####start plotting#####
     for ik in D['detc_tcs'].keys():
-        print('--select:',NetStaChnLoc,'from D["detc_tcs"][%s]'%(ik))
+        #print('--select:',NetStaChnLoc,'from D["detc_tcs"][%s]'%(ik))
         DD = D['detc_tcs'][ik].select(network=NetStaChnLoc.split('.')[0],station=NetStaChnLoc.split('.')[1],channel=NetStaChnLoc.split('.')[2],location=NetStaChnLoc.split('.')[3])
+        if len(DD)==0:
+            continue #note that NetStaChnLoc doesnt always in every D['detc_tcs'][ik]
         if len(DD)!=1:
-            #selected two phases, add phs condition and select data again
+            #selected two or more phases, add phs condition and select data again
             phases = D['phase'][ik]
             #***make sure the order if D and phases are the same
             for i in range(len(DD)):
@@ -334,7 +336,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-
                         DD = Stream(DD[i].copy())
                         break
         #selected the data, start plotting data
-        print('----data selected:',DD)
+        #print('----data selected:',DD)
         time = DD[0].times()
         data = DD[0].data
         data_norm = data/np.max(data)*data_mul
