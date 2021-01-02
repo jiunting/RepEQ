@@ -232,11 +232,12 @@ def my_seismic():
     B1 = np.flipud(tmpRGB[:N//2,2])
 
     #tmp_seis = plt.cm.get_cmap('spring',N//2) #concate whole spring
-    tmp_seis = plt.cm.get_cmap('hsv',N) #concate hsv begin half
+    #tmp_seis = plt.cm.get_cmap('hsv',N) #concate hsv begin half
+    tmp_seis = plt.cm.get_cmap('hot',N) #concate hot last half
     tmpRGB = tmp_seis(range(N))
-    R2 = tmpRGB[:N//2,0]
-    G2 = tmpRGB[:N//2,1]
-    B2 = tmpRGB[:N//2,2]
+    R2 = tmpRGB[N//2:,0]
+    G2 = tmpRGB[N//2:,1]
+    B2 = tmpRGB[N//2:,2]
 #    R2 = tmpRGB[N//2:,0]
 #    G2 = tmpRGB[N//2:,1]
 #    B2 = tmpRGB[N//2:,2]
