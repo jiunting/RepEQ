@@ -216,8 +216,8 @@ def plot_accNumber(home,project_name,cata_name,filter_detc,min_inter,time1,time2
 
 
 
-def my_seismic():
-    #define my_seismic colormap
+def my_colormap():
+    #define my_colormap
     '''
         regular seismic change from blue-white-white-red
         make new seismic change from white-blue-red-white
@@ -391,9 +391,9 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-
     #cmap_ref = plt.cm.seismic(plt.Normalize(iks_ref[0],iks_ref[-1])(iks_ref)) #use the vminmax from data
     
     #cmap_ref = plt.cm.seismic(plt.Normalize(-10,10)(iks_ref)) #use the define seismic
-    my_seis = my_seismic()
+    my_color = my_colormap()
     print('use manual seismic colormap')
-    cmap_ref = my_seis(plt.Normalize(vmin,vmax)(iks_ref))
+    cmap_ref = my_color(plt.Normalize(vmin,vmax)(iks_ref))
 
     ik_color = {} #make color table
     for i in range(len(iks_ref)):
@@ -420,7 +420,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-
     print('***Fix the vmin,vmax to %f,%f***'%(vmin,vmax))
     norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
     #cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='seismic')
-    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=my_seis)
+    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=my_color)
     cmap.set_array([])
 
     #These two lines mean put the bar inside the plot
@@ -433,15 +433,154 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-
 
 
 
+def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-05-04T22:32:54.650",coast=''):
+    import matplotlib
+    matplotlib.use('pdf') #instead using interactive backend
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
+    from repeq import data_proc
+    from repeq.EQreloc import get_lonlat
+    '''
+        read home/project_name/output/Template_match/Measure_lag/measure_lag_all.npy and plot slope of shift measurements
+        cata_name: catalog name
+        sta_name: station table created from data_proc.make_sta_table
+        filter_slope: parameter for measuring slope
+        filter_slope = {
+        'diff_t':60,    #minimum dt between template and detected_OT (note the definition is different from filter_detc used by data_proc.bulk_cut_dailydata)
+        'aligned_CC':0.7,
+        'measured_CC':0.5,
+        'max_shift':0.5, #drop the shift larger than this number (very large shift due to cycle slip)
+        'min_length':0.7, #length of the available time series pass the above criteria (0~1)
+        }
+    '''
+    sns.set()
+    sns.set_palette('husl',n_colors=10)
+
+    # load coast data if given
+    if coast:
+        coast=np.genfromtxt(coast)
+
+    # load catalog
+    df = data_proc.cat2pd(home+'/'+project_name+'/catalog/'+cata_name)
+
+    # load station table in home/project_nam/stations/stations.txt
+    sta_table = pd.read_table(home+'/'+project_name+'/catalog/'+sta_name,header=None,names=['stlon','stlat','stelev','stname'],sep=' ')
+
+    #load all lag measurements (this is a huge file, make sure memory fit)
+    lag_all = np.load(home+'/'+project_name+'/output/Template_match/Measure_lag/'+'measure_lag_all.npy',allow_pickle=True)
+    lag_all = lag_all.item()
 
 
+    sav_slope = {} #with sta as key
+    for ik in lag_all.keys():
+        temp_OT = lag_all[ik]['template_OT']
+        #loop all the detections
+        for detc_OT in lag_all[ik]['detc_OT'].keys():
+            if np.abs(UTCDateTime(temp_OT)-UTCDateTime(detc_OT))<filter_slope['diff_t']:
+                continue #dont want the detection too close to template(basically itself)
+
+            #loop every stations
+            for sta in lag_all[ik]['detc_OT'][detc_OT].keys():
+                #in each lag_all[ik]['detc_OT'][detc_OT][sta] there are "time","shift","CCC" keys
+                time = lag_all[ik]['detc_OT'][detc_OT][sta]['time']
+                shift = lag_all[ik]['detc_OT'][detc_OT][sta]['shift']
+                CCC = lag_all[ik]['detc_OT'][detc_OT][sta]['CCC']
+
+                #find the alignedCC (time closest to zero)
+                zeroidx = np.where(np.min(np.abs(time)))[0][0]
+                if CCC[zeroidx]<filter_slope['aligned_CC']:
+                    continue #alignment is not robust
+                        
+                #take the time,shift and fit by a slope
+                idx = np.where((CCC>=filter_slope['measured_CC']) & (shift<filter_slope['max_shift']) )[0] #shift cannt be too large otherwise is cycle slip
+                if len(idx) >= len(shift)*filter_slope['min_length']:
+                    #plt.plot(time[idx],shift[idx])
+                    #plt.show()
+                    #80% data pass threshold, then calculate slope
+                    M = data_proc.cal_slope(time[idx],shift[idx])
+                    #sav_slope.append(M[1]) #M[0] is intercept, M[1] is slope
+                    G = np.hstack([np.ones([len(idx),1]),time[idx].reshape(-1,1)])
+                    yhat = np.dot(G,M.reshape(-1,1))
+                    fit_std = np.std(yhat-shift[idx]) #standard deviation of misfit
+                    #sav_std.append(fit_std)
+                    #get the reference time WRS to template_OT
+                    ref_tempT = (UTCDateTime(detc_OT)-UTCDateTime(temp_OT))/86400.0 #relative days from template
+                    #sav_reftime.append(ref_tempT)
+                    #create new sta key if its not there
+                    if not (sta in sav_slope):
+                        sav_slope[sta] = {temp_OT:{'slope':[],'std':[],'ref_time':[],'ID':ik}}
+                    #template_OT as new key
+                    if not (lag_all[ik]['template_OT'] in sav_slope[sta]):
+                        sav_slope[sta][temp_OT] = {'slope':[],'std':[],'ref_time':[],'ID':ik}
+                    #appending data
+                    sav_slope[sta][temp_OT]['slope'] = np.hstack([sav_slope[sta][temp_OT]['slope'],M[1]]) #appending data as array
+                    sav_slope[sta][temp_OT]['std'] = np.hstack([sav_slope[sta][temp_OT]['std'],fit_std]) #
+                    sav_slope[sta][temp_OT]['ref_time'] = np.hstack([sav_slope[sta][temp_OT]['ref_time'],ref_tempT])
 
 
-
-
-
-
-
-
+    #=========plot station result============
+    for sta in sav_slope.keys():
+        plt.figure(figsize=(8.5,4.5))
+        plt.subplot(1,2,1)
+        #loop templates
+        n_meas = 0 #n-measurements
+        sav_tmplon = [] #save template lon
+        sav_tmplat = [] #template lat
+        sav_h = []
+        for temp in sav_slope[sta].keys():
+            #for each template, all the measurements at this station
+            time = sav_slope[sta][temp]['ref_time'] #0 is the template time
+            slope = sav_slope[sta][temp]['slope']
+            stdn = sav_slope[sta][temp]['std']
+            #add templat itself in the data
+            time = np.hstack([time,0])
+            slope = np.hstack([slope,0])
+            stdn = np.hstack([stdn,0])
+            #sort
+            sor_idx = np.argsort(time)
+            time = time[sor_idx]
+            slope = slope[sor_idx]
+            stdn = stdn[sor_idx]
+            dt_main = (UTCDateTime(temp)-main_OT)/86400.0
+            time += dt_main
+            #check if slope measurement across the mainshock
+            #if (time.min()<0) & (time.max()>0):
+            if (time.max()>0):
+                #plt.errorbar(time,slope+n_meas,stdn)
+                h = plt.plot(time,slope+n_meas*0.01,'.-')
+                sav_h.append(h[0])
+                plt.plot(dt_main,0+n_meas*0.01,'rv')
+                plt.plot([-10,10],[n_meas*0.01,n_meas*0.01],'k--',linewidth=0.5)
+                #save template information (loc)
+                sav_tmplon.append(df.iloc[ int(sav_slope[sta][temp]['ID']) ].Lon)
+                sav_tmplat.append(df.iloc[ int(sav_slope[sta][temp]['ID']) ].Lat)
+                n_meas += 1
+        if n_meas == 0:
+            plt.close()
+            continue
+        plt.plot([0,0],[-0.01,n_meas*0.01],'r',linewidth=0.5)
+        plt.xlim([-5,5])
+        plt.ylim([-0.01,n_meas*0.01])
+        plt.yticks([],[])
+        plt.xlabel('days from mainshock',fontsize=15,labelpad=0)
+        plt.title(sta,fontsize=15)
+        plt.grid(False)
+        #another subplot plot map
+        plt.subplot(1,2,2)
+        for itmp in range(len(sav_tmplon)):
+            plt.plot(sav_tmplon[itmp],sav_tmplat[itmp],'o',color=sav_h[itmp].get_color(),markeredgecolor=[0,0,0],mew=0.8,alpha=0.9)
+        plt.plot(coast[:,0],coast[:,1],'k-')
+        #get station lon,lat
+        stlon,stlat = get_lonlat(sta_table,[sta])
+        plt.plot(stlon,stlat,'^',markersize=10,color=[0,1,0],markeredgecolor=[0,0,1],mew=1)
+        print('***manually plot mainshock loc, set xlim and ylim')
+        plt.plot(-154.9996667,19.3181667,'r*',markersize=14,markeredgecolor=[0,0,0],mew=1,alpha=0.9)
+        plt.xlim([-155.85,-154.74])
+        plt.ylim([18.86,19.88])
+        plt.xticks(rotation=30,fontsize=10)
+        plt.savefig(home+'/'+project_name+'/output/Template_match/Figs/'+'slopeSummary_%s.png'%(sta))
+        plt.close()
+        #plt.show()
 
 

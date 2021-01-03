@@ -950,8 +950,6 @@ def bulk_cal_lag_parallel(home,project_name,tcs_length_temp,tcs_length_daily,ali
 
 
 
-
-
 def GMD_solve(G,D):
     #calculate inversion here
     GT=np.transpose(G)
@@ -989,8 +987,9 @@ def cal_accum(template_time,time1,time2,dt=3600):
     return sav_t,sav_num
 
 
-#get staChn,phs from data_cut (inputs for data_visual.plot_reptcs(home,project_name,tempID,staChn,phs,cut_window))
+
 def get_cut_info(home,project_name,tempID):
+    #get staChn,phs from data_cut (inputs for data_visual.plot_reptcs(home,project_name,tempID,staChn,phs,cut_window))
     import numpy as np
     import os
     '''
