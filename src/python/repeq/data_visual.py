@@ -490,7 +490,7 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
                 CCC = lag_all[ik]['detc_OT'][detc_OT][sta]['CCC']
 
                 #find the alignedCC (time closest to zero)
-                zeroidx = np.where(np.min(np.abs(time)))[0][0]
+                zeroidx = np.where(np.abs(time) == np.min(np.abs(time)))[0][0]
                 if CCC[zeroidx]<filter_slope['aligned_CC']:
                     continue #alignment is not robust
                         
