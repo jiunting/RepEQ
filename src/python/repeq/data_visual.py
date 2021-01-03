@@ -544,7 +544,7 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
             time = time[sor_idx]
             slope = slope[sor_idx]
             stdn = stdn[sor_idx]
-            dt_main = (UTCDateTime(temp)-main_OT)/86400.0
+            dt_main = (UTCDateTime(temp)-ref_OT)/86400.0 #set t at ref_OT = 0
             time += dt_main
             #check if slope measurement across the mainshock
             #if (time.min()<0) & (time.max()>0):
