@@ -521,6 +521,7 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
                     sav_slope[sta][temp_OT]['ref_time'] = np.hstack([sav_slope[sta][temp_OT]['ref_time'],ref_tempT])
 
 
+    ref_OT = UTCDateTime(ref_OT)
     #=========plot station result============
     for sta in sav_slope.keys():
         plt.figure(figsize=(8.5,4.5))
