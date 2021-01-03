@@ -441,6 +441,8 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
     
     from repeq import data_proc
     from repeq.EQreloc import get_lonlat
+    
+    import pandas as pd
     '''
         read home/project_name/output/Template_match/Measure_lag/measure_lag_all.npy and plot slope of shift measurements
         cata_name: catalog name
