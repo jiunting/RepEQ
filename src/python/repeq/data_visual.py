@@ -467,7 +467,7 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
     df = data_proc.cat2pd(home+'/'+project_name+'/catalog/'+cata_name)
 
     # load station table in home/project_nam/stations/stations.txt
-    sta_table = pd.read_table(home+'/'+project_name+'/catalog/'+sta_name,header=None,names=['stlon','stlat','stelev','stname'],sep=' ')
+    sta_table = pd.read_table(home+'/'+project_name+'/station/'+sta_name,header=None,names=['stlon','stlat','stelev','stname'],sep=' ')
 
     #load all lag measurements (this is a huge file, make sure memory fit)
     lag_all = np.load(home+'/'+project_name+'/output/Template_match/Measure_lag/'+'measure_lag_all.npy',allow_pickle=True)
