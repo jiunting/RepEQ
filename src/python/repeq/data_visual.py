@@ -433,7 +433,7 @@ def plot_reptcs(home,project_name,tempID,NetStaChnLoc,phs,cut_window,v_minmax=[-
 
 
 
-def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-05-04T22:32:54.650",coast=''):
+def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-05-04T22:32:54.650",coast_path=''):
     import matplotlib
     matplotlib.use('pdf') #instead using interactive backend
     import matplotlib.pyplot as plt
@@ -458,8 +458,8 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
     sns.set_palette('husl',n_colors=10)
 
     # load coast data if given
-    if coast:
-        coast=np.genfromtxt(coast)
+    if coast_path:
+        coast=np.genfromtxt(coast_path)
 
     # load catalog
     df = data_proc.cat2pd(home+'/'+project_name+'/catalog/'+cata_name)
@@ -570,7 +570,8 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
         plt.subplot(1,2,2)
         for itmp in range(len(sav_tmplon)):
             plt.plot(sav_tmplon[itmp],sav_tmplat[itmp],'o',color=sav_h[itmp].get_color(),markeredgecolor=[0,0,0],mew=0.8,alpha=0.9)
-        plt.plot(coast[:,0],coast[:,1],'k-')
+        if coast_path:
+            plt.plot(coast[:,0],coast[:,1],'k-')
         #get station lon,lat
         stlon,stlat = get_lonlat(sta_table,[sta])
         plt.plot(stlon,stlat,'^',markersize=10,color=[0,1,0],markeredgecolor=[0,0,1],mew=1)
