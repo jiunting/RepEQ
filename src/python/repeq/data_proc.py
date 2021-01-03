@@ -927,7 +927,7 @@ def bulk_cal_lag_parallel(home,project_name,tcs_length_temp,tcs_length_daily,ali
     results = Parallel(n_jobs=n_jobs,verbose=10,backend='multiprocessing')(delayed(bulk_cal_lag)(home,project_name,tcs_length_temp,tcs_length_daily,align_wind,measure_params,overwrite=overwrite,n_jobs=n_jobs,i_par=i_par) for i_par in range(n_jobs)  )
     print(results)
     #-----after finish all the lag calculation--------
-    if n_job==1:
+    if n_jobs==1:
         return #merged file done in the bulk_cal_lag
     #merge all the measure_lag files into a large file
     all_files = glob.glob(home+'/'+project_name+'/output/Template_match/Measure_lag/measure_lag_temp_*.npy')
