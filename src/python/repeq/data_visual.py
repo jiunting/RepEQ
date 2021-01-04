@@ -567,10 +567,17 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
             #if (time.max()<0):
             #    continue
             #plt.errorbar(time,slope+n_meas,stdn)
-            h = plt.plot(time,slope+n_meas*0.01,'.-')
+            scale_slope = np.std(slope)
+            #h = plt.plot(time,slope+n_meas*0.01,'.-') #the old scaling
+            h = plt.plot(time,slope/scale_slope+n_meas*0.5,'.-')  #normalize by their std
             sav_h.append(h[0])
-            plt.plot(dt_main,0+n_meas*0.01,'v',markerfacecolor=[1,0,0],markeredgecolor=[0,0,0])
+            '''
+            #old scaling
+            plt.plot(dt_main,0+n_meas*0.01,'v',markerfacecolor=[1,0,0],markeredgecolor=[0,0,0]) #template triangle mark
             plt.plot([-10,10],[n_meas*0.01,n_meas*0.01],'k--',linewidth=0.5)
+            '''
+            plt.plot(dt_main,0+n_meas*0.5,'v',markerfacecolor=[1,0,0],markeredgecolor=[0,0,0]) #template triangle mark
+            plt.plot([-10,10],[n_meas*0.5,n_meas*0.5],'k--',linewidth=0.5)
             #save template information (loc)
             sav_tmplon.append(df.iloc[ int(sav_slope[sta][temp]['ID']) ].Lon)
             sav_tmplat.append(df.iloc[ int(sav_slope[sta][temp]['ID']) ].Lat)
@@ -578,9 +585,11 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
         if n_meas == 0:
             plt.close()
             continue
-        plt.plot([0,0],[-0.01,n_meas*0.01],'r',linewidth=0.5)
+        #plt.plot([0,0],[-0.01,n_meas*0.01],'r',linewidth=0.5)
+        plt.plot([0,0],[-0.5,n_meas*0.5],'r',linewidth=0.5)
         plt.xlim([-5,5])
-        plt.ylim([-0.01,n_meas*0.01])
+        #plt.ylim([-0.01,n_meas*0.01])
+        plt.ylim([-0.5,n_meas*0.5])
         plt.yticks([],[])
         plt.xlabel('Day relative to mainshock',fontsize=15,labelpad=0)
         plt.title(sta,fontsize=15)
