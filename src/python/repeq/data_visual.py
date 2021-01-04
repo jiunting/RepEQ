@@ -454,6 +454,7 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
         'measured_CC':0.5,
         'max_shift':0.5, #drop the shift larger than this number (very large shift due to cycle slip)
         'min_length':0.7, #length of the available time series pass the above criteria (0~1)
+        'cal_range':[5,10], # time range for slope calculation
         }
     '''
     sns.set()
@@ -495,7 +496,7 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
                     continue #alignment is not robust
                         
                 #take the time,shift and fit by a slope
-                idx = np.where((CCC>=filter_slope['measured_CC']) & (shift<filter_slope['max_shift']) & (time>0) )[0] #shift cannt be too large otherwise is cycle slip
+                idx = np.where((CCC>=filter_slope['measured_CC']) & (shift<filter_slope['max_shift']) & (time>=filter_slope['cal_range'][0]) & (time<=filter_slope['cal_range'][1]) )[0] #shift cannt be too large otherwise is cycle slip
                 if len(idx) >= len(shift)*filter_slope['min_length']:
                     #plt.plot(time[idx],shift[idx])
                     #plt.show()
