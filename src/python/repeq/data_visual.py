@@ -548,17 +548,22 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
             dt_main = (UTCDateTime(temp)-ref_OT)/86400.0 #set t at ref_OT = 0
             time += dt_main
             #check if slope measurement across the mainshock
-            #if (time.min()<0) & (time.max()>0):
-            if (time.max()>0):
-                #plt.errorbar(time,slope+n_meas,stdn)
-                h = plt.plot(time,slope+n_meas*0.01,'.-')
-                sav_h.append(h[0])
-                plt.plot(dt_main,0+n_meas*0.01,'rv')
-                plt.plot([-10,10],[n_meas*0.01,n_meas*0.01],'k--',linewidth=0.5)
-                #save template information (loc)
-                sav_tmplon.append(df.iloc[ int(sav_slope[sta][temp]['ID']) ].Lon)
-                sav_tmplat.append(df.iloc[ int(sav_slope[sta][temp]['ID']) ].Lat)
-                n_meas += 1
+            if (time.min()<0) & (time.max()>0):
+                continue
+            #not plot short sequence
+            if len(time)< 5:
+                continue
+            #if (time.max()<0):
+            #    continue
+            #plt.errorbar(time,slope+n_meas,stdn)
+            h = plt.plot(time,slope+n_meas*0.01,'.-')
+            sav_h.append(h[0])
+            plt.plot(dt_main,0+n_meas*0.01,'v',markerfacecolor=[1,0,0],markeredgecolor=[0,0,0])
+            plt.plot([-10,10],[n_meas*0.01,n_meas*0.01],'k--',linewidth=0.5)
+            #save template information (loc)
+            sav_tmplon.append(df.iloc[ int(sav_slope[sta][temp]['ID']) ].Lon)
+            sav_tmplat.append(df.iloc[ int(sav_slope[sta][temp]['ID']) ].Lat)
+            n_meas += 1
         if n_meas == 0:
             plt.close()
             continue
@@ -566,7 +571,7 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
         plt.xlim([-5,5])
         plt.ylim([-0.01,n_meas*0.01])
         plt.yticks([],[])
-        plt.xlabel('days from mainshock',fontsize=15,labelpad=0)
+        plt.xlabel('Day relative to mainshock',fontsize=15,labelpad=0)
         plt.title(sta,fontsize=15)
         plt.grid(False)
         #another subplot plot map
@@ -579,7 +584,7 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
         stlon,stlat = get_lonlat(sta_table,[sta])
         plt.plot(stlon,stlat,'^',markersize=10,color=[0,1,0],markeredgecolor=[0,0,1],mew=1)
         print('***manually plot mainshock loc, set xlim and ylim')
-        plt.plot(-154.9996667,19.3181667,'r*',markersize=14,markeredgecolor=[0,0,0],mew=1,alpha=0.9)
+        plt.plot(-154.9996667,19.3181667,'*',markerfacecolor=[1,0,0],markersize=14,markeredgecolor=[0,0,0],mew=1,alpha=0.9)
         plt.xlim([-155.85,-154.74])
         plt.ylim([18.86,19.88])
         plt.xticks(rotation=30,fontsize=10)
