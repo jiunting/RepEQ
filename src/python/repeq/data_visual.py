@@ -474,10 +474,17 @@ def plot_lag_all(home,project_name,cata_name,sta_name,filter_slope,ref_OT="2018-
     lag_all = np.load(home+'/'+project_name+'/output/Template_match/Measure_lag/'+'measure_lag_all.npy',allow_pickle=True)
     lag_all = lag_all.item()
 
+    print('*****Add depth filter all events should >= 5km*****')
 
     sav_slope = {} #with sta as key
     for ik in lag_all.keys():
         temp_OT = lag_all[ik]['template_OT']
+        #find the corresponding eqinfo
+        tmp_df = df[(df.Date==temp_OT.split('T')[0]) & (df.Time==temp_OT.split('T')[1] )  ]
+        if tmp_df.iloc[0].Depth < 5:
+            continue
+
+
         #loop all the detections
         for detc_OT in lag_all[ik]['detc_OT'].keys():
             if np.abs(UTCDateTime(temp_OT)-UTCDateTime(detc_OT))<filter_slope['diff_t']:
