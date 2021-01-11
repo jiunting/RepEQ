@@ -112,14 +112,33 @@ T.template_load()
 | tcs_length   |<array or list; len=2; dtype=float> time series length before and after arrival |
 
 ## 4. Repeating earthquake searching
+### Now you have the waveforms what's next?
 
-#### 4-1 Event-based searching
-> Copy example file control.py, make search=True then run. It has 4 steps.  
-> analysis.searchRepEQ: use velocity model predicted arrival time to calculate if the two events are repeating EQ.  
-> analysis.read_logs: merge all the .log files into summary file  
-> analysis.sequence: make sequence file  
-> analysis.measure_lag: If A and B are repeating EQ, align P waves and measure their lags.  
+#### 4-1 For continuous data template matching
+> Copy example file control_cont.py, use the repeq.template module
 
 
-#### 4-2 Continuous data template matching
-> Copy example file control_cont.py, use the repeq.template module  
+#### 4-2 For event-based searching
+##### Copy example file control.py, make search=True then run. It has main 4 steps.  
+
+> Step 1. Predict arrival time based on catalog and station location from a given velocity model, and calculate CC
+```python
+analysis.searchRepEQ(home,project_name,vel_model,cata_name,data_filters,startover=startover,make_fig_CC=make_fig_CC,QC=True,save_note=True)
+```
+
+> Step 2. Apply hash to merge the measurement into a large summary file
+```python
+analysis.read_logs(home,project_name) #merge all the .log file into a large summary file: project_name.summary
+```
+
+> Step 3. Link the summary file and find repeating earthquake sequence
+```python
+analysis.sequence(home,project_name,seq_filters) #make sequence file: project_name.summary
+```
+
+> Step 4. Furthermore, measure coda-wave interferometry
+```python
+analysis.measure_lag(home,project_name,lag_params,sequence_file,cata_name) #If A and B are repeating EQ, align P waves and measure their lags.  
+```
+
+
