@@ -141,6 +141,32 @@ template.T_parallel(T_part, n_part=n_part, save_CCF=False, fmt=2) #parallel for 
 ```
 > The results will be saved in home/project_name/output/Template_match/Detections/
 
+> Step 2. Make sure detections are robust.  
+```python
+from repeq import data_proc
+
+#set some filter to the detections
+filter_params={
+    'diff_t':60,         #inter-event time >= 60 s
+    'min_sta':6,         #minimum 6 stations (channels or phases)
+    'min_CC':0.3         #minimum averaged CC
+}
+
+# cut the time series from filtered detections
+data_proc.bulk_cut_dailydata(home, project_name, filter_detc, cut_window=[5,20])  #cut a longer time series for better plotting
+
+# make figure from the above (cut) timeseries
+from repeq import data_visual
+
+data_visual.bulk_plot_detc_tcs(home, project_name, filter_detc)
+```
+
+<p float="left">
+  <img src="./fig/Figure_3.png" width="45%" />
+  <img src="./fig/Figure_4.png" width="45%" /> 
+</p>
+
+
 
 #### 4-2 For event-based searching
 ##### Copy example file control.py, make search=True then run. It has main 4 steps.  
