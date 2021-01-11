@@ -21,7 +21,7 @@ What it can/cannot do
 > (2020.10.17) Add template download tool  
 > (2020.10.06) Modify Mass_downloader  
 
-#### Example of template-matching method for repeating earthquake detections in the Hawaiian Big Island 
+#### Example of template-matching method for repeating earthquake detections in the Hawaiian Island 
 <p float="left">
   <img src="./fig/Figure_1.png" width="40%" />
   <img src="./fig/Figure_2.png" width="58%" /> 
