@@ -115,7 +115,25 @@ T.template_load()
 ### Now you have the waveforms what's next?
 
 #### 4-1 For continuous data template matching
-> Copy example file control_cont.py, use the repeq.template module
+##### Copy example file control_cont.py, use the repeq.template module.
+
+> Step 1. Before run the script, make sure you have downloaded template data in home/project_name/waveform_template/ and continuous data in home/project_name/waveform/ .  
+> There are two ways to run calculation i)run directly or ii) multiprocessing which is highly recommended!
+```python
+#Run by multiprocessing
+T = template.Template(home,project_name,cata_name2,False,sampling_rate,filter=filter,tcs_length=[1,9],filt_CC=0.3,filt_nSTA=6,plot_check=False)
+#set T.download = False, so T.template_load() will not download the templates again but load all the existing ms in the list
+T.template_load()  #to show all the templates: print(T.ms)
+n_part = 8 #set 8 multiprocessing
+T_part = template.T_partition(T,n_part=n_part) #partitioning the T
+template.T_parallel(T_part,n_part=n_part,save_CCF=False,fmt=2) #parallel for all T_part
+
+## if you insist or computer out-of-memory, here is the way to run them one-by-one
+## T.template_load()
+## T.xcorr_cont(save_CCF=False,fmt=2) #fmt=1 no longer supported
+
+```
+> The results will be saved in home/project_name/output/Template_match/Detections/
 
 
 #### 4-2 For event-based searching
