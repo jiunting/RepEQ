@@ -410,13 +410,13 @@ def download_continuous_cent(net,sta,comp,chn,sampl,t1,t2,lon,lat,r1=0,r2=1):
             staInfo_fail['heigh'].append(sav_heigh[i])
             continue #data unavailable
         print(net,sav_sta[i],comp,chn,t1,t2)
-        tr.detrend()
+        tr.detrend('linear')
         tr.merge() #now tr can be same station but different component
         for itr in range(len(tr)):
             if isinstance(tr[itr].data, np.ma.masked_array):
                 tr[itr].data.fill_value = 0
                 tr[itr].data = tr[itr].data.filled()
-        tr.detrend()
+        tr.detrend('linear')
         tr.filter("bandpass",freqmin=2,freqmax=7)
         #tr.filter("bandpass",freqmin=1,freqmax=8)
         tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=True, pad=True, fill_value=0)
@@ -555,7 +555,7 @@ def make_template(df,sampling_rate,filter=[0.2,8],tcs_length=[1,9]):
         else:
             #print("Data available:",net, sta, location, comp, t1-2, t2+2)
             tr.merge(method=1,interpolation_samples=-1,fill_value='interpolate')
-            tr.detrend()
+            tr.detrend('linear')
             tr.trim(starttime=t1-2, endtime=t2+2, nearest_sample=1, pad=1, fill_value=0)
             if filter:
                 tr.filter("bandpass",freqmin=filter[0],freqmax=filter[1])
