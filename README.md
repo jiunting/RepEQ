@@ -192,3 +192,9 @@ analysis.measure_lag(home, project_name, lag_params, sequence_file, cata_name) #
 ```
 
 
+
+#### Add [Issues][Issue_lnk] if you have questions, ideas, or would like to contribute to the code via [Step-by-Step Fork tutorial][Fork_lnk], or simply email: ```jiunting AT uoregon DOT edu```
+
+[Mudpy]:https://github.com/dmelgarm/MudPy "Diego's Mudpy link"
+[Issue_lnk]:https://github.com/jiunting/RepEQ/issues
+[Fork_lnk]:https://guides.github.com/activities/forking/
