@@ -192,6 +192,7 @@ analysis.measure_lag(home, project_name, lag_params, sequence_file, cata_name) #
 ```
 
 
+****
 
 #### Add [Issues][Issue_lnk] if you have questions, ideas, or would like to contribute to the code via [Step-by-Step Fork tutorial][Fork_lnk], or simply email: ```jiunting AT uoregon DOT edu```
 
