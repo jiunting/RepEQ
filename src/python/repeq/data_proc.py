@@ -15,9 +15,8 @@ def cat2pd(cata_path):
     #load catalog in pandas
     #read the full path
     cat = np.genfromtxt(cata_path, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U22",float,float,float,float,"|U2","|U22"))
-    df = pd.DataFrame(cat, columns=['ID','Time','Magnitude','Lat','Lon','Depth','Regional'])
-    for ii in range(len(cat)):
-        df = df.append({'ID': cat[ii][6][2:],'Time': cat[ii][0][11:], 'Magnitude': cat[ii][4], 'Date': cat[ii][0][:10],'Lat': cat[ii][1], 'Lon': cat[ii][2], 'Depth': cat[ii][3], 'Regional': cat[ii][5]}, ignore_index=True)
+    cat = [list(i) for i in cat]
+    df = pd.DataFrame(cat, columns=['Time','Lat','Lon','Depth','Magnitude','Regional','ID'])
     return df
 
 
