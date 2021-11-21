@@ -8,6 +8,7 @@ Created on Wed May 08 18:19:05 2019
 
 def build_TauPyModel(home,project_name,vel_mod_file,background_model='PREM'):
     #function modified from mudpy
+    #https://github.com/dmelgarm/MudPy/blob/master/src/python/mudpy/fakequakes.py
     #vel_mod_file: the full path of .mod file
     #return a .npz file that can be read by TauPyModel
     '''
