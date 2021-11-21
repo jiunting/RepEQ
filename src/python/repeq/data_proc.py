@@ -6,7 +6,7 @@ import numpy as np
 from obspy import UTCDateTime
 from scipy import signal
 
-def cat2pd(cata_path):
+def cat2pd(cata_path,description=False):
     '''
         convert USGS catalog format to pandas
     '''
@@ -14,9 +14,13 @@ def cat2pd(cata_path):
     import os
     #load catalog in pandas
     #read the full path
-    cat = np.genfromtxt(cata_path, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U22",float,float,float,float,"|U2","|U22"))
-    cat = [list(i) for i in cat]
-    df = pd.DataFrame(cat, columns=['Time','Lat','Lon','Depth','Magnitude','Regional','ID'])
+    if description:
+        df = pd.read_csv(cata_path,header=None,skiprows=0,usecols=[0,1,2,3,4,5,10,11,13,14,19],names=['Time','Lat','Lon','Depth','Magnitude','Magtype','Regional','ID','Description','Source_type','review'])
+    else:
+        df = pd.read_csv(cata_path,header=None,skiprows=0,usecols=[0,1,2,3,4,10,11],names=['Time','Lat','Lon','Depth','Magnitude','Magtype','Regional','ID'])
+        #cat = np.genfromtxt(cata_path, delimiter=',', skip_header=0,usecols=(0,1,2,3,4,10,11), dtype=("|U22",float,float,float,float,"|U2","|U22"))
+        #cat = [list(i) for i in cat] #tuple to list
+        #df = pd.DataFrame(cat, columns=['Time','Lat','Lon','Depth','Magnitude','Regional','ID'])
     return df
 
 
