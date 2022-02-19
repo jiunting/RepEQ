@@ -52,8 +52,8 @@ vi ~/.bash_profile
 > and add the following line in the file
 
 ```bash
-#set MLARGE
-export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/RepEQ/src/python
+#set RepEQ
+export PYTHONPATH=$PYTHONPATH:YOUR_PATH/RepEQ/src/python
 ```
 
 ## 2. Download catalog  
